@@ -35,6 +35,7 @@
             </div>
 
             <form action="/backup/google-drive" method="POST">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
               <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm fw-semibold">
                 <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload Backup to Google Drive (1-Click)
               </button>
@@ -107,7 +108,8 @@
           <strong>Notice:</strong> Restoring a backup file will import all firms, items, parties, and bills from the JSON file into your account.
         </div>
 
-        <form action="/backup/restore" method="POST" enctype="multipart/form-data" class="form-delete-confirm" data-confirm-message="Are you sure you want to restore data from this JSON backup?">
+        <form action="/backup/restore?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data" class="form-delete-confirm" data-confirm-message="Are you sure you want to restore data from this JSON backup?">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <div class="row g-3 align-items-center">
             <div class="col-md-8">
               <label for="backup_file" class="form-label small">Select Backup JSON File (.json)</label>

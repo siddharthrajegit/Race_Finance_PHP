@@ -23,6 +23,7 @@
   data-default-gst="<%= isEditMode ? (invoice.is_gst_bill ? 'gst' : 'non_gst') : billSettings.default_gst_type %>"
   data-gst-calc-mode="<%= billSettings.gst_calc_mode %>"
   data-enable-discount="<%= showDiscountCol ? '1' : '0' %>">
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
   <input type="hidden" name="type" value="<%= invoiceType %>">
   <input type="hidden" name="gst_calc_mode" id="gstCalcModeInput" value="<%= billSettings.gst_calc_mode %>">
 
@@ -435,6 +436,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="quickPartyForm">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <input type="hidden" name="type" value="<%= invoiceType === 'sale' ? 'customer' : 'supplier' %>">
         <div class="modal-body p-4">
           <div id="quickPartyAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
@@ -512,6 +514,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="quickItemForm">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <div class="modal-body p-4">
           <div id="quickItemAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
 

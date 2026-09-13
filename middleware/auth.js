@@ -1,5 +1,21 @@
 const { Firm } = require('../models');
 
+function sanitizeReturnTo(url) {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('/\\') ||
+    trimmed.includes('\\') ||
+    /^\/[/\\]/.test(trimmed) ||
+    /[\u0000-\u001F\u007F-\u009F]/.test(trimmed)
+  ) {
+    return null;
+  }
+  return trimmed;
+}
+
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     if (req.user && req.user.status === 'suspended') {
@@ -12,14 +28,20 @@ function ensureAuthenticated(req, res, next) {
     return next();
   }
   req.flash('error_msg', 'Please sign in to access this page.');
-  req.session.returnTo = req.originalUrl;
+  const safeReturn = sanitizeReturnTo(req.originalUrl);
+  if (safeReturn) {
+    req.session.returnTo = safeReturn;
+  }
   res.redirect('/auth/login');
 }
 
 function ensureAdmin(req, res, next) {
   if (!req.isAuthenticated()) {
     req.flash('error_msg', 'Please sign in with administrator credentials.');
-    req.session.returnTo = req.originalUrl;
+    const safeReturn = sanitizeReturnTo(req.originalUrl);
+    if (safeReturn) {
+      req.session.returnTo = safeReturn;
+    }
     return res.redirect('/auth/login');
   }
 
@@ -43,7 +65,10 @@ function ensureAdmin(req, res, next) {
 function ensureUserOnly(req, res, next) {
   if (!req.isAuthenticated()) {
     req.flash('error_msg', 'Please sign in to access this page.');
-    req.session.returnTo = req.originalUrl;
+    const safeReturn = sanitizeReturnTo(req.originalUrl);
+    if (safeReturn) {
+      req.session.returnTo = safeReturn;
+    }
     return res.redirect('/auth/login');
   }
 

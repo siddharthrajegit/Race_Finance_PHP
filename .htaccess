@@ -18,10 +18,15 @@
 
 # 2. Security Headers for Production
 <IfModule mod_headers.c>
+    # Inform backend Node.js (Phusion Passenger) when incoming request is HTTPS
+    RequestHeader set X-Forwarded-Proto "https" env=HTTPS
+
+    # Response Security Headers
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
 
 # 3. Gzip & Compression for Fast Page Loads & Google Crawler Ranking

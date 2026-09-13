@@ -158,6 +158,7 @@
                     <% if (u.id !== user.id) { %>
                       <li>
                         <form action="/admin/users/<%= u.id %>/role" method="POST" class="m-0">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                           <button type="submit" class="dropdown-item py-2 small <%= u.role === 'admin' ? 'text-danger' : 'text-primary' %>">
                             <i class="bi <%= u.role === 'admin' ? 'bi-shield-slash' : 'bi-shield-fill-plus' %> me-2"></i>
                             <%= u.role === 'admin' ? 'Demote to Standard User' : 'Promote to Admin' %>
@@ -168,6 +169,7 @@
                       <!-- Status Toggle -->
                       <li>
                         <form action="/admin/users/<%= u.id %>/status" method="POST" class="m-0">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                           <button type="submit" class="dropdown-item py-2 small <%= u.status === 'active' ? 'text-danger' : 'text-success' %>">
                             <i class="bi <%= u.status === 'active' ? 'bi-lock-fill' : 'bi-unlock-fill' %> me-2"></i>
                             <%= u.status === 'active' ? 'Suspend Account' : 'Activate Account' %>
@@ -180,6 +182,7 @@
                       <!-- Delete User -->
                       <li>
                         <form action="/admin/users/<%= u.id %>/delete" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete subscriber '<%= u.name %>'? All registered business firms, inventory items, and invoices will be purged.">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                           <button type="submit" class="dropdown-item py-2 small text-danger">
                             <i class="bi bi-trash-fill me-2"></i> Delete Account
                           </button>
@@ -213,6 +216,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form action="/admin/users/create" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Business Owner / Name <span class="text-danger">*</span></label>
@@ -259,6 +263,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="resetPasswordForm" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <div class="modal-body p-4">
           <p class="text-muted small mb-3">
             Overriding password for subscriber: <strong id="resetUserName" class="text-dark"></strong>

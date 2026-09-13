@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { Backup } = require('../models');
 const { uploadBackupToDrive } = require('../config/googleDrive');
+const { validateAndSanitizeBackup } = require('../middleware/backupValidator');
 
 const backupController = {
   getIndex: (req, res) => {
@@ -32,22 +33,27 @@ const backupController = {
   },
 
   restoreJson: (req, res) => {
+    let filePath = null;
     try {
       if (!req.file) {
         req.flash('error_msg', 'Please select a valid JSON backup file.');
         return res.redirect('/backup');
       }
 
-      const filePath = req.file.path;
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const backupData = JSON.parse(fileContent);
-
-      // Clean up uploaded file
+      filePath = req.file.path;
+      let backupData;
       try {
-        fs.unlinkSync(filePath);
-      } catch (e) {}
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        backupData = JSON.parse(fileContent);
+      } catch (parseErr) {
+        req.flash('error_msg', 'Uploaded file is not a valid JSON document.');
+        return res.redirect('/backup');
+      }
 
-      Backup.restoreFullBackup(req.user.id, backupData);
+      // Validate & sanitize backup payload (Vulnerability H5)
+      const sanitizedData = validateAndSanitizeBackup(backupData);
+
+      Backup.restoreFullBackup(req.user.id, sanitizedData);
 
       req.flash('success_msg', 'Data restored successfully from backup! All firms, items, and bills imported.');
       res.redirect('/dashboard');
@@ -55,6 +61,14 @@ const backupController = {
       console.error('Restore backup error:', err);
       req.flash('error_msg', 'Failed to restore backup: ' + err.message);
       res.redirect('/backup');
+    } finally {
+      if (filePath) {
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {}
+      }
     }
   },
 

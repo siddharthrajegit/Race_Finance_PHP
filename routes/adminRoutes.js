@@ -30,6 +30,7 @@ router.get('/system', adminController.getSystemHealth);
 router.post('/system/vacuum', adminController.postVacuumDb);
 router.post('/system/clean-orphans', adminController.postCleanOrphans);
 router.get('/system/download-db', adminController.getDownloadDb);
+router.post('/system/download-db', adminController.postDownloadDb);
 
 // Governance & Platform Settings
 router.get('/settings', adminController.getSettings);

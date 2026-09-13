@@ -232,7 +232,13 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items(invoice_id);
     CREATE INDEX IF NOT EXISTS idx_payments_firm ON payments(firm_id);
     CREATE INDEX IF NOT EXISTS idx_payments_party ON payments(party_id);
-    CREATE INDEX IF NOT EXISTS idx_admin_logs ON admin_audit_logs(created_at);
+    -- Persistent Sessions Table
+    CREATE TABLE IF NOT EXISTS sessions (
+      sid TEXT PRIMARY KEY,
+      sess TEXT NOT NULL,
+      expired INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_expired ON sessions(expired);
   `);
 
   // Auto-migration: Check and add 'role' and 'status' columns if not existing
@@ -244,24 +250,20 @@ function initDatabase() {
     db.exec("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
   }
 
-  // Seed / Ensure Admin Account: Phone 9414223562 with password admin123
+  // Seed initial Admin Account only if it does not already exist
   try {
     const bcrypt = require('bcryptjs');
-    const adminPhone = '9414223562';
-    const existingAdmin = db.prepare('SELECT * FROM users WHERE phone = ?').get(adminPhone);
-    const hashedPassword = bcrypt.hashSync('admin123', 10);
+    const adminPhone = process.env.ADMIN_PHONE || '9414223562';
+    const existingAdmin = db.prepare('SELECT id FROM users WHERE phone = ?').get(adminPhone);
 
     if (!existingAdmin) {
+      const initialPassword = process.env.ADMIN_INITIAL_PASSWORD || 'admin123';
+      const hashedPassword = bcrypt.hashSync(initialPassword, 10);
       db.prepare(`
         INSERT INTO users (name, phone, password, role, status)
         VALUES (?, ?, ?, 'admin', 'active')
       `).run('Admin', adminPhone, hashedPassword);
-      console.log('✅ Admin account seeded: Phone 9414223562 / Password admin123 (Role: admin)');
-    } else {
-      // Ensure role is admin and password is updated to admin123
-      db.prepare(`
-        UPDATE users SET role = 'admin', status = 'active', password = ? WHERE phone = ?
-      `).run(hashedPassword, adminPhone);
+      console.log(`✅ Initial admin account created (Phone: ${adminPhone}).`);
     }
   } catch (err) {
     console.error('Error ensuring admin user:', err.message);

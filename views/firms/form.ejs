@@ -12,7 +12,8 @@
       </div>
 
       <div class="card-body p-4">
-        <form action="<%= firm ? '/firms/edit/' + firm.id : '/firms/create' %>" method="POST" enctype="multipart/form-data">
+        <form action="<%= firm ? '/firms/edit/' + firm.id : '/firms/create' %>?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <!-- Section 1: Basic Information -->
           <h5 class="fw-semibold text-primary border-bottom pb-2 mb-3">1. Business Profile</h5>
           <div class="row g-3 mb-4">

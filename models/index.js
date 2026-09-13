@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const db = require('../config/db');
+const { validateAndSanitizeBackup } = require('../middleware/backupValidator');
 
 // State list with standard 2-digit GST state codes
 const GST_STATES = [
@@ -43,11 +44,17 @@ const GST_STATES = [
   { code: '97', name: 'Other Territory' }
 ];
 
+const SAFE_USER_FIELDS = 'id, name, email, phone, google_id, avatar, role, status, created_at';
+
 const User = {
-  findById: (id) => db.prepare('SELECT * FROM users WHERE id = ?').get(id),
-  findByEmail: (email) => db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email),
-  findByPhone: (phone) => db.prepare('SELECT * FROM users WHERE phone = ?').get(phone),
-  findByGoogleId: (googleId) => db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId),
+  findById: (id) => db.prepare(`SELECT ${SAFE_USER_FIELDS} FROM users WHERE id = ?`).get(id),
+  findByEmail: (email) => db.prepare(`SELECT ${SAFE_USER_FIELDS} FROM users WHERE LOWER(email) = LOWER(?)`).get(email),
+  findByPhone: (phone) => db.prepare(`SELECT ${SAFE_USER_FIELDS} FROM users WHERE phone = ?`).get(phone),
+  findByGoogleId: (googleId) => db.prepare(`SELECT ${SAFE_USER_FIELDS} FROM users WHERE google_id = ?`).get(googleId),
+  getPasswordHashById: (id) => {
+    const u = db.prepare('SELECT password FROM users WHERE id = ?').get(id);
+    return u ? u.password : null;
+  },
   findByEmailOrPhone: (identifier) => {
     return db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR phone = ?').get(identifier, identifier);
   },
@@ -60,7 +67,7 @@ const User = {
       name, email || null, phone || null, password || null,
       google_id || null, avatar || null, role || 'user', status || 'active'
     );
-    return db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    return User.findById(info.lastInsertRowid);
   },
   updateGoogleId: (id, google_id, avatar) => {
     db.prepare('UPDATE users SET google_id = ?, avatar = COALESCE(avatar, ?) WHERE id = ?').run(google_id, avatar, id);
@@ -499,9 +506,9 @@ const Item = {
 
     const info = stmt.run(
       firm_id, name.trim(), item_code || null, hsn_code || null, unit || 'PCS',
-      parseFloat(sale_price) || 0, parseFloat(purchase_price) || 0,
-      parseFloat(tax_rate) || 0, tax_inclusive ? 1 : 0,
-      initialStock, initialStock, parseFloat(low_stock_threshold) || 0,
+      Math.max(0, parseFloat(sale_price) || 0), Math.max(0, parseFloat(purchase_price) || 0),
+      Math.min(100, Math.max(0, parseFloat(tax_rate) || 0)), tax_inclusive ? 1 : 0,
+      initialStock, initialStock, Math.max(0, parseFloat(low_stock_threshold) || 0),
       description || null
     );
     return db.prepare('SELECT * FROM items WHERE id = ?').get(info.lastInsertRowid);
@@ -520,9 +527,9 @@ const Item = {
       WHERE id = ? AND firm_id = ?
     `).run(
       name.trim(), item_code || null, hsn_code || null, unit || 'PCS',
-      parseFloat(sale_price) || 0, parseFloat(purchase_price) || 0,
-      parseFloat(tax_rate) || 0, tax_inclusive ? 1 : 0,
-      parseFloat(low_stock_threshold) || 0, description || null,
+      Math.max(0, parseFloat(sale_price) || 0), Math.max(0, parseFloat(purchase_price) || 0),
+      Math.min(100, Math.max(0, parseFloat(tax_rate) || 0)), tax_inclusive ? 1 : 0,
+      Math.max(0, parseFloat(low_stock_threshold) || 0), description || null,
       id, firmId
     );
     return Item.getById(id, firmId);
@@ -546,14 +553,14 @@ function numeric(value, fallback = 0) {
 
 function adjustInvoiceItemStock(itemId, firmId, invoiceType, quantity, direction = 1) {
   if (!itemId) return;
-  const qtyChange = numeric(quantity);
-  if (!qtyChange) return;
+  const rawQty = numeric(quantity);
+  if (rawQty <= 0) return; // Disallow non-positive quantities from corrupting stock
 
   const typeMultiplier = invoiceType === 'sale' ? -1 : invoiceType === 'purchase' ? 1 : 0;
   if (!typeMultiplier) return;
 
   db.prepare('UPDATE items SET current_stock = current_stock + ? WHERE id = ? AND firm_id = ?')
-    .run(typeMultiplier * direction * qtyChange, itemId, firmId);
+    .run(typeMultiplier * direction * rawQty, itemId, firmId);
 }
 
 const Invoice = {
@@ -608,11 +615,11 @@ const Invoice = {
         firm_id, type || 'sale', invoice_number, invoice_date, due_date || null,
         party_id || null, party_name, party_phone || null, party_gstin || null,
         party_address || null, party_state || null, party_state_code || null,
-        is_gst_bill ? 1 : 0, is_interstate ? 1 : 0, parseFloat(subtotal) || 0,
-        discount_type || 'percentage', parseFloat(discount_value) || 0, parseFloat(discount_amount) || 0,
-        parseFloat(taxable_amount) || 0, parseFloat(cgst_amount) || 0, parseFloat(sgst_amount) || 0,
-        parseFloat(igst_amount) || 0, parseFloat(tax_amount) || 0, parseFloat(round_off) || 0,
-        parseFloat(grand_total) || 0, parseFloat(paid_amount) || 0, parseFloat(balance_due) || 0,
+        is_gst_bill ? 1 : 0, is_interstate ? 1 : 0, Math.max(0, parseFloat(subtotal) || 0),
+        discount_type || 'percentage', Math.max(0, parseFloat(discount_value) || 0), Math.max(0, parseFloat(discount_amount) || 0),
+        Math.max(0, parseFloat(taxable_amount) || 0), Math.max(0, parseFloat(cgst_amount) || 0), Math.max(0, parseFloat(sgst_amount) || 0),
+        Math.max(0, parseFloat(igst_amount) || 0), Math.max(0, parseFloat(tax_amount) || 0), parseFloat(round_off) || 0,
+        Math.max(0, parseFloat(grand_total) || 0), Math.max(0, parseFloat(paid_amount) || 0), Math.max(0, parseFloat(balance_due) || 0),
         payment_status || 'unpaid', payment_mode || 'cash', notes || null, terms || null
       );
 
@@ -628,18 +635,38 @@ const Invoice = {
       `);
 
       for (const item of itemsData) {
+        const rawQty = parseFloat(item.quantity);
+        if (isNaN(rawQty) || !isFinite(rawQty) || rawQty <= 0) {
+          throw new Error(`Quantity for item "${item.item_name || 'Line Item'}" must be greater than 0.`);
+        }
+        const rawRate = parseFloat(item.rate);
+        if (isNaN(rawRate) || !isFinite(rawRate) || rawRate < 0) {
+          throw new Error(`Rate for item "${item.item_name || 'Line Item'}" cannot be negative.`);
+        }
+
+        const itemQty = rawQty;
+        const itemRate = rawRate;
+        const itemDiscPct = Math.min(100, Math.max(0, parseFloat(item.discount_percent) || 0));
+        const itemDiscAmt = Math.max(0, parseFloat(item.discount_amount) || 0);
+        const itemTaxable = Math.max(0, parseFloat(item.taxable_amount) || 0);
+        const itemTaxRate = Math.min(100, Math.max(0, parseFloat(item.tax_rate) || 0));
+        const itemCgstAmt = Math.max(0, parseFloat(item.cgst_amount) || 0);
+        const itemSgstAmt = Math.max(0, parseFloat(item.sgst_amount) || 0);
+        const itemIgstAmt = Math.max(0, parseFloat(item.igst_amount) || 0);
+        const itemTotal = Math.max(0, parseFloat(item.total_amount) || 0);
+
         itemStmt.run(
           invoiceId, item.item_id || null, item.item_name, item.hsn_code || null,
-          item.unit || 'PCS', parseFloat(item.quantity) || 1, parseFloat(item.rate) || 0,
-          parseFloat(item.discount_percent) || 0, parseFloat(item.discount_amount) || 0,
-          parseFloat(item.taxable_amount) || 0, parseFloat(item.tax_rate) || 0,
-          parseFloat(item.cgst_rate) || 0, parseFloat(item.cgst_amount) || 0,
-          parseFloat(item.sgst_rate) || 0, parseFloat(item.sgst_amount) || 0,
-          parseFloat(item.igst_rate) || 0, parseFloat(item.igst_amount) || 0,
-          parseFloat(item.total_amount) || 0
+          item.unit || 'PCS', itemQty, itemRate,
+          itemDiscPct, itemDiscAmt,
+          itemTaxable, itemTaxRate,
+          parseFloat(item.cgst_rate) || 0, itemCgstAmt,
+          parseFloat(item.sgst_rate) || 0, itemSgstAmt,
+          parseFloat(item.igst_rate) || 0, itemIgstAmt,
+          itemTotal
         );
 
-        adjustInvoiceItemStock(item.item_id, firm_id, type, item.quantity);
+        adjustInvoiceItemStock(item.item_id, firm_id, type, itemQty);
       }
 
       // 3. If paid_amount > 0 at time of billing, record payment receipt/voucher automatically
@@ -703,11 +730,11 @@ const Invoice = {
         type || existingInvoice.type, invoice_number, invoice_date, due_date || null,
         party_id || null, party_name, party_phone || null, party_gstin || null,
         party_address || null, party_state || null, party_state_code || null,
-        is_gst_bill ? 1 : 0, is_interstate ? 1 : 0, parseFloat(subtotal) || 0,
-        discount_type || 'percentage', parseFloat(discount_value) || 0, parseFloat(discount_amount) || 0,
-        parseFloat(taxable_amount) || 0, parseFloat(cgst_amount) || 0, parseFloat(sgst_amount) || 0,
-        parseFloat(igst_amount) || 0, parseFloat(tax_amount) || 0, parseFloat(round_off) || 0,
-        parseFloat(grand_total) || 0, parseFloat(paid_amount) || 0, parseFloat(balance_due) || 0,
+        is_gst_bill ? 1 : 0, is_interstate ? 1 : 0, Math.max(0, parseFloat(subtotal) || 0),
+        discount_type || 'percentage', Math.max(0, parseFloat(discount_value) || 0), Math.max(0, parseFloat(discount_amount) || 0),
+        Math.max(0, parseFloat(taxable_amount) || 0), Math.max(0, parseFloat(cgst_amount) || 0), Math.max(0, parseFloat(sgst_amount) || 0),
+        Math.max(0, parseFloat(igst_amount) || 0), Math.max(0, parseFloat(tax_amount) || 0), parseFloat(round_off) || 0,
+        Math.max(0, parseFloat(grand_total) || 0), Math.max(0, parseFloat(paid_amount) || 0), Math.max(0, parseFloat(balance_due) || 0),
         payment_status || 'unpaid', payment_mode || 'cash', notes || null, terms || null,
         id, firmId
       );
@@ -722,18 +749,38 @@ const Invoice = {
       `);
 
       for (const item of itemsData) {
+        const rawQty = parseFloat(item.quantity);
+        if (isNaN(rawQty) || !isFinite(rawQty) || rawQty <= 0) {
+          throw new Error(`Quantity for item "${item.item_name || 'Line Item'}" must be greater than 0.`);
+        }
+        const rawRate = parseFloat(item.rate);
+        if (isNaN(rawRate) || !isFinite(rawRate) || rawRate < 0) {
+          throw new Error(`Rate for item "${item.item_name || 'Line Item'}" cannot be negative.`);
+        }
+
+        const itemQty = rawQty;
+        const itemRate = rawRate;
+        const itemDiscPct = Math.min(100, Math.max(0, parseFloat(item.discount_percent) || 0));
+        const itemDiscAmt = Math.max(0, parseFloat(item.discount_amount) || 0);
+        const itemTaxable = Math.max(0, parseFloat(item.taxable_amount) || 0);
+        const itemTaxRate = Math.min(100, Math.max(0, parseFloat(item.tax_rate) || 0));
+        const itemCgstAmt = Math.max(0, parseFloat(item.cgst_amount) || 0);
+        const itemSgstAmt = Math.max(0, parseFloat(item.sgst_amount) || 0);
+        const itemIgstAmt = Math.max(0, parseFloat(item.igst_amount) || 0);
+        const itemTotal = Math.max(0, parseFloat(item.total_amount) || 0);
+
         itemStmt.run(
           id, item.item_id || null, item.item_name, item.hsn_code || null,
-          item.unit || 'PCS', parseFloat(item.quantity) || 1, parseFloat(item.rate) || 0,
-          parseFloat(item.discount_percent) || 0, parseFloat(item.discount_amount) || 0,
-          parseFloat(item.taxable_amount) || 0, parseFloat(item.tax_rate) || 0,
-          parseFloat(item.cgst_rate) || 0, parseFloat(item.cgst_amount) || 0,
-          parseFloat(item.sgst_rate) || 0, parseFloat(item.sgst_amount) || 0,
-          parseFloat(item.igst_rate) || 0, parseFloat(item.igst_amount) || 0,
-          parseFloat(item.total_amount) || 0
+          item.unit || 'PCS', itemQty, itemRate,
+          itemDiscPct, itemDiscAmt,
+          itemTaxable, itemTaxRate,
+          parseFloat(item.cgst_rate) || 0, itemCgstAmt,
+          parseFloat(item.sgst_rate) || 0, itemSgstAmt,
+          parseFloat(item.igst_rate) || 0, itemIgstAmt,
+          itemTotal
         );
 
-        adjustInvoiceItemStock(item.item_id, firmId, type, item.quantity);
+        adjustInvoiceItemStock(item.item_id, firmId, type, itemQty);
       }
 
       // 5. Update or recreate payment record if paid_amount changed
@@ -1045,9 +1092,8 @@ const Backup = {
     };
   },
   restoreFullBackup: (userId, backupData) => {
-    if (!backupData || !backupData.firms) {
-      throw new Error('Invalid backup file format.');
-    }
+    // Validate & sanitize incoming backup data (Vulnerability H5)
+    const cleanData = validateAndSanitizeBackup(backupData);
 
     const restoreTx = db.transaction(() => {
       // Create mapping of old firm ID -> new firm ID
@@ -1057,7 +1103,7 @@ const Backup = {
       const invoiceIdMap = {};
 
       // 1. Insert Firms
-      for (const f of backupData.firms) {
+      for (const f of cleanData.firms) {
         const stmt = db.prepare(`
           INSERT INTO firms (
             user_id, name, gstin, pan, phone, email, address, city, state, state_code,
@@ -1066,16 +1112,17 @@ const Backup = {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const info = stmt.run(
-          userId, f.name, f.gstin, f.pan, f.phone, f.email, f.address, f.city, f.state,
-          f.state_code, f.pincode, f.bank_name, f.bank_account_no, f.bank_ifsc, f.bank_branch,
-          f.upi_id, f.terms, f.logo_path, f.signature_path, f.is_default || 0
+          userId, f.name, f.gstin || null, f.pan || null, f.phone || null, f.email || null,
+          f.address || null, f.city || null, f.state || null, f.state_code || null, f.pincode || null,
+          f.bank_name || null, f.bank_account_no || null, f.bank_ifsc || null, f.bank_branch || null,
+          f.upi_id || null, f.terms || null, f.logo_path || null, f.signature_path || null, f.is_default || 0
         );
         firmIdMap[f.id] = info.lastInsertRowid;
       }
 
       // 2. Insert Parties
-      if (backupData.parties && backupData.parties.length > 0) {
-        for (const p of backupData.parties) {
+      if (cleanData.parties && cleanData.parties.length > 0) {
+        for (const p of cleanData.parties) {
           const newFirmId = firmIdMap[p.firm_id];
           if (!newFirmId) continue;
 
@@ -1086,17 +1133,17 @@ const Backup = {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
           const info = stmt.run(
-            newFirmId, p.type || 'customer', p.name, p.phone, p.email, p.gstin, p.pan,
-            p.billing_address, p.shipping_address, p.city, p.state, p.state_code,
-            p.pincode, p.opening_balance || 0
+            newFirmId, p.type || 'customer', p.name, p.phone || null, p.email || null,
+            p.gstin || null, p.pan || null, p.billing_address || null, p.shipping_address || null,
+            p.city || null, p.state || null, p.state_code || null, p.pincode || null, p.opening_balance || 0
           );
           partyIdMap[p.id] = info.lastInsertRowid;
         }
       }
 
       // 3. Insert Items
-      if (backupData.items && backupData.items.length > 0) {
-        for (const it of backupData.items) {
+      if (cleanData.items && cleanData.items.length > 0) {
+        for (const it of cleanData.items) {
           const newFirmId = firmIdMap[it.firm_id];
           if (!newFirmId) continue;
 
@@ -1107,22 +1154,22 @@ const Backup = {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
           const info = stmt.run(
-            newFirmId, it.name, it.item_code, it.hsn_code, it.unit || 'PCS',
+            newFirmId, it.name, it.item_code || null, it.hsn_code || null, it.unit || 'PCS',
             it.sale_price || 0, it.purchase_price || 0, it.tax_rate || 0,
             it.tax_inclusive || 0, it.opening_stock || 0, it.current_stock || 0,
-            it.low_stock_threshold || 0, it.description
+            it.low_stock_threshold || 0, it.description || null
           );
           itemIdMap[it.id] = info.lastInsertRowid;
         }
       }
 
       // 4. Insert Invoices
-      if (backupData.invoices && backupData.invoices.length > 0) {
-        for (const inv of backupData.invoices) {
+      if (cleanData.invoices && cleanData.invoices.length > 0) {
+        for (const inv of cleanData.invoices) {
           const newFirmId = firmIdMap[inv.firm_id];
           if (!newFirmId) continue;
 
-          const newPartyId = inv.party_id ? partyIdMap[inv.party_id] : null;
+          const newPartyId = (inv.party_id && partyIdMap[inv.party_id]) ? partyIdMap[inv.party_id] : null;
 
           const stmt = db.prepare(`
             INSERT INTO invoices (
@@ -1134,25 +1181,26 @@ const Backup = {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
           const info = stmt.run(
-            newFirmId, inv.type || 'sale', inv.invoice_number, inv.invoice_date, inv.due_date,
-            newPartyId, inv.party_name, inv.party_phone, inv.party_gstin, inv.party_address,
-            inv.party_state, inv.party_state_code, inv.is_gst_bill, inv.is_interstate,
-            inv.subtotal, inv.discount_type, inv.discount_value, inv.discount_amount,
-            inv.taxable_amount, inv.cgst_amount, inv.sgst_amount, inv.igst_amount,
-            inv.tax_amount, inv.round_off, inv.grand_total, inv.paid_amount, inv.balance_due,
-            inv.payment_status, inv.payment_mode, inv.notes, inv.terms
+            newFirmId, inv.type || 'sale', inv.invoice_number, inv.invoice_date, inv.due_date || null,
+            newPartyId, inv.party_name || 'Walk-in Customer', inv.party_phone || null, inv.party_gstin || null,
+            inv.party_address || null, inv.party_state || null, inv.party_state_code || null,
+            inv.is_gst_bill || 0, inv.is_interstate || 0, inv.subtotal || 0, inv.discount_type || 'fixed',
+            inv.discount_value || 0, inv.discount_amount || 0, inv.taxable_amount || 0,
+            inv.cgst_amount || 0, inv.sgst_amount || 0, inv.igst_amount || 0, inv.tax_amount || 0,
+            inv.round_off || 0, inv.grand_total || 0, inv.paid_amount || 0, inv.balance_due || 0,
+            inv.payment_status || 'unpaid', inv.payment_mode || 'Cash', inv.notes || null, inv.terms || null
           );
           invoiceIdMap[inv.id] = info.lastInsertRowid;
         }
       }
 
       // 5. Insert Line Items
-      if (backupData.invoice_items && backupData.invoice_items.length > 0) {
-        for (const ii of backupData.invoice_items) {
+      if (cleanData.invoice_items && cleanData.invoice_items.length > 0) {
+        for (const ii of cleanData.invoice_items) {
           const newInvoiceId = invoiceIdMap[ii.invoice_id];
           if (!newInvoiceId) continue;
 
-          const newItemId = ii.item_id ? itemIdMap[ii.item_id] : null;
+          const newItemId = (ii.item_id && itemIdMap[ii.item_id]) ? itemIdMap[ii.item_id] : null;
 
           const stmt = db.prepare(`
             INSERT INTO invoice_items (
@@ -1162,22 +1210,23 @@ const Backup = {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
           stmt.run(
-            newInvoiceId, newItemId, ii.item_name, ii.hsn_code, ii.unit, ii.quantity, ii.rate,
-            ii.discount_percent, ii.discount_amount, ii.taxable_amount, ii.tax_rate,
-            ii.cgst_rate, ii.cgst_amount, ii.sgst_rate, ii.sgst_amount, ii.igst_rate,
-            ii.igst_amount, ii.total_amount
+            newInvoiceId, newItemId, ii.item_name, ii.hsn_code || null, ii.unit || 'PCS',
+            ii.quantity || 1, ii.rate || 0, ii.discount_percent || 0, ii.discount_amount || 0,
+            ii.taxable_amount || 0, ii.tax_rate || 0, ii.cgst_rate || 0, ii.cgst_amount || 0,
+            ii.sgst_rate || 0, ii.sgst_amount || 0, ii.igst_rate || 0, ii.igst_amount || 0,
+            ii.total_amount || 0
           );
         }
       }
 
       // 6. Insert Payments
-      if (backupData.payments && backupData.payments.length > 0) {
-        for (const p of backupData.payments) {
+      if (cleanData.payments && cleanData.payments.length > 0) {
+        for (const p of cleanData.payments) {
           const newFirmId = firmIdMap[p.firm_id];
           const newPartyId = partyIdMap[p.party_id];
           if (!newFirmId || !newPartyId) continue;
 
-          const newInvoiceId = p.invoice_id ? invoiceIdMap[p.invoice_id] : null;
+          const newInvoiceId = (p.invoice_id && invoiceIdMap[p.invoice_id]) ? invoiceIdMap[p.invoice_id] : null;
 
           const stmt = db.prepare(`
             INSERT INTO payments (
@@ -1186,8 +1235,8 @@ const Backup = {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
           stmt.run(
-            newFirmId, p.type, p.payment_number, p.payment_date, newPartyId,
-            newInvoiceId, p.amount, p.payment_mode, p.reference_no, p.notes
+            newFirmId, p.type || 'payment_in', p.payment_number, p.payment_date, newPartyId,
+            newInvoiceId, p.amount || 0, p.payment_mode || 'Cash', p.reference_no || null, p.notes || null
           );
         }
       }

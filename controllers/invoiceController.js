@@ -137,7 +137,8 @@ function resolveItemId(body, index, firmId, type, isGst, itemName) {
     return existingItem.id;
   }
 
-  const rowRate = parseFloat(formArrayValue(body.rate, index, 0)) || 0;
+  const rowRate = Math.max(0, parseFloat(formArrayValue(body.rate, index, 0)) || 0);
+  const rowTaxRate = isGst ? Math.min(100, Math.max(0, parseFloat(formArrayValue(body.item_tax_rate, index, 0)) || 0)) : 0;
   const newItem = Item.create({
     firm_id: firmId,
     name: itemName,
@@ -146,14 +147,14 @@ function resolveItemId(body, index, firmId, type, isGst, itemName) {
     unit: formArrayValue(body.unit, index, 'PCS') || 'PCS',
     sale_price: type === 'sale' ? rowRate : 0,
     purchase_price: type === 'purchase' ? rowRate : 0,
-    tax_rate: isGst ? (parseFloat(formArrayValue(body.item_tax_rate, index, 0)) || 0) : 0,
+    tax_rate: rowTaxRate,
     opening_stock: 0,
     low_stock_threshold: 0
   });
   return newItem.id;
 }
 
-function buildInvoiceItems(body, firmId, type, isGst, isInterstate) {
+function buildInvoiceItems(body, firmId, type, isGst, isInterstate, redirectTo) {
   const itemNames = Array.isArray(body.item_name) ? body.item_name : (body.item_name ? [body.item_name] : []);
   const items = [];
   const totals = { subtotal: 0, cgst: 0, sgst: 0, igst: 0, tax: 0 };
@@ -163,13 +164,56 @@ function buildInvoiceItems(body, firmId, type, isGst, isInterstate) {
     if (!rawName || !rawName.trim()) continue;
 
     const itemName = rawName.trim();
-    const quantity = parseFloat(formArrayValue(body.quantity, index, 1)) || 1;
-    const rate = parseFloat(formArrayValue(body.rate, index, 0)) || 0;
-    const discountPercent = parseFloat(formArrayValue(body.item_discount_percent, index, 0)) || 0;
+
+    // Strict Quantity Validation (H6 Prevention)
+    const rawQty = formArrayValue(body.quantity, index, 1);
+    const parsedQty = parseFloat(rawQty);
+    if (isNaN(parsedQty) || !isFinite(parsedQty) || parsedQty <= 0) {
+      throw submissionError(
+        `Invalid Quantity: Quantity for item "${itemName}" must be greater than 0 (received ${rawQty}).`,
+        redirectTo
+      );
+    }
+    const quantity = parsedQty;
+
+    // Strict Rate / Price Validation (H6 Prevention)
+    const rawRate = formArrayValue(body.rate, index, 0);
+    const parsedRate = parseFloat(rawRate);
+    if (isNaN(parsedRate) || !isFinite(parsedRate) || parsedRate < 0) {
+      throw submissionError(
+        `Invalid Price / Rate: Price for item "${itemName}" cannot be negative (received ${rawRate}).`,
+        redirectTo
+      );
+    }
+    const rate = parsedRate;
+
+    // Strict Item Discount Validation
+    const rawDiscount = formArrayValue(body.item_discount_percent, index, 0);
+    const parsedDiscount = parseFloat(rawDiscount);
+    if (isNaN(parsedDiscount) || !isFinite(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 100) {
+      throw submissionError(
+        `Invalid Discount: Discount percent for item "${itemName}" must be between 0% and 100% (received ${rawDiscount}%).`,
+        redirectTo
+      );
+    }
+    const discountPercent = parsedDiscount;
+
     const gross = quantity * rate;
     const discountAmount = gross * (discountPercent / 100);
     const taxableAmount = Math.max(0, gross - discountAmount);
-    const taxRate = isGst ? (parseFloat(formArrayValue(body.item_tax_rate, index, 0)) || 0) : 0;
+
+    let taxRate = 0;
+    if (isGst) {
+      const rawTax = formArrayValue(body.item_tax_rate, index, 0);
+      const parsedTax = parseFloat(rawTax);
+      if (isNaN(parsedTax) || !isFinite(parsedTax) || parsedTax < 0 || parsedTax > 100) {
+        throw submissionError(
+          `Invalid Tax Rate: Tax rate for item "${itemName}" must be between 0% and 100%.`,
+          redirectTo
+        );
+      }
+      taxRate = parsedTax;
+    }
     const tax = calculateTax(taxableAmount, taxRate, isGst, isInterstate);
     const totalAmount = taxableAmount + tax.total;
 
@@ -208,7 +252,7 @@ function applyFinalAmountGst(totals, body, isGst, isInterstate, netTaxable) {
     return totals;
   }
 
-  const finalTaxRate = parseFloat(body.final_tax_rate) || 0;
+  const finalTaxRate = Math.min(100, Math.max(0, parseFloat(body.final_tax_rate) || 0));
   const taxTotals = { ...totals, cgst: 0, sgst: 0, igst: 0, tax: 0 };
   if (isInterstate) {
     taxTotals.igst = netTaxable * (finalTaxRate / 100);
@@ -227,21 +271,39 @@ function buildInvoiceSubmission({ body, firmId, activeFirm, existingInvoice = nu
   const partyId = resolveParty(body, firmId, cleaned);
   const isGst = isChecked(body.is_gst_bill);
   const isInterstate = isChecked(body.is_interstate);
-  const { items, totals: itemTotals } = buildInvoiceItems(body, firmId, type, isGst, isInterstate);
+  const { items, totals: itemTotals } = buildInvoiceItems(body, firmId, type, isGst, isInterstate, redirectTo);
 
   if (items.length === 0) {
     throw submissionError('Please add at least one item row to the bill.', redirectTo);
   }
 
-  const discountValue = parseFloat(body.discount_value) || 0;
+  const rawDiscountVal = body.discount_value !== undefined && body.discount_value !== '' ? body.discount_value : 0;
+  const discountValue = parseFloat(rawDiscountVal);
+  if (isNaN(discountValue) || !isFinite(discountValue) || discountValue < 0) {
+    throw submissionError('Invalid Discount: Overall discount value cannot be negative.', redirectTo);
+  }
+
   const discountType = body.discount_type || 'percentage';
-  const discountAmount = discountType === 'percentage' ? itemTotals.subtotal * (discountValue / 100) : discountValue;
+  if (discountType === 'percentage' && discountValue > 100) {
+    throw submissionError('Invalid Discount: Overall discount percentage cannot exceed 100%.', redirectTo);
+  }
+
+  const discountAmount = discountType === 'percentage' 
+    ? itemTotals.subtotal * (discountValue / 100) 
+    : Math.min(itemTotals.subtotal, discountValue);
+
   const netTaxable = Math.max(0, itemTotals.subtotal - discountAmount);
   const totals = applyFinalAmountGst(itemTotals, body, isGst, isInterstate, netTaxable);
   const unroundedGrand = netTaxable + totals.tax;
   const grandTotal = Math.round(unroundedGrand);
   const roundOff = grandTotal - unroundedGrand;
-  const paidAmount = parseFloat(body.paid_amount) || 0;
+
+  const rawPaidAmount = body.paid_amount !== undefined && body.paid_amount !== '' ? body.paid_amount : 0;
+  const paidAmount = parseFloat(rawPaidAmount);
+  if (isNaN(paidAmount) || !isFinite(paidAmount) || paidAmount < 0) {
+    throw submissionError('Invalid Paid Amount: Paid amount cannot be negative.', redirectTo);
+  }
+
   const balanceDue = Math.max(0, grandTotal - paidAmount);
   const paymentStatus = paidAmount >= grandTotal && grandTotal > 0 ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid');
 

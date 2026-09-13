@@ -207,6 +207,7 @@
 
         <!-- Delete Payment -->
         <form action="/payments/delete/<%= payment.id %>" method="POST" class="d-inline m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete this payment slip? Party balances will be adjusted automatically.">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
             <i class="bi bi-trash me-1"></i> Delete
           </button>

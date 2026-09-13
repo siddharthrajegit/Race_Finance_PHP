@@ -1,26 +1,33 @@
 async function testAuthAndEndpoints() {
   console.log('Testing End-to-End User Flow...');
 
-  // 1. Post Login
-  const loginParams = new URLSearchParams();
-  loginParams.append('identifier', '9876543210');
-  loginParams.append('password', 'admin123');
-
-  const loginRes = await fetch('http://localhost:3000/auth/login', {
-    method: 'POST',
-    body: loginParams,
-    redirect: 'manual'
-  });
-
-  const cookie = loginRes.headers.get('set-cookie');
-  console.log('1. Login response status:', loginRes.status, '(Redirect 302 expected)');
+  // 1. Get Login Page & CSRF Token
+  const getLoginRes = await fetch('http://localhost:3000/auth/login');
+  const cookie = getLoginRes.headers.get('set-cookie');
+  console.log('1. GET /auth/login status:', getLoginRes.status);
   console.log('   Cookie obtained:', !!cookie);
 
   if (!cookie) {
-    throw new Error('No session cookie returned on login');
+    throw new Error('No session cookie returned on GET /auth/login');
   }
 
   const sessionCookie = cookie.split(';')[0];
+  const html = await getLoginRes.text();
+  const csrfMatch = html.match(/name="_csrf" value="([a-f0-9]+)"/i);
+  const csrfToken = csrfMatch ? csrfMatch[1] : '';
+
+  // Post Login with CSRF token
+  const loginParams = new URLSearchParams();
+  loginParams.append('identifier', '9876543210');
+  loginParams.append('password', 'admin123');
+  loginParams.append('_csrf', csrfToken);
+
+  const loginRes = await fetch('http://localhost:3000/auth/login', {
+    method: 'POST',
+    headers: { Cookie: sessionCookie },
+    body: loginParams,
+    redirect: 'manual'
+  });
 
   // Helper for authenticated requests
   const authFetch = async (url) => {

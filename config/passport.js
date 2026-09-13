@@ -14,6 +14,7 @@ passport.deserializeUser((id, done) => {
   try {
     const user = User.findById(id);
     if (!user) return done(null, false);
+    if (user.password) delete user.password;
     done(null, user);
   } catch (err) {
     done(err, null);
@@ -53,6 +54,8 @@ passport.use(
           return done(null, false, { message: 'Invalid password. Please check and try again.' });
         }
 
+        // Never expose password hash in session/req.user
+        delete user.password;
         return done(null, user);
       } catch (err) {
         return done(err);
@@ -64,7 +67,10 @@ passport.use(
 // 2. Google OAuth 2.0 Strategy
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
+const defaultCallbackUrl = process.env.NODE_ENV === 'production'
+  ? 'https://racefinance.site/auth/google/callback'
+  : 'http://localhost:3000/auth/google/callback';
+const googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL || defaultCallbackUrl;
 
 if (googleClientId && googleClientSecret && googleClientId !== 'your_google_client_id_here') {
   passport.use(
@@ -115,6 +121,9 @@ if (googleClientId && googleClientSecret && googleClientId !== 'your_google_clie
             });
           }
 
+          if (user && user.password) {
+            delete user.password;
+          }
           return done(null, user);
         } catch (err) {
           return done(err, null);

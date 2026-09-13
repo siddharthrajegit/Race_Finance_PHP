@@ -35,6 +35,7 @@
   <% if (targetUser.id !== user.id) { %>
     <div class="d-flex align-items-center gap-2">
       <form action="/admin/users/<%= targetUser.id %>/status" method="POST" class="m-0">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <button type="submit" class="btn btn-sm <%= targetUser.status === 'active' ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill px-3">
           <i class="bi <%= targetUser.status === 'active' ? 'bi-lock-fill' : 'bi-unlock-fill' %> me-1"></i>
           <%= targetUser.status === 'active' ? 'Suspend Account' : 'Activate Account' %>
@@ -493,6 +494,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="resetPasswordForm" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <div class="modal-body p-4">
           <p class="text-muted small mb-3">
             Overriding password for subscriber: <strong id="resetUserName" class="text-dark"></strong>

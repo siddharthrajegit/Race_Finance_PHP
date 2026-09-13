@@ -13,6 +13,7 @@
 
       <div class="card-body p-4">
         <form action="<%= item ? '/items/edit/' + item.id : '/items/create' %>" method="POST">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <!-- Item Name & Code -->
           <div class="row g-3 mb-3">
             <div class="col-md-8">

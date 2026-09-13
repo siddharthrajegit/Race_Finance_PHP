@@ -66,6 +66,7 @@
     <% if (activeTab === 'sales') { %>
       <!-- Sales Bill Settings Form -->
       <form action="/settings" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <input type="hidden" name="section" value="sales">
 
         <div class="card shadow-sm border-0 mb-3">
@@ -195,6 +196,7 @@
     <% } else if (activeTab === 'purchases') { %>
       <!-- Purchase Bill Settings Form -->
       <form action="/settings" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <input type="hidden" name="section" value="purchases">
 
         <div class="card shadow-sm border-0 mb-3">
@@ -256,6 +258,7 @@
     <% } else if (activeTab === 'print') { %>
       <!-- Print & A4 Settings Form -->
       <form action="/settings" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <input type="hidden" name="section" value="print">
 
         <div class="card shadow-sm border-0 mb-3">
@@ -318,6 +321,7 @@
     <% } else if (activeTab === 'general') { %>
       <!-- General Settings Form -->
       <form action="/settings" method="POST">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         <input type="hidden" name="section" value="general">
 
         <div class="card shadow-sm border-0 mb-3">

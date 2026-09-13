@@ -100,6 +100,7 @@
                       <li><hr class="dropdown-divider my-1"></li>
                       <li>
                         <form action="/items/delete/<%= it.id %>" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete <%= it.name %>?">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                           <button type="submit" class="dropdown-item py-1 px-3 small d-flex align-items-center text-danger border-0 bg-transparent w-100">
                             <i class="bi bi-trash me-2"></i> Delete Item
                           </button>
@@ -113,6 +114,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-sm text-start">
                       <div class="modal-content">
                         <form action="/items/adjust/<%= it.id %>" method="POST">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                           <div class="modal-header py-2">
                             <h6 class="modal-title fw-bold">Adjust Stock: <%= it.name %></h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

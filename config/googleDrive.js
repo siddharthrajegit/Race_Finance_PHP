@@ -5,7 +5,10 @@ const { Backup } = require('../models');
 function getOAuth2Client(userId) {
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
+  const defaultCallbackUrl = process.env.NODE_ENV === 'production'
+    ? 'https://racefinance.site/auth/google/callback'
+    : 'http://localhost:3000/auth/google/callback';
+  const googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL || defaultCallbackUrl;
 
   if (!googleClientId || !googleClientSecret) {
     throw new Error('Google OAuth credentials not configured in .env');

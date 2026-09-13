@@ -35,18 +35,28 @@ const itemController = {
         return res.redirect('/items/create');
       }
 
+      if ((sale_price !== undefined && parseFloat(sale_price) < 0) || (purchase_price !== undefined && parseFloat(purchase_price) < 0)) {
+        req.flash('error_msg', 'Sale price and purchase price cannot be negative.');
+        return res.redirect('/items/create');
+      }
+
+      if (tax_rate !== undefined && (parseFloat(tax_rate) < 0 || parseFloat(tax_rate) > 100)) {
+        req.flash('error_msg', 'Tax rate must be between 0% and 100%.');
+        return res.redirect('/items/create');
+      }
+
       Item.create({
         firm_id: firmId,
         name: name.trim(),
         item_code: item_code ? item_code.trim() : null,
         hsn_code: hsn_code ? hsn_code.trim() : null,
         unit: unit ? unit.trim().toUpperCase() : 'PCS',
-        sale_price: parseFloat(sale_price) || 0,
-        purchase_price: parseFloat(purchase_price) || 0,
-        tax_rate: parseFloat(tax_rate) || 0,
+        sale_price: Math.max(0, parseFloat(sale_price) || 0),
+        purchase_price: Math.max(0, parseFloat(purchase_price) || 0),
+        tax_rate: Math.min(100, Math.max(0, parseFloat(tax_rate) || 0)),
         tax_inclusive: tax_inclusive === 'on' || tax_inclusive === '1' ? 1 : 0,
         opening_stock: parseFloat(opening_stock) || 0,
-        low_stock_threshold: parseFloat(low_stock_threshold) || 0,
+        low_stock_threshold: Math.max(0, parseFloat(low_stock_threshold) || 0),
         description: description ? description.trim() : null
       });
 
@@ -88,16 +98,26 @@ const itemController = {
         return res.redirect(`/items/edit/${itemId}`);
       }
 
+      if ((sale_price !== undefined && parseFloat(sale_price) < 0) || (purchase_price !== undefined && parseFloat(purchase_price) < 0)) {
+        req.flash('error_msg', 'Sale price and purchase price cannot be negative.');
+        return res.redirect(`/items/edit/${itemId}`);
+      }
+
+      if (tax_rate !== undefined && (parseFloat(tax_rate) < 0 || parseFloat(tax_rate) > 100)) {
+        req.flash('error_msg', 'Tax rate must be between 0% and 100%.');
+        return res.redirect(`/items/edit/${itemId}`);
+      }
+
       Item.update(itemId, firmId, {
         name: name.trim(),
         item_code: item_code ? item_code.trim() : null,
         hsn_code: hsn_code ? hsn_code.trim() : null,
         unit: unit ? unit.trim().toUpperCase() : 'PCS',
-        sale_price: parseFloat(sale_price) || 0,
-        purchase_price: parseFloat(purchase_price) || 0,
-        tax_rate: parseFloat(tax_rate) || 0,
+        sale_price: Math.max(0, parseFloat(sale_price) || 0),
+        purchase_price: Math.max(0, parseFloat(purchase_price) || 0),
+        tax_rate: Math.min(100, Math.max(0, parseFloat(tax_rate) || 0)),
         tax_inclusive: tax_inclusive === 'on' || tax_inclusive === '1' ? 1 : 0,
-        low_stock_threshold: parseFloat(low_stock_threshold) || 0,
+        low_stock_threshold: Math.max(0, parseFloat(low_stock_threshold) || 0),
         description: description ? description.trim() : null
       });
 
@@ -162,18 +182,26 @@ const itemController = {
         return res.status(400).json({ success: false, error: 'Item name is required.' });
       }
 
+      if ((sale_price !== undefined && parseFloat(sale_price) < 0) || (purchase_price !== undefined && parseFloat(purchase_price) < 0)) {
+        return res.status(400).json({ success: false, error: 'Sale price and purchase price cannot be negative.' });
+      }
+
+      if (tax_rate !== undefined && (parseFloat(tax_rate) < 0 || parseFloat(tax_rate) > 100)) {
+        return res.status(400).json({ success: false, error: 'Tax rate must be between 0% and 100%.' });
+      }
+
       const item = Item.create({
         firm_id: firmId,
         name: name.trim(),
         item_code: item_code ? item_code.trim() : null,
         hsn_code: hsn_code ? hsn_code.trim() : null,
         unit: unit ? unit.trim().toUpperCase() : 'PCS',
-        sale_price: parseFloat(sale_price) || 0,
-        purchase_price: parseFloat(purchase_price) || 0,
-        tax_rate: parseFloat(tax_rate) || 0,
+        sale_price: Math.max(0, parseFloat(sale_price) || 0),
+        purchase_price: Math.max(0, parseFloat(purchase_price) || 0),
+        tax_rate: Math.min(100, Math.max(0, parseFloat(tax_rate) || 0)),
         tax_inclusive: tax_inclusive === 'on' || tax_inclusive === '1' || tax_inclusive === true ? 1 : 0,
         opening_stock: parseFloat(opening_stock) || 0,
-        low_stock_threshold: parseFloat(low_stock_threshold) || 0,
+        low_stock_threshold: Math.max(0, parseFloat(low_stock_threshold) || 0),
         description: description ? description.trim() : null
       });
 

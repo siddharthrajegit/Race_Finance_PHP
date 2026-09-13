@@ -32,6 +32,7 @@
         <% } %>
 
         <form action="/auth/login" method="POST">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <div class="mb-3">
             <label for="identifier" class="form-label">Phone Number or Email</label>
             <div class="input-group">
@@ -47,6 +48,29 @@
               <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
             </div>
           </div>
+
+          <% if (typeof showCaptcha !== 'undefined' && showCaptcha && typeof captchaQuestion !== 'undefined' && captchaQuestion) { %>
+            <div class="mb-4 p-3 rounded-3 bg-light border border-warning shadow-sm">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <label for="captcha" class="form-label fw-semibold text-dark mb-0 d-flex align-items-center">
+                  <i class="bi bi-shield-check text-warning fs-5 me-1"></i> Security Verification
+                </label>
+                <span class="badge bg-warning text-dark fw-normal">Required</span>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text bg-white fw-bold text-primary font-monospace fs-6 px-3 border-end-0">
+                  <%= captchaQuestion %>
+                </span>
+                <input type="number" class="form-control text-center fw-bold fs-6 font-monospace" id="captcha" name="captcha" placeholder="Your Answer" required autocomplete="off">
+                <a href="/auth/login" class="btn btn-outline-secondary" title="Get a new question">
+                  <i class="bi bi-arrow-clockwise"></i>
+                </a>
+              </div>
+              <div class="form-text small text-muted mt-2">
+                <i class="bi bi-info-circle me-1"></i> Please solve the math question to verify you are a human.
+              </div>
+            </div>
+          <% } %>
 
           <div class="d-grid mb-3">
             <button type="submit" class="btn btn-primary btn-lg shadow-sm fw-semibold">

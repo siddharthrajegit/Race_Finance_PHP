@@ -82,7 +82,8 @@ Create or edit `.env` in the root folder:
 ```env
 PORT=3000
 NODE_ENV=development
-SESSION_SECRET=race_finance_secret_key_2026_production_ready
+# Generate a secure 64-char secret: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+SESSION_SECRET=your_random_64_character_hex_secret_here
 
 # Google OAuth 2.0 & Google Drive Backup (Optional)
 # Obtain from Google Cloud Console (https://console.cloud.google.com):

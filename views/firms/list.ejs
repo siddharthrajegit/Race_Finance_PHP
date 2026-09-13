@@ -83,6 +83,7 @@
               <div>
                 <% if (!activeFirm || activeFirm.id !== f.id) { %>
                   <form action="/firms/switch/<%= f.id %>" method="POST" class="d-inline">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                     <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                       <i class="bi bi-arrow-repeat me-1"></i> Switch to This
                     </button>
@@ -99,6 +100,7 @@
 
                 <% if (!f.is_default) { %>
                   <form action="/firms/default/<%= f.id %>" method="POST" class="d-inline">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                     <button type="submit" class="btn btn-sm btn-light rounded-pill px-2" title="Make Default">
                       <i class="bi bi-star"></i>
                     </button>
@@ -107,6 +109,7 @@
 
                 <% if (firms.length > 1) { %>
                   <form action="/firms/delete/<%= f.id %>" method="POST" class="d-inline form-delete-confirm" data-confirm-message="Are you sure you want to delete this firm and all associated bills?">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Delete Firm">
                       <i class="bi bi-trash"></i>
                     </button>

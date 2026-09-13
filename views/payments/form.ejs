@@ -13,6 +13,7 @@
 
       <div class="card-body p-4">
         <form action="/payments/create" method="POST">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <input type="hidden" name="type" value="<%= type %>">
           <% if (selectedInvoiceId) { %>
             <input type="hidden" name="invoice_id" value="<%= selectedInvoiceId %>">

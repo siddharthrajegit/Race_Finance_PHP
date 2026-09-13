@@ -2,19 +2,36 @@ async function testBillCreationHttp() {
   console.log('Testing HTTP Sale and Purchase Bill Creation...');
 
   // 1. Login
+  const getLoginRes = await fetch('http://localhost:3000/auth/login');
+  const initialCookie = getLoginRes.headers.get('set-cookie');
+  if (!initialCookie) throw new Error('No cookie on GET /auth/login');
+  let sessionCookie = initialCookie.split(';')[0];
+  const loginHtml = await getLoginRes.text();
+  const csrfMatch = loginHtml.match(/name="_csrf" value="([a-f0-9]+)"/i);
+  let csrfToken = csrfMatch ? csrfMatch[1] : '';
+
   const loginParams = new URLSearchParams();
   loginParams.append('identifier', '9876543210');
   loginParams.append('password', 'admin123');
+  loginParams.append('_csrf', csrfToken);
 
   const loginRes = await fetch('http://localhost:3000/auth/login', {
     method: 'POST',
+    headers: { Cookie: sessionCookie },
     body: loginParams,
     redirect: 'manual'
   });
 
-  const cookie = loginRes.headers.get('set-cookie');
-  if (!cookie) throw new Error('No cookie');
-  const sessionCookie = cookie.split(';')[0];
+  const postCookie = loginRes.headers.get('set-cookie');
+  if (postCookie) sessionCookie = postCookie.split(';')[0];
+
+  // Helper to fetch invoice page and get fresh CSRF token
+  const getInvRes = await fetch('http://localhost:3000/invoices/create', {
+    headers: { Cookie: sessionCookie }
+  });
+  const invHtml = await getInvRes.text();
+  const invCsrfMatch = invHtml.match(/name="_csrf" value="([a-f0-9]+)"/i);
+  if (invCsrfMatch) csrfToken = invCsrfMatch[1];
 
   // 2. Create Sales Bill via POST /invoices/create
   const saleParams = new URLSearchParams();
@@ -30,6 +47,7 @@ async function testBillCreationHttp() {
   saleParams.append('is_interstate', '0');
   saleParams.append('payment_mode', 'cash');
   saleParams.append('paid_amount', '500');
+  saleParams.append('_csrf', csrfToken);
 
   // Line item arrays
   saleParams.append('item_name', 'Wireless Keyboard');
@@ -54,6 +72,7 @@ async function testBillCreationHttp() {
 
   // 3. Create Purchase Bill via POST /invoices/create
   const purchaseParams = new URLSearchParams();
+  purchaseParams.append('_csrf', csrfToken);
   purchaseParams.append('type', 'purchase');
   purchaseParams.append('invoice_number', 'WEB-PUR-' + Date.now());
   purchaseParams.append('invoice_date', '2026-08-17');

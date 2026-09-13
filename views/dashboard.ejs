@@ -224,6 +224,7 @@
                       <li><hr class="dropdown-divider my-1"></li>
                       <li>
                         <form action="/invoices/delete/<%= inv.id %>" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete sales record <%= inv.invoice_number %>? Item inventory stock and party balances will be restored automatically.">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                           <button type="submit" class="dropdown-item py-1 px-3 small d-flex align-items-center text-danger border-0 bg-transparent w-100">
                             <i class="bi bi-trash me-2"></i> Delete Record
                           </button>

@@ -532,7 +532,40 @@ const adminController = {
   },
 
   getDownloadDb: (req, res) => {
+    req.flash('info_msg', 'Database download requires password authentication. Please use the download button on the System page.');
+    res.redirect('/admin/system');
+  },
+
+  postDownloadDb: (req, res) => {
     try {
+      const { admin_password } = req.body;
+      if (!admin_password || typeof admin_password !== 'string') {
+        req.flash('error_msg', 'Administrator password is required to authorize database snapshot download.');
+        return res.redirect('/admin/system');
+      }
+
+      // Verify the current admin's password
+      const passwordHash = User.getPasswordHashById(req.user.id);
+      if (!passwordHash) {
+        req.flash('error_msg', 'Your account has no local password set. Please set a password in Settings to enable database downloads.');
+        return res.redirect('/admin/system');
+      }
+
+      const isMatch = bcrypt.compareSync(admin_password, passwordHash);
+      if (!isMatch) {
+        Admin.logAction(
+          req.user.id,
+          req.user.name,
+          'FAILED_DB_DOWNLOAD_INVALID_PASSWORD',
+          'System',
+          'biller.db',
+          'Attempted database download with incorrect password',
+          req.ip
+        );
+        req.flash('error_msg', 'Authorization failed: Incorrect administrator password.');
+        return res.redirect('/admin/system');
+      }
+
       const dbPath = path.join(__dirname, '..', 'data', 'biller.db');
       if (!fs.existsSync(dbPath)) {
         req.flash('error_msg', 'Database file not found.');
@@ -545,7 +578,7 @@ const adminController = {
         'DOWNLOAD_DATABASE_BACKUP',
         'System',
         'biller.db',
-        'Downloaded raw database backup snapshot',
+        'Downloaded raw database backup snapshot after password confirmation',
         req.ip
       );
 
