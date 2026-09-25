@@ -1,0 +1,23 @@
+{
+  "name": "RACE FINANCE - Small Business Billing & Inventory",
+  "short_name": "RACE FINANCE",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6efd",
+  "description": "Smart small business billing, inventory management, and digital bookkeeping utility.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon"
+    }
+  ]
+}

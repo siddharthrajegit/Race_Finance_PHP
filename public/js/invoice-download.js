@@ -181,9 +181,9 @@
   }
 
   function setHsvValues(h, s, v) {
-    currentH = Math.max(0, Math.min(360, parseInt(h) || 0));
-    currentS = Math.max(0, Math.min(100, parseInt(s) || 0));
-    currentV = Math.max(0, Math.min(100, parseInt(v) || 0));
+    currentH = Math.max(0, Math.min(360, parseInt(h, 10) || 0));
+    currentS = Math.max(0, Math.min(100, parseInt(s, 10) || 0));
+    currentV = Math.max(0, Math.min(100, parseInt(v, 10) || 0));
     updateHsvUi();
   }
 
@@ -265,7 +265,7 @@
       const control = byId(id);
       if (!control) return;
       control.addEventListener('input', e => {
-        const value = parseInt(e.target.value) || 0;
+        const value = parseInt(e.target.value, 10) || 0;
         if (param === 'h') setHsvValues(value, currentS, currentV);
         if (param === 's') setHsvValues(currentH, value, currentV);
         if (param === 'v') setHsvValues(currentH, currentS, value);

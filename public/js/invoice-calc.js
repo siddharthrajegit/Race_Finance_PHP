@@ -507,7 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateRowCalculation(row) {
     const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
     const rate = parseFloat(row.querySelector('.row-rate').value) || 0;
-    const discPct = enableDiscount ? (parseFloat(row.querySelector('.row-discount-pct').value) || 0) : 0;
+    const rawDiscPct = enableDiscount ? (parseFloat(row.querySelector('.row-discount-pct').value) || 0) : 0;
+    const discPct = Math.min(100, Math.max(0, isNaN(rawDiscPct) ? 0 : rawDiscPct));
     const taxRate = parseFloat(row.querySelector('.row-tax-rate').value) || 0;
 
     const isGst = isGstToggle ? isGstToggle.checked : true;
@@ -593,13 +594,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Overall Invoice Discount
     const discType = discountTypeSelect ? discountTypeSelect.value : 'percentage';
-    const discVal = discountValueInput ? parseFloat(discountValueInput.value) || 0 : 0;
+    const rawDiscVal = discountValueInput ? parseFloat(discountValueInput.value) || 0 : 0;
+    const discVal = Math.max(0, isNaN(rawDiscVal) ? 0 : rawDiscVal);
     let overallDiscAmt = 0;
 
     if (discType === 'percentage') {
-      overallDiscAmt = totalSubtotal * (discVal / 100);
+      overallDiscAmt = totalSubtotal * (Math.min(100, discVal) / 100);
     } else {
-      overallDiscAmt = discVal;
+      overallDiscAmt = Math.min(totalSubtotal, discVal);
     }
 
     if (discountAmountInput) discountAmountInput.value = overallDiscAmt.toFixed(2);
@@ -723,7 +725,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Overall Discount, Final Tax Rate and Payment Input listeners
-  if (discountTypeSelect) discountTypeSelect.addEventListener('change', updateAllCalculations);
+  if (discountTypeSelect) {
+    discountTypeSelect.addEventListener('change', () => {
+      if (discountValueInput) {
+        if (discountTypeSelect.value === 'percentage') {
+          discountValueInput.max = '100';
+          if (parseFloat(discountValueInput.value) > 100) discountValueInput.value = '100';
+        } else {
+          discountValueInput.removeAttribute('max');
+        }
+      }
+      updateAllCalculations();
+    });
+  }
   if (discountValueInput) discountValueInput.addEventListener('input', updateAllCalculations);
   if (finalTaxRateSelect) finalTaxRateSelect.addEventListener('change', updateAllCalculations);
   if (paidAmountInput) paidAmountInput.addEventListener('input', updateAllCalculations);
@@ -809,6 +823,49 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         alert('Please enter at least one product / item name in the bill.');
         return false;
+      }
+
+      // 6. Validate Item Discounts (0 - 100%)
+      let invalidItemDisc = false;
+      itemRows.forEach(r => {
+        const discInput = r.querySelector('.row-discount-pct');
+        if (discInput && discInput.value !== '') {
+          const val = parseFloat(discInput.value);
+          if (isNaN(val) || val < 0 || val > 100) {
+            invalidItemDisc = true;
+            discInput.focus();
+          }
+        }
+      });
+      if (invalidItemDisc) {
+        e.preventDefault();
+        alert('Invalid Discount: Item discount percent must be between 0% and 100%.');
+        return false;
+      }
+
+      // 7. Validate Overall Invoice Discount
+      if (discountValueInput) {
+        const dType = discountTypeSelect ? discountTypeSelect.value : 'percentage';
+        const dVal = parseFloat(discountValueInput.value) || 0;
+        if (dVal < 0) {
+          e.preventDefault();
+          alert('Invalid Discount: Overall discount value cannot be negative.');
+          discountValueInput.focus();
+          return false;
+        }
+        if (dType === 'percentage' && dVal > 100) {
+          e.preventDefault();
+          alert(`Invalid Discount: Overall discount percentage cannot exceed 100% (received ${dVal}%).`);
+          discountValueInput.focus();
+          return false;
+        }
+        const currentSubtotal = subtotalInput ? parseFloat(subtotalInput.value) || 0 : 0;
+        if (dType !== 'percentage' && dVal > currentSubtotal) {
+          e.preventDefault();
+          alert(`Invalid Discount: Flat discount amount (₹${dVal}) cannot exceed bill subtotal (₹${currentSubtotal.toFixed(2)}).`);
+          discountValueInput.focus();
+          return false;
+        }
       }
 
       // Clear draft on successful submission

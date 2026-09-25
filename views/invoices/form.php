@@ -1,0 +1,586 @@
+<?php
+$isEditMode = !empty($isEdit) && !empty($invoice);
+$currentSettings = !empty($settings) ? $settings : ["sales" => ["default_gst_type" => "gst", "gst_calc_mode" => "separate", "enable_discount_column" => true, "default_due_days" => 0]];
+$billSettings = (($invoiceType ?? "sale") === "purchase" && !empty($currentSettings["purchases"])) ? $currentSettings["purchases"] : ($currentSettings["sales"] ?? []);
+$isGstDefault = $isEditMode ? (((int)($invoice["is_gst_bill"] ?? 0)) === 1) : (($billSettings["default_gst_type"] ?? "") !== "non_gst");
+$isSeparateGst = ($billSettings["gst_calc_mode"] ?? "") !== "final_amount";
+$showDiscountCol = ($billSettings["enable_discount_column"] ?? true) !== false;
+
+$defaultDueDate = $isEditMode ? ($invoice["due_date"] ?? "") : "";
+if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSettings["default_due_days"] > 0) {
+    $defaultDueDate = date("Y-m-d", strtotime("+" . (int)$billSettings["default_due_days"] . " days"));
+}
+?>
+
+<form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm" 
+  data-firm-id="<?= $activeFirm['id'] ?>"
+  data-is-edit="<?= $isEditMode ? '1' : '0' ?>"
+  data-firm-state-code="<?= $activeFirm['state_code'] || '' ?>"
+  data-default-gst="<?= $isEditMode ? ($invoice['is_gst_bill'] ? 'gst' : 'non_gst') : $billSettings['default_gst_type'] ?>"
+  data-gst-calc-mode="<?= $billSettings['gst_calc_mode'] ?>"
+  data-enable-discount="<?= $showDiscountCol ? '1' : '0' ?>">
+  <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+  <input type="hidden" name="type" value="<?= $invoiceType ?>">
+  <input type="hidden" name="gst_calc_mode" id="gstCalcModeInput" value="<?= $billSettings['gst_calc_mode'] ?>">
+
+  <!-- Unsaved Draft Recovery Alert Banner -->
+  <div id="draftRecoveryBanner" class="alert alert-warning shadow-sm d-none mb-3 border-warning d-flex flex-wrap align-items-center justify-content-between p-3 gap-2" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-clock-history fs-3 text-warning me-3"></i>
+      <div>
+        <div class="fw-bold text-dark mb-0">Unsaved Bill Draft Found</div>
+        <div class="small text-muted" id="draftDetailsText">You have an unsaved draft from a previous session.</div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-warning btn-sm fw-semibold shadow-sm" id="btnRestoreDraft">
+        <i class="bi bi-arrow-counterclockwise me-1"></i> Restore Draft
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="btnDiscardDraft">
+        Discard
+      </button>
+    </div>
+  </div>
+
+  <!-- Top Action Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        <h3 class="fw-bold mb-0 text-dark">
+          <i class="bi <?= $isEditMode ? 'bi-pencil-square text-warning' : ($invoiceType === 'sale' ? 'bi-cart-check text-success' : 'bi-bag-plus text-primary') ?> me-2"></i>
+          <?= $isEditMode ? ($invoiceType === 'sale' ? 'Edit Sales Record' : 'Edit Purchase Record') : ($invoiceType === 'sale' ? 'Create Sales Record' : 'Create Purchase Record') ?>
+        </h3>
+        <span id="draftSaveIndicator" class="badge bg-light text-muted border small d-none" style="font-size: 0.75rem;">
+          <i class="bi bi-cloud-check text-success me-1"></i> <span id="draftSaveTime">Draft saved</span>
+        </span>
+      </div>
+      <span class="badge <?= $isGstDefault ? 'bg-primary' : 'bg-secondary' ?> mt-1" id="gstModeBadge">
+        <?= $isGstDefault ? ($isSeparateGst ? 'GST Sales Record (Separate Item GST)' : 'GST Sales Record (Final Amount GST)') : 'Non-GST Business Record' ?>
+      </span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="/settings?tab=<?= $invoiceType === 'sale' ? 'sales' : 'purchases' ?>" class="btn btn-outline-secondary btn-sm" title="Record Settings">
+        <i class="bi bi-gear me-1"></i> Settings
+      </a>
+      <a href="<?= $isEditMode ? ('/invoices/view/' . $invoice['id']) : ($invoiceType === 'sale' ? '/sales' : '/purchases') ?>" class="btn btn-outline-secondary btn-sm">Cancel</a>
+      <button type="submit" class="btn btn-success btn-sm px-3 shadow-sm fw-semibold">
+        <i class="bi bi-check2-circle me-1"></i> <?= $isEditMode ? 'Update Record' : 'Save Record' ?>
+      </button>
+    </div>
+  </div>
+
+  <!-- Row 1: Record Settings & Dates -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-center">
+        <!-- Record Number (Numbers Only) -->
+        <div class="col-sm-6 col-md-3">
+          <label class="form-label small mb-1">Record Number <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-sm font-monospace fw-bold text-primary" id="invoiceNumberInput" name="invoice_number" value="<?= $isEditMode ? $invoice['invoice_number'] : $nextInvoiceNumber ?>" pattern="[0-9]+" inputmode="numeric" required title="Record number must contain only numbers" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 101">
+        </div>
+
+        <!-- Record Date -->
+        <div class="col-sm-6 col-md-3">
+          <label class="form-label small mb-1">Record Date <span class="text-danger">*</span></label>
+          <input type="date" class="form-control form-control-sm" name="invoice_date" value="<?= $isEditMode ? $invoice['invoice_date'] : $today ?>" required>
+        </div>
+
+        <!-- Due Date -->
+        <div class="col-sm-6 col-md-2">
+          <label class="form-label small mb-1">Due Date</label>
+          <input type="date" class="form-control form-control-sm" name="due_date" value="<?= $defaultDueDate ?>">
+        </div>
+
+        <!-- GST & Interstate Toggles -->
+        <div class="col-sm-6 col-md-4">
+          <label class="form-label small mb-1 text-muted">Tax & GST Breakdown</label>
+          <div class="d-flex flex-wrap gap-3 mt-1">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="isGstToggle" name="is_gst_bill" value="1" <?= $isGstDefault ? 'checked' : '' ?>>
+              <label class="form-check-label small fw-semibold" for="isGstToggle">Calculate GST</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="isInterstateToggle" name="is_interstate" value="1" <?= $isEditMode && $invoice['is_interstate'] === 1 ? 'checked' : '' ?>>
+              <label class="form-check-label small" for="isInterstateToggle">Inter-State (IGST)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Customer / Party Details -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-white py-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="fw-bold small text-uppercase text-secondary">
+          <i class="bi bi-person me-1"></i> <?= $invoiceType === 'sale' ? 'Bill To (Customer Details)' : 'Bill From (Supplier Details)' ?>
+        </span>
+        <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 small fw-semibold" data-bs-toggle="modal" data-bs-target="#modalQuickAddParty" id="btnOpenAddPartyModal">
+          <i class="bi bi-person-plus-fill me-1"></i> + Add New Party
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-3">
+      <div class="row g-3">
+        <!-- Party Quick Searchable Dropdown -->
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Select Existing Party</label>
+          <div class="position-relative">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control form-control-sm" id="partySearchInput" placeholder="Type name, phone or GSTIN to search..." autocomplete="off" value="<?= $isEditMode ? ($invoice['party_name'] + ($invoice['party_phone'] ? ' (' . $invoice['party_phone'] . ')' : '')) : '' ?>">
+              <button class="btn btn-outline-secondary" type="button" id="btnClearPartySearch" title="Clear selection" style="<?= $isEditMode && $invoice['party_id'] ? 'display: block;' : 'display: none;' ?>">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <!-- Live Party Search Results Dropdown -->
+            <div id="partySearchResults" class="list-group shadow position-absolute w-100 mt-1 d-none" style="max-height: 250px; overflow-y: auto; z-index: 1050; border-radius: 6px; font-size: 0.85rem;">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+          <!-- Underlying select element for state and form submission -->
+          <select class="d-none" id="partySelect" name="party_id">
+            <option value="">-- Choose Party or Enter Manually --</option>
+            <?php foreach (($parties ?? []) as $p): ?>
+              <option value="<?= $p['id'] ?>"
+                data-name="<?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?>"
+                data-phone="<?= htmlspecialchars($p['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                data-gstin="<?= htmlspecialchars($p['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                data-address="<?= htmlspecialchars($p['billing_address'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                data-state="<?= htmlspecialchars($p['state'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                data-state-code="<?= htmlspecialchars($p['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                <?= ($isEditMode && ($invoice['party_id'] ?? null) == $p['id']) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?> <?= !empty($p['phone']) ? '(' . htmlspecialchars($p['phone'], ENT_QUOTES, 'UTF-8') . ')' : '' ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <!-- Party Name (Mandatory) -->
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Party / Customer Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-sm" id="partyNameInput" name="party_name" placeholder="Enter party name" value="<?= $isEditMode ? $invoice['party_name'] : '' ?>" required>
+        </div>
+
+        <!-- Phone Number (Strict 10 Digits) -->
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Phone / Mobile (10 Digits)</label>
+          <input type="tel" class="form-control form-control-sm font-monospace" id="partyPhoneInput" name="party_phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= $isEditMode ? ($invoice['party_phone'] || '') : '' ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          <div id="phoneValidationStatus" class="form-text small" style="font-size: 0.72rem;">Exact 10 digits required</div>
+        </div>
+
+        <!-- GSTIN (Strict 15 Alphanumeric Characters) -->
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Party GSTIN (15 Chars)</label>
+          <input type="text" class="form-control form-control-sm font-monospace text-uppercase" id="partyGstinInput" name="party_gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= $isEditMode ? ($invoice['party_gstin'] || '') : '' ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+          <div id="gstinValidationStatus" class="form-text small" style="font-size: 0.72rem;">Exact 15 letters & numbers</div>
+        </div>
+
+        <!-- Address -->
+        <div class="col-md-5">
+          <label class="form-label small mb-1">Billing Address</label>
+          <input type="text" class="form-control form-control-sm" id="partyAddressInput" name="party_address" placeholder="Building, Street, Area..." value="<?= $isEditMode ? ($invoice['party_address'] || '') : '' ?>">
+        </div>
+
+        <!-- State & State Code (Strict State Dropdown + Auto Code) -->
+        <div class="col-md-3">
+          <label class="form-label small mb-1">State / UT <span class="text-danger">*</span></label>
+          <select class="form-select form-select-sm" id="partyStateSelect" name="party_state" required>
+            <option value="">-- Select State --</option>
+            <?php foreach (($gstStates ?? []) as $st): ?>
+              <?php 
+                $isSelected = ($isEditMode && (($invoice['party_state'] ?? '') === $st['name'] || ($invoice['party_state_code'] ?? '') === $st['code'])) || 
+                               (!$isEditMode && !empty($activeFirm) && (($activeFirm['state'] ?? '') === $st['name'] || ($activeFirm['state_code'] ?? '') === $st['code']));
+              ?>
+              <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= $isSelected ? 'selected' : '' ?>>
+                <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label small mb-1">Code</label>
+          <input type="text" class="form-control form-control-sm font-monospace bg-light fw-bold text-center text-primary" id="partyStateCodeInput" name="party_state_code" placeholder="00" value="<?= $isEditMode ? ($invoice['party_state_code'] || '') : (activeFirm ? ($activeFirm['state_code'] || '') : '') ?>" readonly title="State code is auto-populated">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Dynamic Line Items Table -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+      <span class="fw-bold small text-uppercase text-secondary">
+        <i class="bi bi-box-seam me-1"></i> Bill Line Items
+      </span>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalQuickAddItem" id="btnOpenAddItemModal">
+          <i class="bi bi-plus-circle me-1"></i> + New Item
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnAddItem">
+          <i class="bi bi-plus-lg me-1"></i> Add Row
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="invoice-table-wrap">
+        <table class="table table-bordered table-sm mb-0 invoice-items-table align-middle" id="invoiceItemsTable">
+          <thead class="table-light">
+            <tr>
+              <th class="text-center" style="width: 28px;">#</th>
+              <th>Item Name / Description</th>
+              <th style="width: 85px;">HSN/SAC</th>
+              <th style="width: 82px;" class="text-end">Qty</th>
+              <th style="width: 78px;">Unit</th>
+              <th style="width: 95px;" class="text-end">Rate (₹)</th>
+              <th style="width: 72px;" class="text-end discount-col <?= !$showDiscountCol ? 'd-none' : '' ?>">Disc %</th>
+              <th style="width: 85px;" class="gst-col <?= (!$isGstDefault || !$isSeparateGst) ? 'd-none' : '' ?>">Tax %</th>
+              <th style="width: 105px;" class="text-end">Amount (₹)</th>
+              <th style="width: 32px;" class="text-center"></th>
+            </tr>
+          </thead>
+          <tbody id="invoiceItemsBody">
+            <!-- Dynamic rows inserted via invoice-calc.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preloaded Items Element for JS -->
+  <div id="preloadedInvoiceItems" data-items="<?= htmlspecialchars(json_encode(!empty($invoice['items']) ? $invoice['items'] : []), ENT_QUOTES, 'UTF-8') ?>" class="d-none"></div>
+
+  <!-- Row 4: Calculation Summary, Discounts, Payments, Notes -->
+  <div class="row g-3">
+    <!-- Left: Notes, Terms, Payment Mode -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body p-3">
+          <div class="mb-3">
+            <label class="form-label small">Payment Mode</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_mode" id="modeCash" value="cash" <?= !$isEditMode || $invoice['payment_mode'] === 'cash' ? 'checked' : '' ?>>
+                <label class="form-check-label small" for="modeCash">Cash</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_mode" id="modeBank" value="bank" <?= $isEditMode && $invoice['payment_mode'] === 'bank' ? 'checked' : '' ?>>
+                <label class="form-check-label small" for="modeBank">Bank Transfer</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_mode" id="modeUpi" value="upi" <?= $isEditMode && $invoice['payment_mode'] === 'upi' ? 'checked' : '' ?>>
+                <label class="form-check-label small" for="modeUpi">UPI</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_mode" id="modeCheque" value="cheque" <?= $isEditMode && $invoice['payment_mode'] === 'cheque' ? 'checked' : '' ?>>
+                <label class="form-check-label small" for="modeCheque">Cheque</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_mode" id="modeCredit" value="credit" <?= $isEditMode && $invoice['payment_mode'] === 'credit' ? 'checked' : '' ?>>
+                <label class="form-check-label small" for="modeCredit">Credit (Unpaid)</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="notes" class="form-label small">Private Notes / Remarks</label>
+            <textarea class="form-control form-control-sm" id="notes" name="notes" rows="2" placeholder="Optional notes for your reference..."><?= $isEditMode ? ($invoice['notes'] || '') : '' ?></textarea>
+          </div>
+
+          <div>
+            <label for="terms" class="form-label small">Invoice Terms & Conditions</label>
+            <textarea class="form-control form-control-sm" id="terms" name="terms" rows="2"><?= $isEditMode ? ($invoice['terms'] || '') : ($activeFirm['terms'] || '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.') ?></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Totals & Tax Breakdown -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+          <!-- Subtotal -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Taxable Subtotal:</span>
+            <span class="fw-semibold" id="displaySubtotal">₹ 0.00</span>
+            <input type="hidden" name="subtotal" id="subtotalInput" value="<?= $isEditMode ? $invoice['subtotal'] : '0' ?>">
+            <input type="hidden" name="taxable_amount" id="taxableAmountInput" value="<?= $isEditMode ? $invoice['taxable_amount'] : '0' ?>">
+          </div>
+
+          <!-- Overall Invoice Discount -->
+          <div class="d-flex justify-content-between align-items-center mb-2 gap-2">
+            <span class="text-muted small text-nowrap">Discount:</span>
+            <div class="d-flex align-items-center gap-2" style="max-width: 270px; width: 100%;">
+              <div style="width: 140px; min-width: 130px;">
+                <select name="discount_type" id="discountTypeSelect" class="form-select fw-medium">
+                  <option value="percentage" <?= $isEditMode && $invoice['discount_type'] === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
+                  <option value="flat" <?= $isEditMode && $invoice['discount_type'] === 'flat' ? 'selected' : '' ?>>Flat Amount (₹)</option>
+                </select>
+              </div>
+              <div class="flex-grow-1">
+                <input type="number" name="discount_value" id="discountValueInput" class="form-control text-end fw-semibold" min="0" max="<?= ($isEditMode && $invoice['discount_type'] === 'flat') ? '' : '100' ?>" step="any" placeholder="0.00" value="<?= $isEditMode ? $invoice['discount_value'] : '0' ?>">
+                <input type="hidden" name="discount_amount" id="discountAmountInput" value="<?= $isEditMode ? $invoice['discount_amount'] : '0' ?>">
+              </div>
+            </div>
+          </div>
+
+          <!-- GST Summary (Collapsible / Toggleable) -->
+          <div id="gstSummarySection">
+            <!-- Composite Final Amount GST Rate Selector (if mode is final_amount) -->
+            <div class="row g-2 align-items-center mb-2 <?= $isSeparateGst ? 'd-none' : '' ?>" id="finalGstRateRow">
+              <div class="col-6">
+                <span class="text-muted small fw-semibold">GST Rate on Final Amount:</span>
+              </div>
+              <div class="col-6">
+                <select name="final_tax_rate" id="finalTaxRateSelect" class="form-select form-select-sm">
+                  <option value="0">0% (Tax Exempt)</option>
+                  <option value="5">5% GST</option>
+                  <option value="12">12% GST</option>
+                  <option value="18" selected>18% GST</option>
+                  <option value="28">28% GST</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1 text-muted small" id="cgstSgstSummaryRow">
+              <span>CGST + SGST:</span>
+              <span class="fw-medium" id="displayTax">₹ 0.00</span>
+              <input type="hidden" name="cgst_amount" id="cgstAmountInput" value="<?= $isEditMode ? $invoice['cgst_amount'] : '0' ?>">
+              <input type="hidden" name="sgst_amount" id="sgstAmountInput" value="<?= $isEditMode ? $invoice['sgst_amount'] : '0' ?>">
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1 text-muted small d-none" id="igstSummaryRow">
+              <span>IGST (Integrated Tax):</span>
+              <span class="fw-medium">₹ 0.00</span>
+              <input type="hidden" name="igst_amount" id="igstAmountInput" value="<?= $isEditMode ? $invoice['igst_amount'] : '0' ?>">
+            </div>
+            <input type="hidden" name="tax_amount" id="taxAmountInput" value="<?= $isEditMode ? $invoice['tax_amount'] : '0' ?>">
+          </div>
+
+          <!-- Round Off -->
+          <div class="d-flex justify-content-between align-items-center mb-2 text-muted small">
+            <span>Round Off:</span>
+            <input type="hidden" name="round_off" id="roundOffInput" value="<?= $isEditMode ? $invoice['round_off'] : '0' ?>">
+            <span class="text-muted">₹ 0.00</span>
+          </div>
+
+          <hr class="my-2">
+
+          <!-- Grand Total -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fs-5 fw-bold text-dark">Grand Total:</span>
+            <span class="fs-4 fw-bold text-primary" id="displayGrandTotal">₹ 0.00</span>
+            <input type="hidden" name="grand_total" id="grandTotalInput" value="<?= $isEditMode ? $invoice['grand_total'] : '0' ?>">
+          </div>
+
+          <!-- Paid Amount & Due Balance -->
+          <div class="bg-light p-3 rounded mb-3">
+            <div class="row g-2 align-items-center mb-2">
+              <div class="col-sm-5">
+                <label for="paidAmountInput" class="form-label small mb-0 fw-semibold text-success">
+                  Amount Received / Paid:
+                </label>
+              </div>
+              <div class="col-sm-4">
+                <input type="number" name="paid_amount" id="paidAmountInput" class="form-control form-control-sm text-end fw-bold" step="any" min="0" placeholder="0.00" value="<?= $isEditMode ? $invoice['paid_amount'] : '0' ?>">
+              </div>
+              <div class="col-sm-3 d-flex gap-1">
+                <button type="button" class="btn btn-outline-success btn-sm w-50 p-1 small" id="btnPayFull" title="Full Payment">Full</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm w-50 p-1 small" id="btnPayZero" title="Unpaid / Credit">Zero</button>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small fw-semibold text-danger">Balance Due:</span>
+              <span class="fw-bold text-danger fs-6" id="displayBalanceDue">₹ 0.00</span>
+              <input type="hidden" name="balance_due" id="balanceDueInput" value="<?= $isEditMode ? $invoice['balance_due'] : '0' ?>">
+            </div>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-success btn-lg shadow-sm fw-bold">
+              <i class="bi bi-check2-circle me-1"></i> <?= $isEditMode ? ('Update ' . ($invoiceType === 'sale' ? 'Sales Record' : 'Purchase Record')) : ('Save ' . ($invoiceType === 'sale' ? 'Sales Record' : 'Purchase Record')) ?>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Datalist for Items Autocomplete -->
+<datalist id="itemsDataList">
+  <?php foreach (($items ?? []) as $it): ?>
+    <option value="<?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?>"
+      data-id="<?= $it['id'] ?>"
+      data-hsn="<?= htmlspecialchars($it['hsn_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+      data-unit="<?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+      data-price="<?= ($invoiceType === 'purchase') ? (!empty($it['purchase_price']) ? $it['purchase_price'] : $it['sale_price']) : $it['sale_price'] ?>"
+      data-tax="<?= htmlspecialchars((string)($it['tax_rate'] ?? 0), ENT_QUOTES, 'UTF-8') ?>">
+      <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?> (Stock: <?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?> | ₹<?= htmlspecialchars((string)($it['sale_price'] ?? 0), ENT_QUOTES, 'UTF-8') ?>)
+    </option>
+  <?php endforeach; ?>
+</datalist>
+
+<!-- Modal: Quick Add Party (In-Page, Zero Data Loss) -->
+<div class="modal fade" id="modalQuickAddParty" tabindex="-1" aria-labelledby="modalQuickAddPartyLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header bg-primary text-white border-0 py-3">
+        <h5 class="modal-title fw-bold" id="modalQuickAddPartyLabel">
+          <i class="bi bi-person-plus-fill me-2"></i> Quick Create <?= $invoiceType === 'sale' ? 'Customer' : 'Supplier' ?> Party
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="quickPartyForm">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <input type="hidden" name="type" value="<?= $invoiceType === 'sale' ? 'customer' : 'supplier' ?>">
+        <div class="modal-body p-4">
+          <div id="quickPartyAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Party / Business Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-sm" name="name" id="quickPartyName" placeholder="e.g. Ramesh Trading Co." required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Phone Number (10 Digits)</label>
+              <input type="tel" class="form-control form-control-sm font-monospace" name="phone" id="quickPartyPhone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+              <div class="form-text text-muted small" style="font-size: 0.72rem;">Exact 10 digits without country code</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">GSTIN (15 Chars)</label>
+              <input type="text" class="form-control form-control-sm font-monospace text-uppercase" name="gstin" id="quickPartyGstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Email Address</label>
+              <input type="email" class="form-control form-control-sm" name="email" id="quickPartyEmail" placeholder="party@example.com">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-bold">Billing Address</label>
+              <input type="text" class="form-control form-control-sm" name="billing_address" id="quickPartyAddress" placeholder="Building, Street, Area...">
+            </div>
+
+            <div class="col-md-5">
+              <label class="form-label small fw-bold">State / UT <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" name="state" id="quickPartyState" required>
+                <option value="">-- Select State --</option>
+                <?php foreach (($gstStates ?? []) as $st): ?>
+              <?php 
+                $isSelected = ($isEditMode && (($invoice['party_state'] ?? '') === $st['name'] || ($invoice['party_state_code'] ?? '') === $st['code'])) || 
+                               (!$isEditMode && !empty($activeFirm) && (($activeFirm['state'] ?? '') === $st['name'] || ($activeFirm['state_code'] ?? '') === $st['code']));
+              ?>
+              <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= $isSelected ? 'selected' : '' ?>>
+                <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
+              </option>
+            <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">State Code</label>
+              <input type="text" class="form-control form-control-sm bg-light text-center font-monospace fw-bold text-primary" name="state_code" id="quickPartyStateCode" value="<?= activeFirm ? ($activeFirm['state_code'] || '') : '' ?>" readonly>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Opening Balance (₹)</label>
+              <input type="number" class="form-control form-control-sm" name="opening_balance" id="quickPartyOpeningBalance" step="any" placeholder="0.00" value="0">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-0 py-2 px-4">
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold" id="btnSubmitQuickParty">
+            <span class="spinner-border spinner-border-sm me-1 d-none" id="quickPartySpinner" role="status"></span>
+            <i class="bi bi-check-circle me-1"></i> Save & Select Party
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Quick Add Item (In-Page, Zero Data Loss) -->
+<div class="modal fade" id="modalQuickAddItem" tabindex="-1" aria-labelledby="modalQuickAddItemLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header bg-success text-white border-0 py-3">
+        <h5 class="modal-title fw-bold" id="modalQuickAddItemLabel">
+          <i class="bi bi-box-seam me-2"></i> Quick Create Inventory Item
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="quickItemForm">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <div class="modal-body p-4">
+          <div id="quickItemAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label small fw-bold">Item / Product Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-sm" name="name" id="quickItemName" placeholder="e.g. Cotton Shirt Blue - XL" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">HSN / SAC Code</label>
+              <input type="text" class="form-control form-control-sm font-monospace" name="hsn_code" id="quickItemHsn" placeholder="e.g. 6205">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Measurement Unit <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" name="unit" id="quickItemUnit" required>
+                <option value="PCS" selected>PCS (Pieces)</option>
+                <option value="KG">KG (Kilograms)</option>
+                <option value="BOX">BOX (Boxes)</option>
+                <option value="MTR">MTR (Meters)</option>
+                <option value="LTR">LTR (Liters)</option>
+                <option value="NOS">NOS (Numbers)</option>
+                <option value="BAG">BAG (Bags)</option>
+                <option value="PKT">PKT (Packets)</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold"><?= $invoiceType === 'purchase' ? 'Purchase Price (₹)' : 'Sale Price (₹)' ?> <span class="text-danger">*</span></label>
+              <input type="number" class="form-control form-control-sm text-end" name="sale_price" id="quickItemPrice" min="0" step="any" placeholder="0.00" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">GST Tax Rate (%)</label>
+              <select class="form-select form-select-sm" name="tax_rate" id="quickItemTaxRate">
+                <option value="0">0% (Nil / Exempt)</option>
+                <option value="5">5% GST</option>
+                <option value="12">12% GST</option>
+                <option value="18" selected>18% GST</option>
+                <option value="28">28% GST</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Opening Stock Quantity</label>
+              <input type="number" class="form-control form-control-sm" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Item Description (Optional)</label>
+              <input type="text" class="form-control form-control-sm" name="description" id="quickItemDesc" placeholder="Optional details...">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-0 py-2 px-4">
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 fw-semibold" id="btnSubmitQuickItem">
+            <span class="spinner-border spinner-border-sm me-1 d-none" id="quickItemSpinner" role="status"></span>
+            <i class="bi bi-check-circle me-1"></i> Save & Add to Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/js/invoice-calc.js"></script>
+

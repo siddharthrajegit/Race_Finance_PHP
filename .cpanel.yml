@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/$USER/public_html/
+    - /bin/rsync -av --exclude='.git*' --exclude='.env*' --exclude='data/' --exclude='public/uploads/' --exclude='backups/' ./ $DEPLOYPATH

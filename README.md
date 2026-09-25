@@ -1,102 +1,103 @@
-# RACE FINANCE — Small Business Billing, Inventory & Accounting System
+# RACE FINANCE — Billing & Inventory Management System (PHP Edition)
 
-A fast, lightweight, and modern web application for small businesses and traders to create GST and Non-GST sales/purchase bills, manage items and stock, track customer/vendor ledgers, operate multiple business firms, and perform 1-click cloud backups to Google Drive.
-
----
-
-## 🌟 Key Features
-
-1. **Multi-Firm Management**:
-   - Register and manage multiple business firms or branches under a single account.
-   - Switch active firm with 1-click directly from the top navigation bar.
-   - Customize each firm with business name, GSTIN, PAN, address, state/state codes, bank account details, UPI ID, logo, and terms.
-
-2. **Sales & Purchase Billing (GST & Non-GST)**:
-   - **GST Tax Invoice**: Real-time tax computation (intra-state CGST + SGST vs inter-state IGST based on GST state codes).
-   - **Non-GST / Bill of Supply / Retail Bill**: Simple tax-free invoices with a single toggle.
-   - Dynamic line items with autocomplete product search, HSN/SAC codes, units, item discounts, and overall bill discount.
-   - Partial payment tracking (Amount Paid, Balance Due, Payment Status: *Paid / Partial / Unpaid*).
-   - Automatic inventory stock deduction on Sales and stock addition on Purchases.
-
-3. **Standard A4 Invoice Print & PDF**:
-   - Clean, professional standard A4 Tax Invoice layout with seller/buyer details, HSN breakdown, tax split, bank/UPI details, terms, and authorized signature.
-   - Native browser print with dedicated `@media print` CSS.
-
-4. **Item & Inventory Management**:
-   - Track product catalog with HSN codes, custom units (PCS, KG, BOX, MTR, etc.), sale/purchase rates, and tax rates.
-   - Low stock threshold alerts with instant visual warning badges on the dashboard.
-   - Quick stock adjustment tool (+ / - stock).
-
-5. **Customer & Party Ledgers**:
-   - Track outstanding receivables (money customers owe you) and payables (money you owe suppliers).
-   - Detailed ledger statement with debit, credit, and running balance history.
-   - Record Payment-In receipts and Payment-Out vouchers.
-
-6. **Reports & Tax Filing (GSTR-1)**:
-   - Real-time Dashboard KPIs (Today's Sales, Total Sales, Receivables, Payables, Low Stock items).
-   - GSTR-1 Tax Summary report with date-range filters, taxable turnover, and CGST/SGST/IGST breakdown.
-   - Party-wise account summary and item-wise sales volume reports.
-
-7. **Backup & Google Drive Cloud Sync**:
-   - **1-Click Local JSON Export**: Download complete offline database backup as `.json`.
-   - **JSON Restore**: Upload and import backups into any account.
-   - **1-Click Google Drive Sync**: Direct upload to a `"RACE FINANCE Backups"` folder in the user's Google Drive via Google Drive API v3.
-
-8. **Authentication**:
-   - Manual Sign-In & Sign-Up using Phone Number or Email + Password (encrypted via `bcryptjs`).
-   - Google OAuth 2.0 1-Click Sign-In.
+A high-performance, lightweight, and production-ready small business billing, GST invoicing, and inventory accounting platform built with pure PHP and MySQL/SQLite.
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Key Features
 
-### 1. Install Dependencies
+- **GST & Non-GST Invoicing**: Professional Tax Invoices, Quotations, Sales & Purchase Bills with A4 print/PDF download.
+- **Inventory & Stock Management**: Real-time stock tracking, automated deduction upon sales, low-stock alerts, and manual adjustments.
+- **Customer & Supplier Ledgers**: Complete party transaction history, running debit/credit balances, and payment tracking.
+- **Multi-Firm Support**: Manage up to 2 distinct business entities under a single subscriber account.
+- **Platform Command Center (Admin)**: Full subscriber management, plan renewal, storage quota enforcement, database optimization, and audit logging.
+- **Zero-Dependency Architecture**: Pure vanilla PHP (no heavyweight framework bloat) designed for 100% compatibility with standard cPanel/Apache hosting.
+- **Dual Database Support**: Seamlessly runs on MySQL/MariaDB (default on cPanel) with automatic fallback to SQLite (`data/biller.db`).
+
+---
+
+## 📋 System Requirements
+
+- **PHP**: 8.0 or higher
+- **Extensions**: `pdo`, `pdo_mysql` (or `pdo_sqlite`), `mbstring`, `openssl`, `fileinfo`, `gd` (optional, for image processing)
+- **Web Server**: Apache with `mod_rewrite` enabled (supported natively by `.htaccess`) or Nginx
+
+---
+
+## 🛠️ Quick Installation Guide
+
+### 1. Clone the Repository
 ```bash
-npm install
+git clone https://github.com/siddharthrajegit/Race_Finance_PHP.git
+cd Race_Finance_PHP
 ```
 
-### 2. (Optional) Run Database Seeder
-To test with pre-filled sample items, parties, firms, and bills:
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env`:
 ```bash
-npm run seed
+cp .env.example .env
 ```
+Edit `.env` with your settings:
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://yourdomain.com
+SESSION_SECRET=your_random_64_character_secret_here
 
-**Default Test Credentials:**
-- **Phone:** `9876543210`
-- **Email:** `admin@racefinance.com`
+# cPanel MySQL Database Credentials
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=cpaneluser_biller
+DB_USERNAME=cpaneluser_dbuser
+DB_PASSWORD=your_strong_mysql_password
+```
+*(Note: If `DB_CONNECTION=sqlite` or MySQL credentials are left blank, the app will automatically use SQLite in `data/biller.db`).*
+
+### 3. Import MySQL Schema (cPanel / phpMyAdmin)
+1. Open **phpMyAdmin** in your hosting control panel.
+2. Select your database.
+3. Import `database/schema_mysql.sql`.
+
+### 4. Default Seed Administrator
+- **Phone (Login ID):** `9414223562`
 - **Password:** `admin123`
 
-### 3. Start the Server
-```bash
-npm start
-```
-
-Open your browser and navigate to: **[http://localhost:3000](http://localhost:3000)**
+*(You can immediately change this password or add new admins via the Admin Center at `/admin/users` or via CLI using `php create_user.php`).*
 
 ---
 
-## ⚙️ Configuration (`.env`)
+## 🔄 Automated Deployment to cPanel
 
-Create or edit `.env` in the root folder:
+This repository includes a pre-configured GitHub Actions workflow in `.github/workflows/deploy.yml` that automatically syncs code to your cPanel hosting on every `git push`.
 
-```env
-PORT=3000
-NODE_ENV=development
-# Generate a secure 64-char secret: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-SESSION_SECRET=your_random_64_character_hex_secret_here
+To enable automated deployment:
+1. Go to your GitHub repository **Settings** > **Secrets and variables** > **Actions**.
+2. Add the following repository secrets:
+   - `FTP_SERVER`: Your domain or FTP host (e.g. `ftp.yourdomain.com`).
+   - `FTP_USERNAME`: Your cPanel FTP username.
+   - `FTP_PASSWORD`: Your cPanel FTP password.
 
-# Google OAuth 2.0 & Google Drive Backup (Optional)
-# Obtain from Google Cloud Console (https://console.cloud.google.com):
-GOOGLE_CLIENT_ID=your_google_client_id_here
-GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+---
+
+## 📁 Project Structure
+
+```
+├── .github/workflows/deploy.yml  # Automated CI/CD deployment to cPanel
+├── .cpanel.yml                   # Native cPanel Git deployment configuration
+├── .htaccess                     # Apache routing, security headers & HTTPS enforcement
+├── config/                       # Application configuration & PDO connection manager
+├── controllers/                  # MVC Controllers (Auth, Admin, Invoices, Firms, etc.)
+├── core/                         # Core router, authentication guard, security, flash messages
+├── database/                     # MySQL schema & database migration scripts
+├── models/                       # Data models (User, Firm, Invoice, Item, Party, etc.)
+├── public/                       # Static public assets (CSS, JS, logos, user uploads)
+├── views/                        # PHP template views organized by feature
+├── create_user.php               # CLI tool to provision users and admins from terminal
+└── index.php                     # Front controller & request router
 ```
 
 ---
 
-## 📁 Tech Stack Architecture
-
-- **Backend:** Node.js, Express.js, Passport.js, Multer, Google APIs
-- **Database:** SQLite (`better-sqlite3`) — fast, zero setup, single-file storage in `data/biller.db`
-- **Frontend / Templating:** HTML5, Vanilla CSS, Bootstrap 5.3, Bootstrap Icons, EJS (Embedded JavaScript Templates)
-- **Cloud API:** Google Drive API v3 (for 1-click cloud backups)
+## 📄 License
+Proprietary — All Rights Reserved.
