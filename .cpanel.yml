@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/$USER/public_html/
+    - export DEPLOYPATH=/home/$USER/racefinance.site/
     - /bin/rsync -av --exclude='.git*' --exclude='.env*' --exclude='data/' --exclude='public/uploads/' --exclude='backups/' ./ $DEPLOYPATH
