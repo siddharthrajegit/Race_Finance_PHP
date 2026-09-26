@@ -8,14 +8,15 @@
             <div>
               <span>RACE FINANCE &copy; <?= date('Y') ?> &bull; </span>
               <span class="d-inline-flex gap-2 text-muted">
-                <a href="/legal?tab=about" class="text-secondary text-decoration-none hover-primary">About</a> &bull;
-                <a href="/legal?tab=pricing" class="text-secondary text-decoration-none hover-primary">Pricing</a> &bull;
-                <a href="/legal?tab=contact" class="text-secondary text-decoration-none hover-primary">Contact</a> &bull;
-                <a href="/legal?tab=terms" class="text-secondary text-decoration-none hover-primary">Terms</a> &bull;
-                <a href="/legal?tab=privacy" class="text-secondary text-decoration-none hover-primary">Privacy</a> &bull;
-                <a href="/legal?tab=refund" class="text-secondary text-decoration-none hover-primary">Refund Policy</a> &bull;
-                <a href="/legal?tab=disclaimer" class="text-secondary text-decoration-none hover-primary">Disclaimer</a> &bull;
-                <a href="/legal?tab=security" class="text-secondary text-decoration-none hover-primary">Security</a>
+                <a href="/free-trial" class="text-secondary text-decoration-none hover-primary">Free Trial</a> &bull;
+                <a href="/about" class="text-secondary text-decoration-none hover-primary">About</a> &bull;
+                <a href="/pricing" class="text-secondary text-decoration-none hover-primary">Pricing</a> &bull;
+                <a href="/contact" class="text-secondary text-decoration-none hover-primary">Contact</a> &bull;
+                <a href="/terms" class="text-secondary text-decoration-none hover-primary">Terms</a> &bull;
+                <a href="/privacy" class="text-secondary text-decoration-none hover-primary">Privacy</a> &bull;
+                <a href="/refund-policy" class="text-secondary text-decoration-none hover-primary">Refund Policy</a> &bull;
+                <a href="/disclaimer" class="text-secondary text-decoration-none hover-primary">Disclaimer</a> &bull;
+                <a href="/security" class="text-secondary text-decoration-none hover-primary">Security</a>
               </span>
             </div>
             <?php if (!empty($isAdmin)): ?>
@@ -32,14 +33,15 @@
     <footer class="footer mt-auto py-3 text-center text-muted small">
       <div class="container">
         <div class="d-flex flex-wrap justify-content-center gap-3 mb-1">
-          <a href="/legal?tab=about" class="text-secondary text-decoration-none">About & Features</a> &bull;
-          <a href="/legal?tab=pricing" class="text-secondary text-decoration-none">Pricing</a> &bull;
-          <a href="/legal?tab=contact" class="text-secondary text-decoration-none">Contact</a> &bull;
-          <a href="/legal?tab=terms" class="text-secondary text-decoration-none">Terms & Conditions</a> &bull;
-          <a href="/legal?tab=privacy" class="text-secondary text-decoration-none">Privacy Policy</a> &bull;
-          <a href="/legal?tab=refund" class="text-secondary text-decoration-none">Refund Policy</a> &bull;
-          <a href="/legal?tab=disclaimer" class="text-secondary text-decoration-none">Disclaimer</a> &bull;
-          <a href="/legal?tab=security" class="text-secondary text-decoration-none">Password & Data Security</a>
+          <a href="/free-trial" class="text-secondary text-decoration-none fw-semibold text-primary">1-Month Free Trial</a> &bull;
+          <a href="/about" class="text-secondary text-decoration-none">About & Features</a> &bull;
+          <a href="/pricing" class="text-secondary text-decoration-none">Pricing</a> &bull;
+          <a href="/contact" class="text-secondary text-decoration-none">Contact</a> &bull;
+          <a href="/terms" class="text-secondary text-decoration-none">Terms & Conditions</a> &bull;
+          <a href="/privacy" class="text-secondary text-decoration-none">Privacy Policy</a> &bull;
+          <a href="/refund-policy" class="text-secondary text-decoration-none">Refund Policy</a> &bull;
+          <a href="/disclaimer" class="text-secondary text-decoration-none">Disclaimer</a> &bull;
+          <a href="/security" class="text-secondary text-decoration-none">Password & Data Security</a>
         </div>
         <div>RACE FINANCE &copy; <?= date('Y') ?> — Smart Small Business Billing & Inventory System</div>
       </div>

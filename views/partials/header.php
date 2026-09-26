@@ -18,12 +18,31 @@
   <meta name="author" content="RACE FINANCE">
   <meta name="robots" content="<?= !empty($user) ? 'noindex, nofollow' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' ?>">
   
+  <?php
+    $canonicalPath = '/';
+    if (!empty($activeTab)) {
+      if ($activeTab === 'home') $canonicalPath = '/';
+      elseif ($activeTab === 'free-trial') $canonicalPath = '/free-trial';
+      elseif ($activeTab === 'about') $canonicalPath = '/about';
+      elseif ($activeTab === 'pricing') $canonicalPath = '/pricing';
+      elseif ($activeTab === 'contact') $canonicalPath = '/contact';
+      elseif ($activeTab === 'terms') $canonicalPath = '/terms';
+      elseif ($activeTab === 'privacy') $canonicalPath = '/privacy';
+      elseif ($activeTab === 'refund') $canonicalPath = '/refund-policy';
+      elseif ($activeTab === 'disclaimer') $canonicalPath = '/disclaimer';
+      elseif ($activeTab === 'security') $canonicalPath = '/security';
+      else $canonicalPath = '/' . ltrim($activeTab, '/');
+    } elseif (str_contains($currentUrl ?? '', '/auth/login')) {
+      $canonicalPath = '/auth/login';
+    }
+    $pageCanonicalUrl = rtrim($appUrl ?? 'https://racefinance.site', '/') . ($canonicalPath === '/' ? '' : $canonicalPath);
+  ?>
   <!-- Canonical URL -->
-  <link rel="canonical" href="<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?><?= !empty($activeTab) ? ($activeTab === 'about' ? '/about' : ($activeTab === 'pricing' ? '/pricing' : ($activeTab === 'contact' ? '/contact' : ($activeTab === 'terms' ? '/terms' : ($activeTab === 'privacy' ? '/privacy' : '/legal?tab=' . $activeTab))))) : '' ?>">
+  <link rel="canonical" href="<?= htmlspecialchars($pageCanonicalUrl, ENT_QUOTES, 'UTF-8') ?>">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?><?= !empty($activeTab) ? ($activeTab === 'about' ? '/about' : ($activeTab === 'pricing' ? '/pricing' : ($activeTab === 'contact' ? '/contact' : '/legal?tab=' . $activeTab))) : '' ?>">
+  <meta property="og:url" content="<?= htmlspecialchars($pageCanonicalUrl, ENT_QUOTES, 'UTF-8') ?>">
   <meta property="og:site_name" content="RACE FINANCE">
   <meta property="og:title" content="<?= htmlspecialchars(!empty($title) ? (str_contains($title, 'RACE FINANCE') ? $title : $title . ' - RACE FINANCE') : 'RACE FINANCE - Small Business Billing & Inventory System', ENT_QUOTES, 'UTF-8') ?>">
   <meta property="og:description" content="<?= htmlspecialchars($metaDescription ?? 'Modern small business billing, inventory tracking, and bookkeeping utility for Indian merchants & traders.', ENT_QUOTES, 'UTF-8') ?>">
@@ -34,10 +53,57 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>">
+  <meta name="twitter:url" content="<?= htmlspecialchars($pageCanonicalUrl, ENT_QUOTES, 'UTF-8') ?>">
   <meta name="twitter:title" content="<?= htmlspecialchars(!empty($title) ? (str_contains($title, 'RACE FINANCE') ? $title : $title . ' - RACE FINANCE') : 'RACE FINANCE - Small Business Billing & Inventory', ENT_QUOTES, 'UTF-8') ?>">
   <meta name="twitter:description" content="<?= htmlspecialchars($metaDescription ?? 'Modern small business billing, inventory tracking, and bookkeeping utility.', ENT_QUOTES, 'UTF-8') ?>">
   <meta name="twitter:image" content="<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>/uploads/logo-1787158589640-807857696.png">
+
+  <!-- Schema.org Structured Data (JSON-LD) for Google Rich Snippets & Sitelinks -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>/#organization",
+        "name": "RACE FINANCE",
+        "url": "<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>",
+        "logo": "<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>/uploads/logo-1787158589640-807857696.png",
+        "description": "Smart small business billing, GST invoicing, and inventory bookkeeping software for Indian merchants.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>",
+          "contactType": "customer support",
+          "areaServed": "IN",
+          "availableLanguage": ["English", "Hindi"]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>/#website",
+        "url": "<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>",
+        "name": "RACE FINANCE",
+        "description": "Smart small business billing, inventory accounting, and FIFO party ledgers.",
+        "publisher": {
+          "@id": "<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>/#organization"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "RACE FINANCE",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "All modern web browsers",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR",
+          "name": "1-Month Complimentary Free Trial",
+          "description": "Full-featured 30-day evaluation trial with zero setup fee."
+        }
+      }
+    ]
+  }
+  </script>
 
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -299,7 +365,7 @@
 <!-- Public / Guest Simple Transparent Navigation Header -->
 <nav class="navbar navbar-expand-lg bg-transparent border-0 py-3">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center text-dark text-decoration-none fw-bold" href="/auth/login">
+    <a class="navbar-brand d-flex align-items-center text-dark text-decoration-none fw-bold" href="/">
       <img src="/uploads/logo-1787158589640-807857696.png" alt="RACE FINANCE Logo" class="rounded-2 me-2" width="28" height="28" style="object-fit: contain;">
       <span>RACE FINANCE</span>
     </a>
@@ -308,11 +374,14 @@
     </button>
     <div class="collapse navbar-collapse justify-content-end" id="guestNavbarNav">
       <div class="navbar-nav align-items-lg-center gap-3 gap-lg-4 mt-2 mt-lg-0 small">
-        <a class="text-decoration-none text-secondary <?= (!empty($activeTab) && $activeTab === 'about') ? 'text-dark fw-bold' : '' ?>" href="/about">About</a>
-        <a class="text-decoration-none text-secondary" href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hi%20RACE%20FINANCE%20Support%2C%20I%20have%20an%20inquiry%20regarding%20the%20billing%20software." target="_blank">Contact</a>
-        <a class="text-decoration-none text-secondary" href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank">Free Trial</a>
-        <a class="text-decoration-none text-secondary <?= (!empty($activeTab) && $activeTab === 'pricing') ? 'text-dark fw-bold' : '' ?>" href="/pricing">Pricing</a>
-        <a class="text-decoration-none text-dark fw-semibold" href="/auth/login">Sign In</a>
+        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'home') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/">Home</a>
+        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'about') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/about">About</a>
+        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'pricing') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/pricing">Pricing</a>
+        <a class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold <?= (!empty($activeTab) && $activeTab === 'free-trial') ? 'active' : '' ?>" href="/free-trial">
+          <i class="bi bi-gift-fill me-1"></i> 1-Month Free Trial
+        </a>
+        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'contact') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/contact">Contact</a>
+        <a class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 fw-semibold" href="/auth/login">Sign In</a>
       </div>
     </div>
   </div>

@@ -122,14 +122,15 @@
     <!-- Quick Legal Links & Support -->
     <div class="text-center mt-4">
       <div class="d-flex flex-wrap justify-content-center gap-2 small text-muted mb-2">
+        <a href="/free-trial" class="text-success text-decoration-none hover-primary fw-semibold"><i class="bi bi-gift-fill me-1"></i>Free Trial</a> &bull;
         <a href="/about" class="text-secondary text-decoration-none hover-primary fw-semibold"><i class="bi bi-info-circle me-1"></i>About & Features</a> &bull;
         <a href="/pricing" class="text-secondary text-decoration-none hover-primary fw-semibold">Pricing</a> &bull;
         <a href="/contact" class="text-secondary text-decoration-none hover-primary fw-semibold">Contact</a> &bull;
-        <a href="/legal?tab=terms" class="text-secondary text-decoration-none hover-primary">Terms & Conditions</a> &bull;
-        <a href="/legal?tab=privacy" class="text-secondary text-decoration-none hover-primary">Privacy Policy</a> &bull;
-        <a href="/legal?tab=refund" class="text-secondary text-decoration-none hover-primary">Refund Policy</a> &bull;
-        <a href="/legal?tab=disclaimer" class="text-secondary text-decoration-none hover-primary">Disclaimer</a> &bull;
-        <a href="/legal?tab=security" class="text-secondary text-decoration-none hover-primary">Security</a>
+        <a href="/terms" class="text-secondary text-decoration-none hover-primary">Terms & Conditions</a> &bull;
+        <a href="/privacy" class="text-secondary text-decoration-none hover-primary">Privacy Policy</a> &bull;
+        <a href="/refund-policy" class="text-secondary text-decoration-none hover-primary">Refund Policy</a> &bull;
+        <a href="/disclaimer" class="text-secondary text-decoration-none hover-primary">Disclaimer</a> &bull;
+        <a href="/security" class="text-secondary text-decoration-none hover-primary">Security</a>
       </div>
       <div class="small text-muted">
         Need assistance? <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hi%20RACE%20FINANCE%20Support,%20I%20need%20assistance." target="_blank" class="text-success text-decoration-none fw-semibold"><i class="bi bi-whatsapp"></i> WhatsApp Support (<?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?>)</a>

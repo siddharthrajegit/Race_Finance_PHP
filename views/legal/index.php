@@ -3,20 +3,22 @@
     <!-- Legal Portal Header -->
     <div class="text-center mb-4">
       <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold mb-2">
-        <i class="bi <?= $$activeTab === 'about' ? 'bi-info-circle-fill' : ($$activeTab === 'pricing' ? 'bi-tags-fill' : ($$activeTab === 'contact' ? 'bi-headset' : 'bi-shield-check')) ?> me-1"></i> 
-        <?= $$activeTab === 'about' ? 'Platform Overview & Capabilities' : ($$activeTab === 'pricing' ? 'Transparent Subscription Plans' : ($$activeTab === 'contact' ? 'Official Support & Inquiries' : 'Official Legal & Governance Center')) ?>
+        <i class="bi <?= $activeTab === 'free-trial' ? 'bi-gift-fill' : ($activeTab === 'about' ? 'bi-info-circle-fill' : ($activeTab === 'pricing' ? 'bi-tags-fill' : ($activeTab === 'contact' ? 'bi-headset' : 'bi-shield-check'))) ?> me-1"></i> 
+        <?= $activeTab === 'free-trial' ? 'Complimentary 30-Day Evaluation' : ($activeTab === 'about' ? 'Platform Overview & Capabilities' : ($activeTab === 'pricing' ? 'Transparent Subscription Plans' : ($activeTab === 'contact' ? 'Official Support & Inquiries' : 'Official Legal & Governance Center'))) ?>
       </span>
       <h2 class="fw-bold text-dark">
-        <?= $$activeTab === 'about' ? 'About RACE FINANCE' : ($$activeTab === 'pricing' ? 'RACE FINANCE Pricing & Plans' : ($$activeTab === 'contact' ? 'Contact RACE FINANCE Desk' : 'RACE FINANCE Legal, Privacy & Terms')) ?>
+        <?= $activeTab === 'free-trial' ? 'RACE FINANCE 1-Month Free Trial' : ($activeTab === 'about' ? 'About RACE FINANCE' : ($activeTab === 'pricing' ? 'RACE FINANCE Pricing & Plans' : ($activeTab === 'contact' ? 'Contact RACE FINANCE Desk' : 'RACE FINANCE Legal, Privacy & Terms'))) ?>
       </h2>
       <p class="text-muted small mx-auto" style="max-width: 650px;">
-        <?= $$activeTab === 'about' 
-          ? 'An integrated, lightweight business management and digital bookkeeping utility engineered specifically for small business owners, traders, and retail merchants.' 
-          : ($$activeTab === 'pricing' 
-              ? 'Straightforward, transparent pricing designed to be accessible for every small business. Start with 1-Month Free.' 
-              : ($$activeTab === 'contact'
-                  ? 'Connect with our team for account provisioning, technical support, 1-month free trial onboarding, or commercial inquiries.'
-                  : 'Transparent policies, zero-knowledge security commitments, and clear commercial terms governing your use of the RACE FINANCE Billing & Accounting Platform.')) ?>
+        <?= $activeTab === 'free-trial'
+          ? 'Enjoy 30 days of full, unrestricted access to RACE FINANCE. Experience dual-firm billing, inventory management, and FIFO party ledgers with zero setup cost.'
+          : ($activeTab === 'about' 
+              ? 'An integrated, lightweight business management and digital bookkeeping utility engineered specifically for small business owners, traders, and retail merchants.' 
+              : ($activeTab === 'pricing' 
+                  ? 'Straightforward, transparent pricing designed to be accessible for every small business. Start with 1-Month Free.' 
+                  : ($activeTab === 'contact'
+                      ? 'Connect with our team for account provisioning, technical support, 1-month free trial onboarding, or commercial inquiries.'
+                      : 'Transparent policies, zero-knowledge security commitments, and clear commercial terms governing your use of the RACE FINANCE Billing & Accounting Platform.'))) ?>
       </p>
     </div>
 
@@ -24,7 +26,107 @@
     <div class="card shadow-sm border-0 rounded-4 mb-4">
       <div class="card-body p-4 p-md-5">
 
-        <?php if ($activeTab === 'about'): ?>
+        <?php if ($activeTab === 'free-trial'): ?>
+          <!-- =================== 1-MONTH FREE TRIAL =================== -->
+          <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom flex-wrap gap-2">
+            <div>
+              <h3 class="fw-bold text-dark mb-1">1-Month Complimentary Evaluation</h3>
+              <div class="text-muted small">Full-featured 30-day access &bull; Zero financial commitment &bull; Dedicated WhatsApp onboarding</div>
+            </div>
+            <a href="https://wa.me/<?= $supportPhoneRaw ?? '919672847747' ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+              <i class="bi bi-whatsapp me-1"></i> Start 1-Month Free Trial
+            </a>
+          </div>
+
+          <div class="legal-body text-secondary lh-lg">
+            <p class="lead text-dark fs-6">
+              Welcome to the <strong>RACE FINANCE</strong> complimentary evaluation program. We believe every Indian small business owner, merchant, and trader deserves to experience seamless billing and ledger management before investing in software.
+            </p>
+
+            <!-- Highlight Card -->
+            <div class="card border-0 bg-primary-subtle text-primary p-4 rounded-4 my-4">
+              <div class="row align-items-center g-3">
+                <div class="col-md-8">
+                  <h4 class="fw-bold text-dark mb-1">30 Days of Complete Feature Access</h4>
+                  <p class="small text-secondary mb-0">
+                    Your trial is <strong>100% unrestricted</strong>. You get all tools including dual-firm accounting, FIFO ledgers, inventory tracking, and full offline data backup downloads.
+                  </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                  <span class="display-6 fw-extrabold text-primary">₹0</span>
+                  <div class="small text-muted fw-semibold">No Credit Card Needed</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Features Checklist -->
+            <h5 class="fw-bold text-dark mt-4 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>Everything Unlocked in Your Trial</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-buildings text-primary me-2"></i>Dual-Firm Operations</h6>
+                  <p class="small text-muted mb-0">Operate 2 independent business profiles with separate trade names, GSTINs, and billing formats.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-receipt text-success me-2"></i>Unlimited GST & Non-GST Bills</h6>
+                  <p class="small text-muted mb-0">Create, edit, and print tax invoices, quotations, and bills with instant A4 and PDF output.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-journal-text text-warning me-2"></i>FIFO Party Ledgers</h6>
+                  <p class="small text-muted mb-0">Track customer and vendor balances with chronological FIFO automatic settlement and payment receipts.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-box-seam text-info me-2"></i>Live Inventory Tracking</h6>
+                  <p class="small text-muted mb-0">Real-time stock deduction, multi-unit measurements (PCS, KG, BOX), and low-stock threshold warnings.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-bar-graph text-danger me-2"></i>Accountant GST Exports</h6>
+                  <p class="small text-muted mb-0">Export structured sales and purchase registers to help your accountant prepare GSTR returns.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-download text-dark me-2"></i>100% Data Portability</h6>
+                  <p class="small text-muted mb-0">Download complete structured JSON backups of your items, parties, and invoices to your PC anytime.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Onboarding Steps -->
+            <h5 class="fw-bold text-dark mt-4 mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>How to Activate Your Free Trial</h5>
+            <div class="card border-0 bg-light p-4 rounded-4 mb-4">
+              <div class="row g-4">
+                <div class="col-md-4">
+                  <div class="fw-bold text-dark mb-1">Step 1: Contact Onboarding</div>
+                  <p class="small text-muted mb-0">Click the WhatsApp button below or call our support line at <strong><?= htmlspecialchars($supportPhone ?? '+91 9672847747', ENT_QUOTES, 'UTF-8') ?></strong>.</p>
+                </div>
+                <div class="col-md-4">
+                  <div class="fw-bold text-dark mb-1">Step 2: Share Business Details</div>
+                  <p class="small text-muted mb-0">Provide your firm/shop name and the 10-digit mobile number you wish to use as your login ID.</p>
+                </div>
+                <div class="col-md-4">
+                  <div class="fw-bold text-dark mb-1">Step 3: Immediate Access</div>
+                  <p class="small text-muted mb-0">Receive your temporary password and sign in instantly at <a href="/auth/login" class="text-primary fw-semibold">racefinance.site/auth/login</a>.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center my-4">
+              <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank" class="btn btn-success btn-lg rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-whatsapp me-2 fs-5"></i> Activate 1-Month Free Trial on WhatsApp
+              </a>
+            </div>
+          </div>
+
+        <?php elseif ($activeTab === 'about'): ?>
           <!-- =================== ABOUT & FEATURES =================== -->
           <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom flex-wrap gap-2">
             <div>
@@ -510,14 +612,15 @@
     <!-- Quick Footer Links Box -->
     <div class="card bg-light border-0 p-3 rounded-4 text-center mb-4">
       <div class="d-flex flex-wrap justify-content-center gap-3 small text-muted">
-        <a href="/legal?tab=about" class="text-decoration-none <?= $$activeTab === 'about' ? 'fw-bold text-primary' : 'text-secondary' ?>">About & Features</a> &bull;
-        <a href="/legal?tab=pricing" class="text-decoration-none <?= $$activeTab === 'pricing' ? 'fw-bold text-primary' : 'text-secondary' ?>">Pricing</a> &bull;
-        <a href="/legal?tab=contact" class="text-decoration-none <?= $$activeTab === 'contact' ? 'fw-bold text-primary' : 'text-secondary' ?>">Contact</a> &bull;
-        <a href="/legal?tab=terms" class="text-decoration-none <?= $$activeTab === 'terms' ? 'fw-bold text-primary' : 'text-secondary' ?>">Terms & Conditions</a> &bull;
-        <a href="/legal?tab=privacy" class="text-decoration-none <?= $$activeTab === 'privacy' ? 'fw-bold text-primary' : 'text-secondary' ?>">Privacy Policy</a> &bull;
-        <a href="/legal?tab=refund" class="text-decoration-none <?= $$activeTab === 'refund' ? 'fw-bold text-primary' : 'text-secondary' ?>">Refund Policy</a> &bull;
-        <a href="/legal?tab=disclaimer" class="text-decoration-none <?= $$activeTab === 'disclaimer' ? 'fw-bold text-primary' : 'text-secondary' ?>">Legal Disclaimer</a> &bull;
-        <a href="/legal?tab=security" class="text-decoration-none <?= $$activeTab === 'security' ? 'fw-bold text-primary' : 'text-secondary' ?>">Security & Passwords</a>
+        <a href="/free-trial" class="text-decoration-none <?= $activeTab === 'free-trial' ? 'fw-bold text-primary' : 'text-secondary' ?>">1-Month Free Trial</a> &bull;
+        <a href="/about" class="text-decoration-none <?= $activeTab === 'about' ? 'fw-bold text-primary' : 'text-secondary' ?>">About & Features</a> &bull;
+        <a href="/pricing" class="text-decoration-none <?= $activeTab === 'pricing' ? 'fw-bold text-primary' : 'text-secondary' ?>">Pricing</a> &bull;
+        <a href="/contact" class="text-decoration-none <?= $activeTab === 'contact' ? 'fw-bold text-primary' : 'text-secondary' ?>">Contact</a> &bull;
+        <a href="/terms" class="text-decoration-none <?= $activeTab === 'terms' ? 'fw-bold text-primary' : 'text-secondary' ?>">Terms & Conditions</a> &bull;
+        <a href="/privacy" class="text-decoration-none <?= $activeTab === 'privacy' ? 'fw-bold text-primary' : 'text-secondary' ?>">Privacy Policy</a> &bull;
+        <a href="/refund-policy" class="text-decoration-none <?= $activeTab === 'refund' ? 'fw-bold text-primary' : 'text-secondary' ?>">Refund Policy</a> &bull;
+        <a href="/disclaimer" class="text-decoration-none <?= $activeTab === 'disclaimer' ? 'fw-bold text-primary' : 'text-secondary' ?>">Legal Disclaimer</a> &bull;
+        <a href="/security" class="text-decoration-none <?= $activeTab === 'security' ? 'fw-bold text-primary' : 'text-secondary' ?>">Security & Passwords</a>
       </div>
     </div>
   </div>

@@ -36,6 +36,7 @@ require_once __DIR__ . '/core/Router.php';
 require_once __DIR__ . '/core/Auth.php';
 
 // Controllers
+require_once __DIR__ . '/controllers/HomeController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
 require_once __DIR__ . '/controllers/FirmController.php';
 require_once __DIR__ . '/controllers/ItemController.php';
@@ -51,14 +52,7 @@ require_once __DIR__ . '/controllers/LegalController.php';
 // -----------------------------------------------------------------------------
 // Root & Dashboard
 // -----------------------------------------------------------------------------
-Router::get('/', function() {
-    if (Auth::isAuthenticated()) {
-        header('Location: ' . (Auth::isAdmin() ? '/admin' : '/dashboard'));
-        exit;
-    }
-    header('Location: /auth/login');
-    exit;
-});
+Router::get('/', [HomeController::class, 'index']);
 
 Router::get('/dashboard', [ReportController::class, 'getDashboard']);
 
@@ -184,12 +178,17 @@ Router::post('/admin/settings', [AdminController::class, 'postSettings']);
 // -----------------------------------------------------------------------------
 // Legal & Public Policies
 // -----------------------------------------------------------------------------
+Router::get('/free-trial', [LegalController::class, 'getFreeTrial']);
 Router::get('/about', [LegalController::class, 'getAbout']);
 Router::get('/pricing', [LegalController::class, 'getPricing']);
 Router::get('/contact', [LegalController::class, 'getContact']);
 Router::get('/terms', [LegalController::class, 'getTerms']);
 Router::get('/privacy', [LegalController::class, 'getPrivacy']);
 Router::get('/refund-policy', [LegalController::class, 'getRefund']);
+Router::get('/refund', function() {
+    header('Location: /refund-policy', true, 301);
+    exit;
+});
 Router::get('/disclaimer', [LegalController::class, 'getDisclaimer']);
 Router::get('/security', [LegalController::class, 'getSecurity']);
 Router::get('/legal', [LegalController::class, 'getLegalPage']);
@@ -200,22 +199,57 @@ Router::get('/legal/:section', [LegalController::class, 'getLegalPage']);
 // -----------------------------------------------------------------------------
 Router::get('/robots.txt', function() {
     $host = $_SERVER['HTTP_HOST'] ?? 'racefinance.site';
-    $base = APP_URL;
+    $base = rtrim(APP_URL, '/');
     header('Content-Type: text/plain');
-    echo "# Robots.txt for {$host} ({$base})\nUser-agent: *\nDisallow: /admin/\nDisallow: /invoices/\nDisallow: /purchases/\nDisallow: /sales/\nDisallow: /parties/\nDisallow: /items/\nDisallow: /reports/\nDisallow: /settings/\nDisallow: /firms/\nDisallow: /backup/\nDisallow: /dashboard\nAllow: /\nAllow: /about\nAllow: /pricing\nAllow: /contact\nAllow: /terms\nAllow: /privacy\nAllow: /refund-policy\nAllow: /disclaimer\nAllow: /security\nAllow: /auth/login\n\nSitemap: {$base}/sitemap.xml\n";
+    echo "# Robots.txt for {$host} ({$base})\n";
+    echo "User-agent: *\n";
+    echo "Disallow: /admin/\n";
+    echo "Disallow: /invoices/\n";
+    echo "Disallow: /purchases/\n";
+    echo "Disallow: /sales/\n";
+    echo "Disallow: /parties/\n";
+    echo "Disallow: /items/\n";
+    echo "Disallow: /reports/\n";
+    echo "Disallow: /settings/\n";
+    echo "Disallow: /firms/\n";
+    echo "Disallow: /backup/\n";
+    echo "Disallow: /dashboard\n";
+    echo "Allow: /\n";
+    echo "Allow: /free-trial\n";
+    echo "Allow: /about\n";
+    echo "Allow: /pricing\n";
+    echo "Allow: /contact\n";
+    echo "Allow: /terms\n";
+    echo "Allow: /privacy\n";
+    echo "Allow: /refund-policy\n";
+    echo "Allow: /disclaimer\n";
+    echo "Allow: /security\n";
+    echo "Allow: /auth/login\n\n";
+    echo "Sitemap: {$base}/sitemap.xml\n";
     exit;
 });
 
 Router::get('/sitemap.xml', function() {
-    $base = APP_URL;
+    $base = rtrim(APP_URL, '/');
     $today = date('Y-m-d');
-    $pages = ['', '/about', '/pricing', '/contact', '/auth/login', '/terms', '/privacy', '/refund-policy', '/disclaimer', '/security'];
+    $pages = [
+        ['loc' => '', 'freq' => 'weekly', 'prio' => '1.0'],
+        ['loc' => '/free-trial', 'freq' => 'weekly', 'prio' => '0.9'],
+        ['loc' => '/pricing', 'freq' => 'monthly', 'prio' => '0.9'],
+        ['loc' => '/about', 'freq' => 'monthly', 'prio' => '0.8'],
+        ['loc' => '/contact', 'freq' => 'monthly', 'prio' => '0.8'],
+        ['loc' => '/auth/login', 'freq' => 'monthly', 'prio' => '0.7'],
+        ['loc' => '/terms', 'freq' => 'monthly', 'prio' => '0.6'],
+        ['loc' => '/privacy', 'freq' => 'monthly', 'prio' => '0.6'],
+        ['loc' => '/refund-policy', 'freq' => 'monthly', 'prio' => '0.6'],
+        ['loc' => '/disclaimer', 'freq' => 'monthly', 'prio' => '0.6'],
+        ['loc' => '/security', 'freq' => 'monthly', 'prio' => '0.6']
+    ];
     header('Content-Type: application/xml');
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
     foreach ($pages as $p) {
-        $freq = ($p === '') ? 'weekly' : 'monthly';
-        $prio = ($p === '') ? '1.0' : '0.8';
-        echo "  <url>\n    <loc>{$base}{$p}</loc>\n    <lastmod>{$today}</lastmod>\n    <changefreq>{$freq}</changefreq>\n    <priority>{$prio}</priority>\n  </url>\n";
+        $url = $base . $p['loc'];
+        echo "  <url>\n    <loc>{$url}</loc>\n    <lastmod>{$today}</lastmod>\n    <changefreq>{$p['freq']}</changefreq>\n    <priority>{$p['prio']}</priority>\n  </url>\n";
     }
     echo "</urlset>";
     exit;

@@ -133,7 +133,7 @@
           <div>
             <h6 class="fw-bold text-dark mb-1">Data Ownership, Portability & 1-Year Retention Policy</h6>
             <p class="text-muted small mb-0 lh-base">
-              You retain 100% ownership over your business data. We recommend downloading regular <code class="bg-white px-1">.json</code> offline snapshots to your local computer. Per our <a href="/legal?tab=terms" class="text-primary fw-medium">Terms & Conditions</a>, accounts that remain expired and inactive without subscription renewal for over <strong>1 continuous year (12 months)</strong> will be permanently purged from platform servers.
+              You retain 100% ownership over your business data. We recommend downloading regular <code class="bg-white px-1">.json</code> offline snapshots to your local computer. Per our <a href="/terms" class="text-primary fw-medium">Terms & Conditions</a>, accounts that remain expired and inactive without subscription renewal for over <strong>1 continuous year (12 months)</strong> will be permanently purged from platform servers.
             </p>
           </div>
         </div>
