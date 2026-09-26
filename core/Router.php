@@ -35,6 +35,9 @@ class Router {
         CSRF::verify();
 
         $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        if ($requestMethod === 'HEAD') {
+            $requestMethod = 'GET';
+        }
         $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         $requestUri = '/' . trim($requestUri, '/');
         if ($requestUri === '//') $requestUri = '/';
