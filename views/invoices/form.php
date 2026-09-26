@@ -13,15 +13,15 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
 ?>
 
 <form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm" 
-  data-firm-id="<?= $activeFirm['id'] ?>"
+  data-firm-id="<?= htmlspecialchars((string)($activeFirm['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
   data-is-edit="<?= $isEditMode ? '1' : '0' ?>"
-  data-firm-state-code="<?= $activeFirm['state_code'] || '' ?>"
-  data-default-gst="<?= $isEditMode ? ($invoice['is_gst_bill'] ? 'gst' : 'non_gst') : $billSettings['default_gst_type'] ?>"
-  data-gst-calc-mode="<?= $billSettings['gst_calc_mode'] ?>"
+  data-firm-state-code="<?= htmlspecialchars((string)($activeFirm['state_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+  data-default-gst="<?= $isEditMode ? (!empty($invoice['is_gst_bill']) ? 'gst' : 'non_gst') : htmlspecialchars($billSettings['default_gst_type'] ?? 'gst', ENT_QUOTES, 'UTF-8') ?>"
+  data-gst-calc-mode="<?= htmlspecialchars($billSettings['gst_calc_mode'] ?? 'separate', ENT_QUOTES, 'UTF-8') ?>"
   data-enable-discount="<?= $showDiscountCol ? '1' : '0' ?>">
   <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-  <input type="hidden" name="type" value="<?= $invoiceType ?>">
-  <input type="hidden" name="gst_calc_mode" id="gstCalcModeInput" value="<?= $billSettings['gst_calc_mode'] ?>">
+  <input type="hidden" name="type" value="<?= htmlspecialchars($invoiceType ?? 'sale', ENT_QUOTES, 'UTF-8') ?>">
+  <input type="hidden" name="gst_calc_mode" id="gstCalcModeInput" value="<?= htmlspecialchars($billSettings['gst_calc_mode'] ?? 'separate', ENT_QUOTES, 'UTF-8') ?>">
 
   <!-- Unsaved Draft Recovery Alert Banner -->
   <div id="draftRecoveryBanner" class="alert alert-warning shadow-sm d-none mb-3 border-warning d-flex flex-wrap align-items-center justify-content-between p-3 gap-2" role="alert">
@@ -129,8 +129,8 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
           <div class="position-relative">
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control form-control-sm" id="partySearchInput" placeholder="Type name, phone or GSTIN to search..." autocomplete="off" value="<?= $isEditMode ? ($invoice['party_name'] + ($invoice['party_phone'] ? ' (' . $invoice['party_phone'] . ')' : '')) : '' ?>">
-              <button class="btn btn-outline-secondary" type="button" id="btnClearPartySearch" title="Clear selection" style="<?= $isEditMode && $invoice['party_id'] ? 'display: block;' : 'display: none;' ?>">
+              <input type="text" class="form-control form-control-sm" id="partySearchInput" placeholder="Type name, phone or GSTIN to search..." autocomplete="off" value="<?= $isEditMode ? htmlspecialchars(($invoice['party_name'] ?? '') . (!empty($invoice['party_phone']) ? ' (' . $invoice['party_phone'] . ')' : ''), ENT_QUOTES, 'UTF-8') : '' ?>">
+              <button class="btn btn-outline-secondary" type="button" id="btnClearPartySearch" title="Clear selection" style="<?= ($isEditMode && !empty($invoice['party_id'])) ? 'display: block;' : 'display: none;' ?>">
                 <i class="bi bi-x-lg"></i>
               </button>
             </div>
@@ -160,27 +160,27 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
         <!-- Party Name (Mandatory) -->
         <div class="col-md-4">
           <label class="form-label small mb-1">Party / Customer Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control form-control-sm" id="partyNameInput" name="party_name" placeholder="Enter party name" value="<?= $isEditMode ? $invoice['party_name'] : '' ?>" required>
+          <input type="text" class="form-control form-control-sm" id="partyNameInput" name="party_name" placeholder="Enter party name" value="<?= $isEditMode ? htmlspecialchars($invoice['party_name'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" required>
         </div>
 
         <!-- Phone Number (Strict 10 Digits) -->
         <div class="col-md-4">
           <label class="form-label small mb-1">Phone / Mobile (10 Digits)</label>
-          <input type="tel" class="form-control form-control-sm font-monospace" id="partyPhoneInput" name="party_phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= $isEditMode ? ($invoice['party_phone'] || '') : '' ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          <input type="tel" class="form-control form-control-sm font-monospace" id="partyPhoneInput" name="party_phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= $isEditMode ? htmlspecialchars($invoice['party_phone'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
           <div id="phoneValidationStatus" class="form-text small" style="font-size: 0.72rem;">Exact 10 digits required</div>
         </div>
 
         <!-- GSTIN (Strict 15 Alphanumeric Characters) -->
         <div class="col-md-3">
           <label class="form-label small mb-1">Party GSTIN (15 Chars)</label>
-          <input type="text" class="form-control form-control-sm font-monospace text-uppercase" id="partyGstinInput" name="party_gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= $isEditMode ? ($invoice['party_gstin'] || '') : '' ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+          <input type="text" class="form-control form-control-sm font-monospace text-uppercase" id="partyGstinInput" name="party_gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= $isEditMode ? htmlspecialchars($invoice['party_gstin'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
           <div id="gstinValidationStatus" class="form-text small" style="font-size: 0.72rem;">Exact 15 letters & numbers</div>
         </div>
 
         <!-- Address -->
         <div class="col-md-5">
           <label class="form-label small mb-1">Billing Address</label>
-          <input type="text" class="form-control form-control-sm" id="partyAddressInput" name="party_address" placeholder="Building, Street, Area..." value="<?= $isEditMode ? ($invoice['party_address'] || '') : '' ?>">
+          <input type="text" class="form-control form-control-sm" id="partyAddressInput" name="party_address" placeholder="Building, Street, Area..." value="<?= $isEditMode ? htmlspecialchars($invoice['party_address'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>">
         </div>
 
         <!-- State & State Code (Strict State Dropdown + Auto Code) -->
@@ -201,7 +201,7 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
         </div>
         <div class="col-md-1">
           <label class="form-label small mb-1">Code</label>
-          <input type="text" class="form-control form-control-sm font-monospace bg-light fw-bold text-center text-primary" id="partyStateCodeInput" name="party_state_code" placeholder="00" value="<?= $isEditMode ? ($invoice['party_state_code'] || '') : (activeFirm ? ($activeFirm['state_code'] || '') : '') ?>" readonly title="State code is auto-populated">
+          <input type="text" class="form-control form-control-sm font-monospace bg-light fw-bold text-center text-primary" id="partyStateCodeInput" name="party_state_code" placeholder="00" value="<?= $isEditMode ? htmlspecialchars($invoice['party_state_code'] ?? '', ENT_QUOTES, 'UTF-8') : htmlspecialchars($activeFirm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly title="State code is auto-populated">
         </div>
       </div>
     </div>
@@ -284,12 +284,12 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
 
           <div class="mb-3">
             <label for="notes" class="form-label small">Private Notes / Remarks</label>
-            <textarea class="form-control form-control-sm" id="notes" name="notes" rows="2" placeholder="Optional notes for your reference..."><?= $isEditMode ? ($invoice['notes'] || '') : '' ?></textarea>
+            <textarea class="form-control form-control-sm" id="notes" name="notes" rows="2" placeholder="Optional notes for your reference..."><?= $isEditMode ? htmlspecialchars($invoice['notes'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?></textarea>
           </div>
 
           <div>
             <label for="terms" class="form-label small">Invoice Terms & Conditions</label>
-            <textarea class="form-control form-control-sm" id="terms" name="terms" rows="2"><?= $isEditMode ? ($invoice['terms'] || '') : ($activeFirm['terms'] || '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.') ?></textarea>
+            <textarea class="form-control form-control-sm" id="terms" name="terms" rows="2"><?= $isEditMode ? htmlspecialchars($invoice['terms'] ?? '', ENT_QUOTES, 'UTF-8') : htmlspecialchars(!empty($activeFirm['terms']) ? $activeFirm['terms'] : '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
           </div>
         </div>
       </div>
@@ -482,7 +482,7 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
 
             <div class="col-md-3">
               <label class="form-label small fw-bold">State Code</label>
-              <input type="text" class="form-control form-control-sm bg-light text-center font-monospace fw-bold text-primary" name="state_code" id="quickPartyStateCode" value="<?= activeFirm ? ($activeFirm['state_code'] || '') : '' ?>" readonly>
+              <input type="text" class="form-control form-control-sm bg-light text-center font-monospace fw-bold text-primary" name="state_code" id="quickPartyStateCode" value="<?= htmlspecialchars($activeFirm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly>
             </div>
 
             <div class="col-md-4">

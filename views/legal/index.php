@@ -133,7 +133,7 @@
               <h3 class="fw-bold text-dark mb-1">Empowering Small Business Management</h3>
               <div class="text-muted small">Streamlined operations, ledger clarity, and digital reference records</div>
             </div>
-            <a href="https://wa.me/<?= $$supportPhoneRaw ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+            <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
               <i class="bi bi-whatsapp me-1"></i> Start 1-Month Free Trial
             </a>
           </div>
@@ -245,7 +245,7 @@
                   </p>
                 </div>
                 <div class="col-md-4 text-md-end">
-                  <a href="https://wa.me/<?= $$supportPhoneRaw ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business.%20Please%20provide%20my%20login%20credentials." target="_blank" class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
+                  <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business.%20Please%20provide%20my%20login%20credentials." target="_blank" class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
                     <i class="bi bi-whatsapp me-1 text-success"></i> WhatsApp Onboarding
                   </a>
                 </div>
@@ -253,7 +253,7 @@
             </div>
 
             <div class="text-center small text-muted mt-3">
-              Have questions? Direct line: <a href="tel:+<?= $$supportPhoneRaw ?>" class="text-dark fw-semibold text-decoration-none"><?= $$supportPhone ?></a> | Email: <a href="mailto:support@<?= $$appDomain ?? 'racefinance.site' ?>" class="text-dark fw-semibold text-decoration-none">support@<?= $$appDomain ?? 'racefinance.site' ?></a>
+              Have questions? Direct line: <a href="tel:+<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>" class="text-dark fw-semibold text-decoration-none"><?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?></a> | Email: <a href="mailto:support@<?= htmlspecialchars($appDomain ?? 'racefinance.site', ENT_QUOTES, 'UTF-8') ?>" class="text-dark fw-semibold text-decoration-none">support@<?= htmlspecialchars($appDomain ?? 'racefinance.site', ENT_QUOTES, 'UTF-8') ?></a>
             </div>
           </div>
 
@@ -264,7 +264,7 @@
               <h3 class="fw-bold text-dark mb-1">Transparent & Simple Pricing</h3>
               <div class="text-muted small">Everything included &bull; 1-Month Free Evaluation &bull; Zero Hidden Costs</div>
             </div>
-            <a href="https://wa.me/<?= $$supportPhoneRaw ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+            <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20request%20access%20to%20start%20my%20complimentary%201-Month%20Free%20Trial%20for%20my%20business." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
               <i class="bi bi-whatsapp me-1"></i> Start 1-Month Free Trial
             </a>
           </div>
@@ -288,7 +288,7 @@
                     <li><i class="bi bi-check-circle-fill text-success me-2"></i>Accountant GST-Ready Exports</li>
                     <li><i class="bi bi-check-circle-fill text-success me-2"></i>Offline Backup Downloads (.json)</li>
                   </ul>
-                  <a href="https://wa.me/<?= $$supportPhoneRaw ?? '919672847747' ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20start%20my%20complimentary%201-Month%20Free%20Trial." target="_blank" class="btn btn-outline-success rounded-pill fw-semibold w-100 py-2">
+                  <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20start%20my%20complimentary%201-Month%20Free%20Trial." target="_blank" class="btn btn-outline-success rounded-pill fw-semibold w-100 py-2">
                     <i class="bi bi-whatsapp me-1"></i> Request Free Trial
                   </a>
                 </div>
@@ -313,7 +313,7 @@
                     <li><i class="bi bi-check-circle-fill text-primary me-2"></i>Up to 200 MB Storage Allocation</li>
                     <li><i class="bi bi-check-circle-fill text-primary me-2"></i>1-Year Account Data Protection</li>
                   </ul>
-                  <a href="https://wa.me/<?= $$supportPhoneRaw ?? '919672847747' ?>?text=Hi%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20inquire%20about%20the%20annual%20subscription%20pricing." target="_blank" class="btn btn-primary rounded-pill fw-semibold w-100 py-2">
+                  <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hi%20RACE%20FINANCE%20Support%2C%20I%20would%20like%20to%20inquire%20about%20the%20annual%20subscription%20pricing." target="_blank" class="btn btn-primary rounded-pill fw-semibold w-100 py-2">
                     <i class="bi bi-whatsapp me-1"></i> Contact for Plan Pricing
                   </a>
                 </div>
@@ -328,7 +328,7 @@
               <h3 class="fw-bold text-dark mb-1">Get in Touch with Our Team</h3>
               <div class="text-muted small">Instant WhatsApp onboarding, phone assistance & security support</div>
             </div>
-            <a href="https://wa.me/<?= $$supportPhoneRaw ?? '919672847747' ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20have%20an%20inquiry%20regarding%20the%20platform." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+            <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20have%20an%20inquiry%20regarding%20the%20platform." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
               <i class="bi bi-whatsapp me-1"></i> Chat on WhatsApp
             </a>
           </div>
@@ -343,8 +343,8 @@
                   </div>
                   <h5 class="fw-bold text-dark mb-1">WhatsApp Desk</h5>
                   <p class="small text-muted mb-3">Fastest response for onboarding, free trial requests, and active account help.</p>
-                  <div class="fw-bold text-dark mb-3"><?= $$supportPhone ?? '+91 9672847747' ?></div>
-                  <a href="https://wa.me/<?= $$supportPhoneRaw ?? '919672847747' ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20need%20assistance%20with%20my%20business%20account." target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 mt-auto">
+                  <div class="fw-bold text-dark mb-3"><?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?></div>
+                  <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=Hello%20RACE%20FINANCE%20Support%2C%20I%20need%20assistance%20with%20my%20business%20account." target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 mt-auto">
                     Message Support
                   </a>
                 </div>
@@ -358,8 +358,8 @@
                   </div>
                   <h5 class="fw-bold text-dark mb-1">Phone Line</h5>
                   <p class="small text-muted mb-3">Direct executive line for urgent account queries and billing verification.</p>
-                  <div class="fw-bold text-dark mb-3"><?= $$supportPhone ?? '+91 9672847747' ?></div>
-                  <a href="tel:+<?= $$supportPhoneRaw ?? '919672847747' ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3 mt-auto">
+                  <div class="fw-bold text-dark mb-3"><?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?></div>
+                  <a href="tel:+<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3 mt-auto">
                     Call Directly
                   </a>
                 </div>
@@ -373,8 +373,8 @@
                   </div>
                   <h5 class="fw-bold text-dark mb-1">Official Email</h5>
                   <p class="small text-muted mb-3">Formal business inquiries, partnership requests, and documentation feedback.</p>
-                  <div class="fw-bold text-dark mb-3 small">support@<?= $$appDomain ?? 'racefinance.site' ?></div>
-                  <a href="mailto:support@<?= $$appDomain ?? 'racefinance.site' ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3 mt-auto">
+                  <div class="fw-bold text-dark mb-3 small">support@<?= htmlspecialchars($appDomain ?? 'racefinance.site', ENT_QUOTES, 'UTF-8') ?></div>
+                  <a href="mailto:support@<?= htmlspecialchars($appDomain ?? 'racefinance.site', ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3 mt-auto">
                     Send Email
                   </a>
                 </div>
@@ -482,7 +482,7 @@
 
             <h5 class="fw-bold text-dark mt-4 mb-2"><i class="bi bi-telephone-exclamation text-danger me-2"></i>5. Reporting Suspicious Activity</h5>
             <p>
-              If you detect any irregular behavior, unauthorized access attempts, or suspect that your assigned credentials have been compromised, please notify our security team immediately at <strong><?= $$supportPhone ?? '+91 9672847747' ?></strong> or via WhatsApp.
+              If you detect any irregular behavior, unauthorized access attempts, or suspect that your assigned credentials have been compromised, please notify our security team immediately at <strong><?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?></strong> or via WhatsApp.
             </p>
           </div>
 
@@ -523,7 +523,7 @@
 
             <h5 class="fw-bold text-dark mt-4 mb-2"><i class="bi bi-headset text-primary me-2"></i>3. Billing Queries & Assistance</h5>
             <p>
-              If you believe a duplicate payment or billing discrepancy occurred during renewal, please reach out to our administrative support desk within 7 days of the transaction at <strong><?= $$supportPhone ?? '+91 9672847747' ?></strong> for prompt verification.
+              If you believe a duplicate payment or billing discrepancy occurred during renewal, please reach out to our administrative support desk within 7 days of the transaction at <strong><?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?></strong> for prompt verification.
             </p>
           </div>
 
@@ -596,11 +596,11 @@
               If you detect any unusual account behavior or believe your access phone number or password has been compromised, please report it immediately through our official channels:
             </p>
             <div class="d-flex flex-wrap gap-2">
-              <a href="https://wa.me/<?= $$supportPhoneRaw ?? '919672847747' ?>?text=SECURITY%20ALERT:%20I%20noticed%20suspicious%20activity%20on%20my%20RACE%20FINANCE%20account." class="btn btn-success btn-sm rounded-pill px-3 shadow-sm d-inline-flex align-items-center">
-                <i class="bi bi-whatsapp me-2"></i> Report on WhatsApp (<?= $$supportPhone ?? '+91 9672847747' ?>)
+              <a href="https://wa.me/<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>?text=SECURITY%20ALERT:%20I%20noticed%20suspicious%20activity%20on%20my%20RACE%20FINANCE%20account." class="btn btn-success btn-sm rounded-pill px-3 shadow-sm d-inline-flex align-items-center">
+                <i class="bi bi-whatsapp me-2"></i> Report on WhatsApp (<?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?>)
               </a>
-              <a href="tel:+<?= $$supportPhoneRaw ?? '919672847747' ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3 shadow-sm d-inline-flex align-items-center">
-                <i class="bi bi-telephone-fill me-2"></i> Call Security Desk (<?= $$supportPhone ?? '+91 9672847747' ?>)
+              <a href="tel:+<?= htmlspecialchars($supportPhoneRaw ?? '919672847747', ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3 shadow-sm d-inline-flex align-items-center">
+                <i class="bi bi-telephone-fill me-2"></i> Call Security Desk (<?= htmlspecialchars($supportPhone ?? '+91 96728 47747', ENT_QUOTES, 'UTF-8') ?>)
               </a>
             </div>
           </div>
