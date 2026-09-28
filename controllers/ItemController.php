@@ -222,30 +222,48 @@ class ItemController {
         header('Content-Type: application/json');
 
         try {
-            $name = trim($_POST['name'] ?? '');
+            $input = $_POST;
+            if (empty($input['name'])) {
+                $rawInput = file_get_contents('php://input');
+                if (!empty($rawInput)) {
+                    $jsonInput = json_decode($rawInput, true);
+                    if (is_array($jsonInput)) {
+                        $input = array_merge($input, $jsonInput);
+                    }
+                }
+            }
+
+            $name = trim($input['name'] ?? '');
             if ($name === '') {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Item name is required.']);
                 exit;
             }
 
-            $salePrice = max(0.0, Security::parseCleanFloat($_POST['sale_price'] ?? 0));
-            $purchasePrice = max(0.0, Security::parseCleanFloat($_POST['purchase_price'] ?? 0));
-            $taxRate = min(100.0, max(0.0, Security::parseCleanFloat($_POST['tax_rate'] ?? 0)));
+            $salePrice = max(0.0, Security::parseCleanFloat($input['sale_price'] ?? 0));
+            $purchasePrice = max(0.0, Security::parseCleanFloat($input['purchase_price'] ?? 0));
+            if ($purchasePrice === 0.0 && $salePrice > 0.0) {
+                $purchasePrice = $salePrice;
+            }
+            if ($salePrice === 0.0 && $purchasePrice > 0.0) {
+                $salePrice = $purchasePrice;
+            }
+
+            $taxRate = min(100.0, max(0.0, Security::parseCleanFloat($input['tax_rate'] ?? 0)));
 
             $item = Item::create([
                 'firm_id' => (int)$firm['id'],
                 'name' => $name,
-                'item_code' => $_POST['item_code'] ?? null,
-                'hsn_code' => $_POST['hsn_code'] ?? null,
-                'unit' => $_POST['unit'] ?? 'PCS',
+                'item_code' => $input['item_code'] ?? null,
+                'hsn_code' => $input['hsn_code'] ?? null,
+                'unit' => $input['unit'] ?? 'PCS',
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,
-                'tax_inclusive' => !empty($_POST['tax_inclusive']) ? 1 : 0,
-                'opening_stock' => Security::parseCleanFloat($_POST['opening_stock'] ?? 0),
-                'low_stock_threshold' => Security::parseCleanFloat($_POST['low_stock_threshold'] ?? 5),
-                'description' => $_POST['description'] ?? null
+                'tax_inclusive' => !empty($input['tax_inclusive']) ? 1 : 0,
+                'opening_stock' => Security::parseCleanFloat($input['opening_stock'] ?? 0),
+                'low_stock_threshold' => Security::parseCleanFloat($input['low_stock_threshold'] ?? 5),
+                'description' => $input['description'] ?? null
             ]);
 
             echo json_encode([

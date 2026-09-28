@@ -1161,6 +1161,20 @@ document.addEventListener('DOMContentLoaded', () => {
     toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
   }
 
+  // Modal reset alerts on open
+  const modalPartyEl = document.getElementById('modalQuickAddParty');
+  if (modalPartyEl) {
+    modalPartyEl.addEventListener('show.bs.modal', () => {
+      if (quickPartyAlert) quickPartyAlert.classList.add('d-none');
+    });
+  }
+  const modalItemEl = document.getElementById('modalQuickAddItem');
+  if (modalItemEl) {
+    modalItemEl.addEventListener('show.bs.modal', () => {
+      if (quickItemAlert) quickItemAlert.classList.add('d-none');
+    });
+  }
+
   // 1. Quick Party Modal Handlers
   const quickPartyForm = document.getElementById('quickPartyForm');
   const quickPartyAlert = document.getElementById('quickPartyAlert');
@@ -1287,6 +1301,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (result.success && result.item) {
           const item = result.item;
+          const isPurchase = invoiceForm ? invoiceForm.querySelector('input[name="type"]')?.value === 'purchase' : false;
+          const effectivePrice = isPurchase ? (item.purchase_price || item.sale_price || 0) : (item.sale_price || item.purchase_price || 0);
           
           // Add to itemsDataList
           const itemsDataList = document.getElementById('itemsDataList');
@@ -1296,9 +1312,9 @@ document.addEventListener('DOMContentLoaded', () => {
             opt.dataset.id = item.id;
             opt.dataset.hsn = item.hsn_code || '';
             opt.dataset.unit = item.unit || 'PCS';
-            opt.dataset.price = item.sale_price || 0;
+            opt.dataset.price = effectivePrice;
             opt.dataset.tax = item.tax_rate || 0;
-            opt.textContent = `${item.name} (Stock: ${item.current_stock || 0} ${item.unit || 'PCS'} | ₹${item.sale_price || 0})`;
+            opt.textContent = `${item.name} (Stock: ${item.current_stock || 0} ${item.unit || 'PCS'} | ₹${effectivePrice})`;
             itemsDataList.appendChild(opt);
           }
 
@@ -1318,7 +1334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetRow.querySelector('.row-item-name').value = item.name;
             targetRow.querySelector('.row-hsn').value = item.hsn_code || '';
             targetRow.querySelector('.row-unit').value = item.unit || 'PCS';
-            targetRow.querySelector('.row-rate').value = item.sale_price || item.purchase_price || 0;
+            targetRow.querySelector('.row-rate').value = effectivePrice;
             if (targetRow.querySelector('.row-tax-rate')) {
               targetRow.querySelector('.row-tax-rate').value = item.tax_rate || 0;
             }
@@ -1330,7 +1346,7 @@ document.addEventListener('DOMContentLoaded', () => {
               name: item.name,
               hsn_code: item.hsn_code || '',
               unit: item.unit || 'PCS',
-              rate: item.sale_price || item.purchase_price || 0,
+              rate: effectivePrice,
               tax_rate: item.tax_rate || 0,
               quantity: 1
             });

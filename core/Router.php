@@ -31,6 +31,18 @@ class Router {
     }
 
     public static function dispatch(): void {
+        // Auto-decode JSON request body if Content-Type is application/json
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
+        if (stripos($contentType, 'application/json') !== false) {
+            $rawInput = file_get_contents('php://input');
+            if (!empty($rawInput)) {
+                $jsonData = json_decode($rawInput, true);
+                if (is_array($jsonData)) {
+                    $_POST = array_merge($_POST, $jsonData);
+                }
+            }
+        }
+
         // Enforce CSRF on state-mutating requests
         CSRF::verify();
 

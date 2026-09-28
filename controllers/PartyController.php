@@ -293,7 +293,18 @@ class PartyController {
         header('Content-Type: application/json');
 
         try {
-            $name = trim($_POST['name'] ?? '');
+            $input = $_POST;
+            if (empty($input['name'])) {
+                $rawInput = file_get_contents('php://input');
+                if (!empty($rawInput)) {
+                    $jsonInput = json_decode($rawInput, true);
+                    if (is_array($jsonInput)) {
+                        $input = array_merge($input, $jsonInput);
+                    }
+                }
+            }
+
+            $name = trim($input['name'] ?? '');
             if ($name === '') {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Party / Customer name is required.']);
@@ -301,7 +312,7 @@ class PartyController {
             }
 
             $cleanPhone = null;
-            $rawPhone = trim($_POST['phone'] ?? '');
+            $rawPhone = trim($input['phone'] ?? '');
             if ($rawPhone !== '') {
                 $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
                 if (strlen($cleanPhone) !== 10) {
@@ -312,7 +323,7 @@ class PartyController {
             }
 
             $cleanGstin = null;
-            $rawGstin = trim($_POST['gstin'] ?? '');
+            $rawGstin = trim($input['gstin'] ?? '');
             if ($rawGstin !== '') {
                 $cleanGstin = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $rawGstin));
                 if (strlen($cleanGstin) !== 15) {
@@ -322,15 +333,15 @@ class PartyController {
                 }
             }
 
-            $email = trim($_POST['email'] ?? '');
+            $email = trim($input['email'] ?? '');
             if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Invalid Email: Please provide a valid email address.']);
                 exit;
             }
 
-            $state = trim($_POST['state'] ?? '');
-            $stateCode = trim($_POST['state_code'] ?? '');
+            $state = trim($input['state'] ?? '');
+            $stateCode = trim($input['state_code'] ?? '');
             if ($stateCode === '' && $state !== '') {
                 foreach (Model::GST_STATES as $s) {
                     if (strcasecmp($s['name'], $state) === 0) {
@@ -345,19 +356,19 @@ class PartyController {
 
             $party = Party::create([
                 'firm_id' => (int)$firm['id'],
-                'type' => $_POST['type'] ?? 'customer',
+                'type' => $input['type'] ?? 'customer',
                 'name' => $name,
                 'phone' => $cleanPhone,
                 'email' => $email ?: null,
                 'gstin' => $cleanGstin,
-                'pan' => !empty($_POST['pan']) ? strtoupper(trim($_POST['pan'])) : null,
-                'billing_address' => $_POST['billing_address'] ?? null,
-                'shipping_address' => $_POST['shipping_address'] ?? ($_POST['billing_address'] ?? null),
-                'city' => $_POST['city'] ?? null,
+                'pan' => !empty($input['pan']) ? strtoupper(trim($input['pan'])) : null,
+                'billing_address' => $input['billing_address'] ?? null,
+                'shipping_address' => $input['shipping_address'] ?? ($input['billing_address'] ?? null),
+                'city' => $input['city'] ?? null,
                 'state' => $state ?: null,
                 'state_code' => $stateCode ?: null,
-                'pincode' => $_POST['pincode'] ?? null,
-                'opening_balance' => Security::parseCleanFloat($_POST['opening_balance'] ?? 0)
+                'pincode' => $input['pincode'] ?? null,
+                'opening_balance' => Security::parseCleanFloat($input['opening_balance'] ?? 0)
             ]);
 
             echo json_encode([
