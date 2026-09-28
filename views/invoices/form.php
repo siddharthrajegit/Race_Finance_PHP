@@ -10,6 +10,9 @@ $defaultDueDate = $isEditMode ? ($invoice["due_date"] ?? "") : "";
 if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSettings["default_due_days"] > 0) {
     $defaultDueDate = date("Y-m-d", strtotime("+" . (int)$billSettings["default_due_days"] . " days"));
 }
+$existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (float)$invoice['taxable_amount'] > 0) 
+    ? (int)round(((float)($invoice['tax_amount'] ?? 0) / (float)$invoice['taxable_amount']) * 100) 
+    : 18;
 ?>
 
 <form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm" 
@@ -333,11 +336,11 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
               </div>
               <div class="col-6">
                 <select name="final_tax_rate" id="finalTaxRateSelect" class="form-select form-select-sm">
-                  <option value="0">0% (Tax Exempt)</option>
-                  <option value="5">5% GST</option>
-                  <option value="12">12% GST</option>
-                  <option value="18" selected>18% GST</option>
-                  <option value="28">28% GST</option>
+                  <option value="0" <?= $existingFinalTaxRate === 0 ? 'selected' : '' ?>>0% (Tax Exempt)</option>
+                  <option value="5" <?= $existingFinalTaxRate === 5 ? 'selected' : '' ?>>5% GST</option>
+                  <option value="12" <?= $existingFinalTaxRate === 12 ? 'selected' : '' ?>>12% GST</option>
+                  <option value="18" <?= $existingFinalTaxRate === 18 ? 'selected' : '' ?>>18% GST</option>
+                  <option value="28" <?= $existingFinalTaxRate === 28 ? 'selected' : '' ?>>28% GST</option>
                 </select>
               </div>
             </div>

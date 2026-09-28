@@ -375,61 +375,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const isGst = isGstToggle ? isGstToggle.checked : true;
     const showRowTaxRate = isGst && isSeparateGst;
 
-    const itemId = itemData.item_id || itemData.id || '';
+    const itemId = (itemData.invoice_id !== undefined) ? (itemData.item_id || '') : (itemData.item_id || itemData.id || '');
     const itemName = itemData.item_name || itemData.name || '';
     const itemRate = (itemData.rate !== undefined && itemData.rate !== null && itemData.rate !== '') ? itemData.rate : (itemData.sale_price || '');
     const itemTaxRate = itemData.tax_rate !== undefined && itemData.tax_rate !== null ? parseFloat(itemData.tax_rate) : 18;
+    const unitUpper = (itemData.unit || 'PCS').toUpperCase();
 
     tr.innerHTML = `
       <td class="text-center row-num text-muted small p-1">${rowCount + 1}</td>
       <td>
-        <input type="hidden" name="item_id" class="row-item-id" value="${itemId}">
-        <input type="text" name="item_name" class="form-control form-control-sm row-item-name" placeholder="Item name / Description" value="${itemName}" list="itemsDataList" required>
+        <input type="hidden" name="item_id[]" class="row-item-id" value="${itemId}">
+        <input type="text" name="item_name[]" class="form-control form-control-sm row-item-name" placeholder="Item name / Description" value="${itemName}" list="itemsDataList" required>
       </td>
       <td style="width: 85px;">
-        <input type="text" name="hsn_code" class="form-control form-control-sm row-hsn" placeholder="HSN/SAC" value="${itemData.hsn_code || ''}">
+        <input type="text" name="hsn_code[]" class="form-control form-control-sm row-hsn" placeholder="HSN/SAC" value="${itemData.hsn_code || ''}">
       </td>
       <td style="width: 82px;">
-        <input type="number" name="quantity" class="form-control form-control-sm row-qty text-end" min="0.01" step="any" value="${itemData.quantity !== undefined ? itemData.quantity : '1'}" required>
+        <input type="number" name="quantity[]" class="form-control form-control-sm row-qty text-end" min="0.01" step="any" value="${itemData.quantity !== undefined ? itemData.quantity : '1'}" required>
       </td>
       <td style="width: 78px;">
-        <select name="unit" class="form-select form-select-sm row-unit">
-          <option value="PCS" ${itemData.unit === 'PCS' ? 'selected' : ''}>PCS</option>
-          <option value="KG" ${itemData.unit === 'KG' ? 'selected' : ''}>KG</option>
-          <option value="BOX" ${itemData.unit === 'BOX' ? 'selected' : ''}>BOX</option>
-          <option value="MTR" ${itemData.unit === 'MTR' ? 'selected' : ''}>MTR</option>
-          <option value="LTR" ${itemData.unit === 'LTR' ? 'selected' : ''}>LTR</option>
-          <option value="NOS" ${itemData.unit === 'NOS' ? 'selected' : ''}>NOS</option>
-          <option value="BAG" ${itemData.unit === 'BAG' ? 'selected' : ''}>BAG</option>
-          <option value="PKT" ${itemData.unit === 'PKT' ? 'selected' : ''}>PKT</option>
+        <select name="unit[]" class="form-select form-select-sm row-unit">
+          <option value="PCS" ${unitUpper === 'PCS' ? 'selected' : ''}>PCS</option>
+          <option value="KG" ${unitUpper === 'KG' ? 'selected' : ''}>KG</option>
+          <option value="BOX" ${unitUpper === 'BOX' ? 'selected' : ''}>BOX</option>
+          <option value="MTR" ${unitUpper === 'MTR' ? 'selected' : ''}>MTR</option>
+          <option value="LTR" ${unitUpper === 'LTR' ? 'selected' : ''}>LTR</option>
+          <option value="NOS" ${unitUpper === 'NOS' ? 'selected' : ''}>NOS</option>
+          <option value="BAG" ${unitUpper === 'BAG' ? 'selected' : ''}>BAG</option>
+          <option value="PKT" ${unitUpper === 'PKT' ? 'selected' : ''}>PKT</option>
+          ${!['PCS', 'KG', 'BOX', 'MTR', 'LTR', 'NOS', 'BAG', 'PKT'].includes(unitUpper) ? `<option value="${unitUpper}" selected>${unitUpper}</option>` : ''}
         </select>
       </td>
       <td style="width: 95px;">
-        <input type="number" name="rate" class="form-control form-control-sm row-rate text-end" min="0" step="any" placeholder="0.00" value="${itemRate}" required>
+        <input type="number" name="rate[]" class="form-control form-control-sm row-rate text-end" min="0" step="any" placeholder="0.00" value="${itemRate}" required>
       </td>
       <td style="width: 72px;" class="discount-col ${!enableDiscount ? 'd-none' : ''}">
-        <input type="number" name="item_discount_percent" class="form-control form-control-sm row-discount-pct text-end" min="0" max="100" step="any" placeholder="0%" value="${itemData.discount_percent !== undefined ? itemData.discount_percent : '0'}">
-        <input type="hidden" name="item_discount_amount" class="row-discount-amt" value="0">
+        <input type="number" name="item_discount_percent[]" class="form-control form-control-sm row-discount-pct text-end" min="0" max="100" step="any" placeholder="0%" value="${itemData.discount_percent !== undefined ? itemData.discount_percent : '0'}">
+        <input type="hidden" name="item_discount_amount[]" class="row-discount-amt" value="0">
       </td>
       <td style="width: 85px;" class="gst-col ${!showRowTaxRate ? 'd-none' : ''}">
-        <select name="item_tax_rate" class="form-select form-select-sm row-tax-rate">
+        <select name="item_tax_rate[]" class="form-select form-select-sm row-tax-rate">
           <option value="0" ${itemTaxRate === 0 ? 'selected' : ''}>0%</option>
           <option value="5" ${itemTaxRate === 5 ? 'selected' : ''}>5%</option>
           <option value="12" ${itemTaxRate === 12 ? 'selected' : ''}>12%</option>
           <option value="18" ${itemTaxRate === 18 ? 'selected' : ''}>18%</option>
           <option value="28" ${itemTaxRate === 28 ? 'selected' : ''}>28%</option>
+          ${![0, 5, 12, 18, 28].includes(itemTaxRate) ? `<option value="${itemTaxRate}" selected>${itemTaxRate}%</option>` : ''}
         </select>
-        <input type="hidden" name="item_taxable" class="row-taxable" value="0">
-        <input type="hidden" name="item_cgst_rate" class="row-cgst-rate" value="0">
-        <input type="hidden" name="item_cgst_amount" class="row-cgst-amt" value="0">
-        <input type="hidden" name="item_sgst_rate" class="row-sgst-rate" value="0">
-        <input type="hidden" name="item_sgst_amount" class="row-sgst-amt" value="0">
-        <input type="hidden" name="item_igst_rate" class="row-igst-rate" value="0">
-        <input type="hidden" name="item_igst_amount" class="row-igst-amt" value="0">
+        <input type="hidden" name="item_taxable[]" class="row-taxable" value="0">
+        <input type="hidden" name="item_cgst_rate[]" class="row-cgst-rate" value="0">
+        <input type="hidden" name="item_cgst_amount[]" class="row-cgst-amt" value="0">
+        <input type="hidden" name="item_sgst_rate[]" class="row-sgst-rate" value="0">
+        <input type="hidden" name="item_sgst_amount[]" class="row-sgst-amt" value="0">
+        <input type="hidden" name="item_igst_rate[]" class="row-igst-rate" value="0">
+        <input type="hidden" name="item_igst_amount[]" class="row-igst-amt" value="0">
       </td>
       <td style="width: 105px;" class="text-end fw-bold">
         <span class="row-total-display">0.00</span>
-        <input type="hidden" name="item_total" class="row-total" value="0">
+        <input type="hidden" name="item_total[]" class="row-total" value="0">
       </td>
       <td class="text-center p-1" style="width: 32px;">
         <button type="button" class="btn btn-outline-danger btn-sm border-0 btn-remove-row p-1" title="Remove item">

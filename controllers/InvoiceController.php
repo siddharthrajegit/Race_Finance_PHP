@@ -40,12 +40,16 @@ class InvoiceController {
         return $tax;
     }
 
-    private static function resolveParty(array $body, int $firmId, array $cleaned): int {
-        $type = $body['type'] ?? 'sale';
+    private static function resolveParty(array $body, int $firmId, array $cleaned, ?array $existingInvoice = null): int {
+        $type = $body['type'] ?? ($existingInvoice['type'] ?? 'sale');
         $partyId = !empty($body['party_id']) && is_numeric($body['party_id']) ? (int)$body['party_id'] : null;
 
         if ($partyId) {
             return $partyId;
+        }
+
+        if ($existingInvoice && !empty($existingInvoice['party_id']) && trim($body['party_name'] ?? '') === trim($existingInvoice['party_name'] ?? '')) {
+            return (int)$existingInvoice['party_id'];
         }
 
         $partyName = trim($body['party_name'] ?? '');
@@ -147,7 +151,7 @@ class InvoiceController {
             'cleanGstin' => $cleanGstin,
             'validatedState' => $validatedState,
             'validatedStateCode' => $validatedStateCode
-        ]);
+        ], $existingInvoice);
 
         $isGst = !empty($body['is_gst_bill']);
         $isInterstate = !empty($body['is_interstate']);
