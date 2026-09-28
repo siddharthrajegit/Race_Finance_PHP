@@ -67,8 +67,8 @@ class ReportController {
     public function getTaxReport(): void {
         Auth::requireUserOnly();
         $firm = Auth::requireActiveFirm();
-        $fromDate = $_GET['from_date'] ?? null;
-        $toDate = $_GET['to_date'] ?? null;
+        $fromDate = normalizeDate($_GET['from_date'] ?? null);
+        $toDate = normalizeDate($_GET['to_date'] ?? null);
 
         $taxData = Report::getTaxReport((int)$firm['id'], $fromDate, $toDate);
 

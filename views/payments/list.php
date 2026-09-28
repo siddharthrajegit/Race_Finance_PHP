@@ -63,7 +63,7 @@ $tFilter = $typeFilter ?? '';
                     <i class="bi bi-file-earmark-text me-1"></i><?= htmlspecialchars($p['payment_number'], ENT_QUOTES, 'UTF-8') ?>
                   </a>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-muted small"><?= htmlspecialchars($p['payment_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                <td style="padding: 0.45rem 0.65rem;" class="text-muted small"><?= htmlspecialchars(formatDate($p['payment_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                 <td style="padding: 0.45rem 0.65rem;">
                   <a href="/parties/ledger/<?= $p['party_id'] ?>" class="text-decoration-none text-dark fw-medium">
                     <?= htmlspecialchars($p['party_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>

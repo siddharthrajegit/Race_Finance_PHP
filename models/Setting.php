@@ -8,6 +8,8 @@
 require_once __DIR__ . '/Model.php';
 
 class Setting extends Model {
+    private static array $cache = [];
+
     public const DEFAULT_SETTINGS = [
         'sales' => [
             'default_gst_type' => 'gst',
@@ -29,32 +31,37 @@ class Setting extends Model {
         ],
         'general' => [
             'currency_symbol' => '₹',
-            'date_format' => 'YYYY-MM-DD'
+            'date_format' => 'DD/MM/YYYY'
         ]
     ];
 
     public static function get(int $firmId): array {
+        if (isset(self::$cache[$firmId])) {
+            return self::$cache[$firmId];
+        }
+
         try {
             $stmt = self::db()->prepare("SELECT * FROM firm_settings WHERE firm_id = ?");
             $stmt->execute([$firmId]);
             $row = $stmt->fetch();
             if (!$row || empty($row['settings_json'])) {
-                return self::DEFAULT_SETTINGS;
+                return self::$cache[$firmId] = self::DEFAULT_SETTINGS;
             }
 
             $parsed = json_decode($row['settings_json'], true) ?: [];
-            return [
+            return self::$cache[$firmId] = [
                 'sales' => array_merge(self::DEFAULT_SETTINGS['sales'], $parsed['sales'] ?? []),
                 'purchases' => array_merge(self::DEFAULT_SETTINGS['purchases'], $parsed['purchases'] ?? []),
                 'print' => array_merge(self::DEFAULT_SETTINGS['print'], $parsed['print'] ?? []),
                 'general' => array_merge(self::DEFAULT_SETTINGS['general'], $parsed['general'] ?? [])
             ];
         } catch (Throwable $e) {
-            return self::DEFAULT_SETTINGS;
+            return self::$cache[$firmId] = self::DEFAULT_SETTINGS;
         }
     }
 
     public static function update(int $firmId, string|array $sectionOrFull, ?array $updates = null): array {
+        unset(self::$cache[$firmId]);
         $current = self::get($firmId);
         if (is_string($sectionOrFull)) {
             $current[$sectionOrFull] = array_merge($current[$sectionOrFull] ?? [], $updates ?? []);

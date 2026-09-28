@@ -393,7 +393,7 @@
                       <strong class="text-dark"><?= htmlspecialchars($inv['party_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
                       <?php if (!empty($inv['party_phone'])): ?><div class="text-muted font-monospace" style="font-size: 0.75rem;"><?= htmlspecialchars($inv['party_phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
                     </td>
-                    <td class="text-muted font-monospace"><?= htmlspecialchars($inv['invoice_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td class="text-muted font-monospace"><?= htmlspecialchars(formatDate($inv['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                     <td class="text-center">
                       <span class="badge <?= ($inv['type'] ?? '') === 'sale' ? 'bg-success-subtle text-success' : 'bg-info-subtle text-info' ?>">
                         <?= strtoupper($inv['type'] ?? 'sale') ?>

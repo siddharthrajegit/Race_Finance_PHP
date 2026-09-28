@@ -4,7 +4,7 @@ $cleanPhone = preg_replace('/[^0-9]/', '', (string)($payment['party_phone'] ?? '
 $waPhone = (strlen($cleanPhone) === 10) ? '91' . $cleanPhone : $cleanPhone;
 $firmName = $firm['name'] ?? 'RACE FINANCE';
 $voucherNo = $payment['payment_number'] ?? '';
-$payDate = $payment['payment_date'] ?? '';
+$payDate = formatDate($payment['payment_date'] ?? '');
 $payAmount = number_format((float)($payment['amount'] ?? 0), 2);
 $payMode = strtoupper($payment['payment_mode'] ?? 'Cash');
 $refNo = $payment['reference_no'] ?? '';

@@ -57,7 +57,7 @@ class SettingController {
             } elseif ($section === 'general') {
                 Setting::update($firmId, 'general', [
                     'currency_symbol' => $_POST['currency_symbol'] ?? '₹',
-                    'date_format' => $_POST['date_format'] ?? 'YYYY-MM-DD'
+                    'date_format' => in_array($_POST['date_format'] ?? '', ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'], true) ? $_POST['date_format'] : 'DD/MM/YYYY'
                 ]);
             }
 

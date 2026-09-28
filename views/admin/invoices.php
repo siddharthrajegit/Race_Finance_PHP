@@ -65,7 +65,7 @@
                 <div class="fw-semibold text-dark"><?= htmlspecialchars($inv['party_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
                 <?php if (!empty($inv['party_phone'])): ?><div class="small text-muted"><?= htmlspecialchars($inv['party_phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
               </td>
-              <td class="small text-muted font-monospace"><?= htmlspecialchars($inv['invoice_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+              <td class="small text-muted font-monospace"><?= htmlspecialchars(formatDate($inv['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
               <td class="text-center">
                 <?php if (($inv['type'] ?? '') === 'purchase'): ?>
                   <span class="badge bg-warning text-dark">PURCHASE</span>

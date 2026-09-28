@@ -32,7 +32,11 @@ $partyList = !empty($parties) ? $parties : [];
             </div>
             <div class="col-md-6">
               <label for="payment_date" class="form-label">Payment Date <span class="text-danger">*</span></label>
-              <input type="date" class="form-control" id="payment_date" name="payment_date" value="<?= htmlspecialchars($dateToday, ENT_QUOTES, 'UTF-8') ?>" required>
+              <?php $activeDateFormat = $firmSettings['general']['date_format'] ?? 'DD/MM/YYYY'; ?>
+              <div class="input-group">
+                <input type="text" class="form-control date-picker" id="payment_date" name="payment_date" value="<?= htmlspecialchars(formatDate($dateToday, $activeDateFormat), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" required autocomplete="off">
+                <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('payment_date'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
+              </div>
             </div>
           </div>
 

@@ -74,8 +74,8 @@ $due = (float)($invoice['balance_due'] ?? 0);
         </h5>
         <div class="small">
           <div><strong>Record No:</strong> <span class="font-monospace"><?= htmlspecialchars($invoice['invoice_number'], ENT_QUOTES, 'UTF-8') ?></span></div>
-          <div><strong>Record Date:</strong> <?= htmlspecialchars($invoice['invoice_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-          <?php if (!empty($invoice['due_date'])): ?><div><strong>Due Date:</strong> <?= htmlspecialchars($invoice['due_date'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+          <div><strong>Record Date:</strong> <?= htmlspecialchars(formatDate($invoice['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+          <?php if (!empty($invoice['due_date'])): ?><div><strong>Due Date:</strong> <?= htmlspecialchars(formatDate($invoice['due_date']), ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
           <div><strong>Payment Mode:</strong> <?= strtoupper(htmlspecialchars($invoice['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8')) ?></div>
           <div class="mt-2">
             <strong>Status:</strong>

@@ -1049,6 +1049,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (termsEl) termsEl.value = draft.terms;
     }
 
+    if (draft.invoice_date) {
+      const invDateEl = invoiceForm.querySelector('input[name="invoice_date"]');
+      if (invDateEl) {
+        invDateEl.value = draft.invoice_date;
+        if (invDateEl._flatpickr) {
+          invDateEl._flatpickr.setDate(draft.invoice_date, false);
+        }
+      }
+    }
+    if (draft.due_date) {
+      const dueDateEl = invoiceForm.querySelector('input[name="due_date"]');
+      if (dueDateEl) {
+        dueDateEl.value = draft.due_date;
+        if (dueDateEl._flatpickr) {
+          dueDateEl._flatpickr.setDate(draft.due_date, false);
+        }
+      }
+    }
+
     // Populate Items
     if (draft.items && draft.items.length > 0 && itemsTableBody) {
       itemsTableBody.innerHTML = '';

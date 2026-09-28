@@ -92,7 +92,7 @@ $partyType = $party['type'] ?? 'customer';
                     <?= htmlspecialchars($b['voucher_no'] ?? $b['invoice_number'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                   </a>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="small text-muted"><?= htmlspecialchars($b['date'] ?? $b['invoice_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                <td style="padding: 0.45rem 0.65rem;" class="small text-muted"><?= htmlspecialchars(formatDate($b['date'] ?? $b['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                 <td style="padding: 0.45rem 0.4rem;" class="text-center">
                   <span class="badge <?= ($b['type'] === 'sale') ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-info-subtle text-info border border-info-subtle' ?>" style="font-size: 0.68rem; padding: 0.2em 0.45em;">
                     <?= ($b['type'] === 'sale') ? 'Sale' : 'Purchase' ?>
@@ -171,7 +171,7 @@ $partyType = $party['type'] ?? 'customer';
               $runBal = (float)($tx['running_balance'] ?? 0);
             ?>
               <tr class="ledger-slip-row" data-href="<?= $slipUrl ?>" style="cursor: pointer;" title="Click to open <?= ($tx['entry_type'] === 'invoice') ? 'Bill' : 'Payment Slip' ?> <?= htmlspecialchars($tx['voucher_no'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                <td style="padding: 0.45rem 0.65rem;" class="small text-muted"><?= htmlspecialchars($tx['date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                <td style="padding: 0.45rem 0.65rem;" class="small text-muted"><?= htmlspecialchars(formatDate($tx['date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                 <td style="padding: 0.45rem 0.65rem;" class="font-monospace fw-bold">
                   <?php if ($tx['entry_type'] === 'invoice'): ?>
                     <a href="/invoices/view/<?= $tx['id'] ?>" class="text-decoration-none text-primary">

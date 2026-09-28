@@ -76,7 +76,7 @@ class PaymentController {
                 'firm_id' => $firmId,
                 'type' => $type,
                 'payment_number' => !empty($_POST['payment_number']) ? trim($_POST['payment_number']) : null,
-                'payment_date' => !empty($_POST['payment_date']) ? $_POST['payment_date'] : date('Y-m-d'),
+                'payment_date' => normalizeDate($_POST['payment_date'] ?? null) ?: date('Y-m-d'),
                 'party_id' => $partyId,
                 'invoice_id' => !empty($_POST['invoice_id']) ? (int)$_POST['invoice_id'] : null,
                 'amount' => $amount,

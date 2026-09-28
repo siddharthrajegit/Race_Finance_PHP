@@ -116,6 +116,8 @@
   <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
   <!-- Bootstrap Icons (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
+  <!-- Flatpickr CSS (Offline Local with CDN Fallback) -->
+  <link rel="stylesheet" href="/vendor/flatpickr/flatpickr.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';">
   <!-- Custom Styles -->
   <link rel="stylesheet" href="/css/style.css">
 </head>

@@ -131,12 +131,12 @@ $invNum = $invoice['invoice_number'] ?? '';
             </tr>
             <tr>
               <td class="p-0 fw-bold">Record Date:</td>
-              <td class="p-0"><?= htmlspecialchars($invoice['invoice_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+              <td class="p-0"><?= htmlspecialchars(formatDate($invoice['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
             </tr>
             <?php if (!empty($invoice['due_date'])): ?>
               <tr>
                 <td class="p-0 fw-bold">Due Date:</td>
-                <td class="p-0"><?= htmlspecialchars($invoice['due_date'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="p-0"><?= htmlspecialchars(formatDate($invoice['due_date']), ENT_QUOTES, 'UTF-8') ?></td>
               </tr>
             <?php endif; ?>
             <tr>

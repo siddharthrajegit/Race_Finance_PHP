@@ -53,6 +53,9 @@
 <!-- Bootstrap 5 Bundle JS (Offline Local with CDN Fallback) -->
 <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>if(typeof bootstrap==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>');}</script>
+<!-- Flatpickr JS (Offline Local with CDN Fallback) -->
+<script src="/vendor/flatpickr/flatpickr.min.js"></script>
+<script>if(typeof flatpickr==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/flatpickr"><\/script>');}</script>
 <!-- Main App JS -->
 <script src="/js/app.js"></script>
 <script>

@@ -128,4 +128,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // 7. Global Date Picker Initialization (Flatpickr)
+  if (typeof flatpickr !== 'undefined') {
+    document.querySelectorAll('.date-picker').forEach(input => {
+      const formatSetting = (input.dataset.dateFormat || 'DD/MM/YYYY').toUpperCase();
+      let fpFormat = 'd/m/Y';
+      if (formatSetting === 'YYYY-MM-DD') {
+        fpFormat = 'Y-m-d';
+      } else if (formatSetting === 'DD-MM-YYYY') {
+        fpFormat = 'd-m-Y';
+      } else if (formatSetting === 'DD/MM/YYYY') {
+        fpFormat = 'd/m/Y';
+      }
+
+      flatpickr(input, {
+        dateFormat: fpFormat,
+        allowInput: true,
+        monthSelectorType: 'static',
+        disableMobile: true,
+        onClose: function(selectedDates, dateStr, instance) {
+          instance.element.dispatchEvent(new Event('change', { bubbles: true }));
+          instance.element.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    });
+  }
 });

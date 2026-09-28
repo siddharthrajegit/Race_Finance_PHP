@@ -10,6 +10,9 @@ $defaultDueDate = $isEditMode ? ($invoice["due_date"] ?? "") : "";
 if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSettings["default_due_days"] > 0) {
     $defaultDueDate = date("Y-m-d", strtotime("+" . (int)$billSettings["default_due_days"] . " days"));
 }
+$activeDateFormat = $currentSettings['general']['date_format'] ?? ($firmSettings['general']['date_format'] ?? 'DD/MM/YYYY');
+$formattedInvoiceDate = formatDate($isEditMode ? $invoice['invoice_date'] : $today, $activeDateFormat);
+$formattedDueDate = !empty($defaultDueDate) ? formatDate($defaultDueDate, $activeDateFormat) : '';
 $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (float)$invoice['taxable_amount'] > 0) 
     ? (int)round(((float)($invoice['tax_amount'] ?? 0) / (float)$invoice['taxable_amount']) * 100) 
     : 18;
@@ -84,14 +87,20 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
         <!-- Record Date -->
         <div class="col-sm-6 col-md-3">
-          <label class="form-label small mb-1">Record Date <span class="text-danger">*</span></label>
-          <input type="date" class="form-control form-control-sm" name="invoice_date" value="<?= $isEditMode ? $invoice['invoice_date'] : $today ?>" required>
+          <label class="form-label small mb-1" for="invoiceDateInput">Record Date <span class="text-danger">*</span></label>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control form-control-sm date-picker" id="invoiceDateInput" name="invoice_date" value="<?= htmlspecialchars($formattedInvoiceDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" required autocomplete="off">
+            <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('invoiceDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
+          </div>
         </div>
 
         <!-- Due Date -->
         <div class="col-sm-6 col-md-2">
-          <label class="form-label small mb-1">Due Date</label>
-          <input type="date" class="form-control form-control-sm" name="due_date" value="<?= $defaultDueDate ?>">
+          <label class="form-label small mb-1" for="dueDateInput">Due Date</label>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control form-control-sm date-picker" id="dueDateInput" name="due_date" value="<?= htmlspecialchars($formattedDueDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
+            <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('dueDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
+          </div>
         </div>
 
         <!-- GST & Interstate Toggles -->

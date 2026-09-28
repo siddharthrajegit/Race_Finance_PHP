@@ -80,7 +80,7 @@ $wordsTotal = amountToIndianWords($cleanGrandTotal);
 
 $firmName = $firm["name"] ?? "RACE FINANCE";
 $invNum = $invoice["invoice_number"] ?? "";
-$invDate = $invoice["invoice_date"] ?? "";
+$invDate = formatDate($invoice["invoice_date"] ?? "");
 $partyName = $invoice["party_name"] ?? "Customer";
 $payStatus = !empty($invoice["payment_status"]) ? strtoupper($invoice["payment_status"]) : "PENDING";
 
@@ -257,9 +257,9 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
             </div>
             <div class="small text-muted" style="font-size: 0.84rem;">
               <div><strong>Invoice No:</strong> <span class="font-monospace fw-bold text-dark"><?= $invoice["invoice_number"] ?></span></div>
-              <div><strong>Invoice Date:</strong> <span class="text-dark"><?= $invoice["invoice_date"] ?></span></div>
+              <div><strong>Invoice Date:</strong> <span class="text-dark"><?= formatDate($invoice["invoice_date"]) ?></span></div>
               <?php if (!empty($invoice["due_date"])): ?>
-                <div><strong>Due Date:</strong> <span class="text-dark"><?= $invoice["due_date"] ?></span></div>
+                <div><strong>Due Date:</strong> <span class="text-dark"><?= formatDate($invoice["due_date"]) ?></span></div>
               <?php endif; ?>
               <div><strong>Payment Mode:</strong> <span class="text-uppercase fw-semibold text-dark"><?= ($invoice["payment_mode"] ?: 'Cash') ?></span></div>
               <div class="mt-2">
@@ -500,7 +500,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
         <div class="col-4 text-end">
           <div class="simple-bill-header-title">Invoice Details</div>
           <div>Invoice No. : <?= $invoice["invoice_number"] ?></div>
-          <div>Date : <?= $invoice["invoice_date"] ?></div>
+          <div>Date : <?= formatDate($invoice["invoice_date"]) ?></div>
           <div>Place of supply: <?= (!empty($invoice['party_state']) ? $invoice['party_state'] : (!empty($firm['state']) ? $firm['state'] : 'Local')) ?></div>
         </div>
       </div>
@@ -611,12 +611,12 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <!-- Slip Label & Voucher Meta -->
           <div class="d-flex justify-content-between align-items-center horizontal-slip-badge">
             <span><?= $slipLabel ?></span>
-            <span><?= $invoice["invoice_date"] ?></span>
+            <span><?= formatDate($invoice["invoice_date"]) ?></span>
           </div>
 
           <div class="d-flex justify-content-between align-items-start mb-2" style="font-size: 0.72rem;">
             <div><strong>Invoice No. :</strong> <?= $invoice["invoice_number"] ?></div>
-            <div><strong>Date :</strong> <?= $invoice["invoice_date"] ?></div>
+            <div><strong>Date :</strong> <?= formatDate($invoice["invoice_date"]) ?></div>
           </div>
 
           <!-- Parties Side-by-Side in slip -->

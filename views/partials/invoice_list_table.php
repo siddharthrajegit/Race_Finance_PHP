@@ -21,7 +21,7 @@
                   <a href="/invoices/view/<?= $inv['id'] ?>" class="fw-bold font-monospace text-decoration-none text-primary">
                     <?= htmlspecialchars($inv['invoice_number'], ENT_QUOTES, 'UTF-8') ?>
                   </a>
-                  <div class="text-muted" style="font-size: 0.72rem;"><?= htmlspecialchars($inv['invoice_date'], ENT_QUOTES, 'UTF-8') ?></div>
+                  <div class="text-muted" style="font-size: 0.72rem;"><?= htmlspecialchars(formatDate($inv['invoice_date']), ENT_QUOTES, 'UTF-8') ?></div>
                 </td>
                 <td style="padding: 0.45rem 0.65rem;">
                   <div class="fw-semibold text-dark text-truncate" style="max-width: 170px;"><?= htmlspecialchars($inv['party_name'], ENT_QUOTES, 'UTF-8') ?></div>

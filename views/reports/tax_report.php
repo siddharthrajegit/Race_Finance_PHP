@@ -15,13 +15,20 @@
 <div class="card shadow-sm border-0 mb-4 no-print">
   <div class="card-body p-3">
     <form action="/reports/tax" method="GET" class="row g-3 align-items-end">
+      <?php $activeDateFormat = $firmSettings['general']['date_format'] ?? 'DD/MM/YYYY'; ?>
       <div class="col-md-4">
         <label for="from_date" class="form-label small mb-1">From Date</label>
-        <input type="date" class="form-control form-control-sm" id="from_date" name="from_date" value="<?= htmlspecialchars($fromDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <div class="input-group input-group-sm">
+          <input type="text" class="form-control form-control-sm date-picker" id="from_date" name="from_date" value="<?= htmlspecialchars(!empty($fromDate) ? formatDate($fromDate, $activeDateFormat) : '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
+          <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('from_date'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
+        </div>
       </div>
       <div class="col-md-4">
         <label for="to_date" class="form-label small mb-1">To Date</label>
-        <input type="date" class="form-control form-control-sm" id="to_date" name="to_date" value="<?= htmlspecialchars($toDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <div class="input-group input-group-sm">
+          <input type="text" class="form-control form-control-sm date-picker" id="to_date" name="to_date" value="<?= htmlspecialchars(!empty($toDate) ? formatDate($toDate, $activeDateFormat) : '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
+          <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('to_date'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
+        </div>
       </div>
       <div class="col-md-4 d-flex gap-2">
         <button type="submit" class="btn btn-primary btn-sm px-3">
@@ -107,7 +114,7 @@
           <?php if (!empty($invoices)): ?>
             <?php foreach ($invoices as $inv): ?>
               <tr>
-                <td class="small text-muted"><?= htmlspecialchars($inv['invoice_date'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="small text-muted"><?= htmlspecialchars(formatDate($inv['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                 <td>
                   <a href="/invoices/view/<?= $inv['id'] ?>" class="font-monospace fw-semibold text-decoration-none text-primary">
                     <?= htmlspecialchars($inv['invoice_number'], ENT_QUOTES, 'UTF-8') ?>

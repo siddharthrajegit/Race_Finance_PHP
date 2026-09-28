@@ -345,9 +345,11 @@ $genSettings = $settings['general'] ?? [];
               <div class="col-sm-6">
                 <label class="form-label fw-bold text-dark mb-1">Date Format</label>
                 <select name="date_format" class="form-select form-select-sm">
-                  <option value="YYYY-MM-DD" <?= (($genSettings['date_format'] ?? '') === 'YYYY-MM-DD') ? 'selected' : '' ?>>YYYY-MM-DD (2026-08-19)</option>
-                  <option value="DD-MM-YYYY" <?= (($genSettings['date_format'] ?? '') === 'DD-MM-YYYY') ? 'selected' : '' ?>>DD-MM-YYYY (19-08-2026)</option>
+                  <option value="DD/MM/YYYY" <?= (($genSettings['date_format'] ?? 'DD/MM/YYYY') === 'DD/MM/YYYY') ? 'selected' : '' ?>>DD/MM/YYYY (Day/Month/Year - e.g. <?= date('d/m/Y') ?>)</option>
+                  <option value="DD-MM-YYYY" <?= (($genSettings['date_format'] ?? '') === 'DD-MM-YYYY') ? 'selected' : '' ?>>DD-MM-YYYY (Day/Month/Year - e.g. <?= date('d-m-Y') ?>)</option>
+                  <option value="YYYY-MM-DD" <?= (($genSettings['date_format'] ?? '') === 'YYYY-MM-DD') ? 'selected' : '' ?>>YYYY-MM-DD (Year/Month/Day - e.g. <?= date('Y-m-d') ?>)</option>
                 </select>
+                <div class="form-text small text-muted">Applied to invoice creation, bill viewing, printouts, and reports.</div>
               </div>
             </div>
 
