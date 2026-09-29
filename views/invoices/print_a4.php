@@ -238,10 +238,13 @@ $invNum = $invoice['invoice_number'] ?? '';
             </div>
           <?php endif; ?>
 
-          <?php if (!empty($invoice['terms'])): ?>
+          <?php 
+            $termsText = !empty($invoice['terms']) ? $invoice['terms'] : ($firm['terms'] ?? '');
+            if (!empty($termsText)): 
+          ?>
             <div class="mt-2 text-muted" style="font-size: 10px;">
               <strong>Terms & Conditions:</strong>
-              <div><?= htmlspecialchars($invoice['terms'], ENT_QUOTES, 'UTF-8') ?></div>
+              <div style="white-space: pre-line;"><?= htmlspecialchars($termsText, ENT_QUOTES, 'UTF-8') ?></div>
             </div>
           <?php endif; ?>
         </div>

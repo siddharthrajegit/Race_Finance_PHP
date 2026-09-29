@@ -301,7 +301,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
           <div>
             <label for="terms" class="form-label small">Invoice Terms & Conditions</label>
-            <textarea class="form-control form-control-sm" id="terms" name="terms" rows="2"><?= $isEditMode ? htmlspecialchars($invoice['terms'] ?? '', ENT_QUOTES, 'UTF-8') : htmlspecialchars(!empty($activeFirm['terms']) ? $activeFirm['terms'] : '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
+            <textarea class="form-control form-control-sm" id="terms" name="terms" rows="2"><?= $isEditMode ? htmlspecialchars($invoice['terms'] ?? ($activeFirm['terms'] ?? ''), ENT_QUOTES, 'UTF-8') : htmlspecialchars(!empty($activeFirm['terms']) ? $activeFirm['terms'] : '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
           </div>
         </div>
       </div>

@@ -168,7 +168,7 @@ $due = (float)($invoice['balance_due'] ?? 0);
         <?php endif; ?>
 
         <?php 
-          $termsText = $firm['terms_and_conditions'] ?? ($firm['terms'] ?? '');
+          $termsText = !empty($invoice['terms']) ? $invoice['terms'] : ($firm['terms'] ?? '');
           if (!empty($termsText)): 
         ?>
           <div class="mb-3">

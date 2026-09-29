@@ -379,11 +379,14 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
               </div>
             <?php endif; ?>
 
-            <?php if ((!empty($invoice['terms']) ? $invoice['terms'] : (!empty($firm['terms']) ? $firm['terms'] : ''))): ?>
+            <?php 
+              $termsText = !empty($invoice['terms']) ? $invoice['terms'] : (!empty($firm['terms']) ? $firm['terms'] : '');
+              if (!empty($termsText)): 
+            ?>
               <div class="p-2 border rounded bg-white">
                 <div class="text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem;">Terms & Conditions:</div>
-                <div class="small text-muted" style="font-size: 0.76rem; line-height: 1.35;">
-                  <?= (!empty($invoice['terms']) ? $invoice['terms'] : (!empty($firm['terms']) ? $firm['terms'] : '')) ?>
+                <div class="small text-muted" style="font-size: 0.76rem; line-height: 1.35; white-space: pre-line;">
+                  <?= htmlspecialchars($termsText, ENT_QUOTES, 'UTF-8') ?>
                 </div>
               </div>
             <?php endif; ?>
@@ -550,7 +553,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <div class="mb-4"><?= $wordsTotal ?></div>
 
           <div class="fw-bold mb-1">Terms and Conditions</div>
-          <div><?= (!empty($invoice['terms']) ? $invoice['terms'] : (!empty($firm['terms']) ? $firm['terms'] : 'Thanks for doing business with us!')) ?></div>
+          <div style="white-space: pre-line;"><?= htmlspecialchars(!empty($invoice['terms']) ? $invoice['terms'] : (!empty($firm['terms']) ? $firm['terms'] : 'Thanks for doing business with us!'), ENT_QUOTES, 'UTF-8') ?></div>
         </div>
 
         <!-- Right: Summary Totals -->

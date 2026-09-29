@@ -291,7 +291,7 @@ class InvoiceController {
             'payment_status' => $paymentStatus,
             'payment_mode' => $body['payment_mode'] ?? 'cash',
             'notes' => $body['notes'] ?? null,
-            'terms' => $body['terms'] ?? ($activeFirm['terms'] ?? null)
+            'terms' => isset($body['terms']) && trim((string)$body['terms']) !== '' ? trim((string)$body['terms']) : ($activeFirm['terms'] ?? null)
         ];
 
         return ['invoiceData' => $invoiceData, 'items' => $items];
