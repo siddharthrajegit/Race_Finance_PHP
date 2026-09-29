@@ -217,7 +217,7 @@
                   </button>
                 </form>
               </li>
-            <?php endforeach; ?>
+            <?php endforeach; unset($firm); ?>
             <li><hr class="dropdown-divider border-secondary"></li>
             <li>
               <a class="dropdown-item text-primary-light d-flex align-items-center py-2" href="/firms/create">
