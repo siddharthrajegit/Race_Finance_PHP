@@ -19,7 +19,7 @@ class PartyController {
         $filterType = $_GET['type'] ?? 'all';
 
         if ($filterType === 'customer' || $filterType === 'supplier') {
-            $parties = Party.getByFirmId($firmId, $filterType);
+            $parties = Party::getByFirmId($firmId, $filterType);
         } else {
             $parties = Party::getByFirmId($firmId);
         }
