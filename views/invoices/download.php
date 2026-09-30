@@ -264,9 +264,9 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
               <div><strong>Payment Mode:</strong> <span class="text-uppercase fw-semibold text-dark"><?= ($invoice["payment_mode"] ?: 'Cash') ?></span></div>
               <div class="mt-2">
                 <strong>Status:</strong>
-                <?php if (!empty($invoice["payment_status"]) === 'paid'): ?>
+                <?php if (($invoice["payment_status"] ?? '') === 'paid'): ?>
                   <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">PAID IN FULL</span>
-                <?php elseif (!empty($invoice["payment_status"]) === 'partial'): ?>
+                <?php elseif (($invoice["payment_status"] ?? '') === 'partial'): ?>
                   <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">PARTIALLY PAID</span>
                 <?php else: ?>
                   <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">PAYMENT UNPAID</span>
@@ -400,13 +400,13 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                   <td class="text-muted p-1">Taxable Subtotal:</td>
                   <td class="text-end fw-semibold p-1">₹ <?= number_format($cleanTaxable, 2) ?></td>
                 </tr>
-                <?php if ((float)(!empty($invoice["discount_amount"])) > 0): ?>
+                <?php if ((float)($invoice["discount_amount"] ?? 0) > 0): ?>
                   <tr>
                     <td class="text-danger p-1">Overall Discount:</td>
                     <td class="text-end text-danger fw-semibold p-1">- ₹ <?= number_format((float)($invoice["discount_amount"]), 2) ?></td>
                   </tr>
                 <?php endif; ?>
-                <?php if (!empty($invoice["is_gst_bill"]) && (float)(!empty($invoice["tax_amount"])) > 0): ?>
+                <?php if (!empty($invoice["is_gst_bill"]) && (float)($invoice["tax_amount"] ?? 0) > 0): ?>
                   <?php if (!empty($invoice["is_interstate"])): ?>
                     <tr>
                       <td class="text-muted p-1">IGST (Integrated Tax):</td>

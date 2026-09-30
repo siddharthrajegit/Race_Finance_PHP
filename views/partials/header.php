@@ -205,19 +205,19 @@
 
           <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary w-100">
             <li class="dropdown-header text-uppercase text-secondary small fw-bold">Switch Business Firm</li>
-            <?php foreach ($userFirms as $firm): ?>
+            <?php foreach ($userFirms as $firmOption): ?>
               <li>
-                <form action="/firms/switch/<?= $firm['id'] ?>" method="POST" class="m-0">
+                <form action="/firms/switch/<?= $firmOption['id'] ?>" method="POST" class="m-0">
                   <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                  <button type="submit" class="dropdown-item py-2 d-flex align-items-center justify-content-between <?= (!empty($activeFirm) && $activeFirm['id'] == $firm['id']) ? 'active bg-primary' : '' ?>">
-                    <span class="text-truncate me-2"><?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?></span>
-                    <?php if (!empty($firm['is_default'])): ?>
+                  <button type="submit" class="dropdown-item py-2 d-flex align-items-center justify-content-between <?= (!empty($activeFirm) && $activeFirm['id'] == $firmOption['id']) ? 'active bg-primary' : '' ?>">
+                    <span class="text-truncate me-2"><?= htmlspecialchars($firmOption['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php if (!empty($firmOption['is_default'])): ?>
                       <span class="badge bg-secondary ms-1 small">Default</span>
                     <?php endif; ?>
                   </button>
                 </form>
               </li>
-            <?php endforeach; unset($firm); ?>
+            <?php endforeach; ?>
             <li><hr class="dropdown-divider border-secondary"></li>
             <li>
               <a class="dropdown-item text-primary-light d-flex align-items-center py-2" href="/firms/create">

@@ -140,10 +140,10 @@ $due = (float)($invoice['balance_due'] ?? 0);
                   <strong><?= number_format((float)($item['quantity'] ?? 0), 2) ?></strong>
                   <span class="text-muted small"><?= htmlspecialchars($item['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?></span>
                 </td>
-                <td class="text-end">₹ <?= number_format((float)($item['price'] ?? 0), 2) ?></td>
+                <td class="text-end">₹ <?= number_format((float)($item['rate'] ?? 0), 2) ?></td>
                 <?php if ($isGst): ?>
                   <td class="text-center small"><?= number_format((float)($item['tax_rate'] ?? 0), 0) ?>%</td>
-                  <td class="text-end text-muted small">₹ <?= number_format((float)($item['tax_amount'] ?? 0), 2) ?></td>
+                  <td class="text-end text-muted small">₹ <?= number_format((float)($item['cgst_amount'] ?? 0) + (float)($item['sgst_amount'] ?? 0) + (float)($item['igst_amount'] ?? 0), 2) ?></td>
                 <?php endif; ?>
                 <td class="text-end fw-bold">₹ <?= number_format((float)($item['total_amount'] ?? 0), 2) ?></td>
               </tr>
