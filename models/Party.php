@@ -180,7 +180,7 @@ class Party extends Model {
      * Comprehensive Party Ledger with FIFO Step-by-Step Breakdown
      */
     public static function getLedger(int $partyId, int $firmId): ?array {
-        self::syncFIFOSettlement($partyId, firmId: $firmId);
+        self::syncFIFOSettlement($partyId, $firmId);
 
         $party = self::getById($partyId, $firmId);
         if (!$party) return null;
