@@ -46,7 +46,7 @@ $due = (float)($invoice['balance_due'] ?? 0);
       <div class="col-md-7">
         <div class="d-flex align-items-center mb-3">
           <?php if (!empty($firm['logo_path'])): ?>
-            <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?>" class="rounded border p-1 me-3 bg-white" height="50">
+            <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($firm['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" class="rounded border p-1 me-3 bg-white" height="50">
           <?php endif; ?>
           <div>
             <h4 class="fw-bold text-dark mb-0"><?= htmlspecialchars($firm['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></h4>

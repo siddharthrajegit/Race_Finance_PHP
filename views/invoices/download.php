@@ -231,10 +231,10 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <div class="col-7">
             <div class="d-flex align-items-center mb-2">
               <?php if (!empty($firm["logo_path"])): ?>
-                <img src="<?= $firm["logo_path"] ?>" alt="<?= $firm["name"] ?>" class="rounded border p-1 me-3 bg-white" style="max-height: 52px; max-width: 90px; object-fit: contain;">
+                <img src="<?= $firm["logo_path"] ?>" alt="<?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?>" class="rounded border p-1 me-3 bg-white" style="max-height: 52px; max-width: 90px; object-fit: contain;">
               <?php endif; ?>
               <div>
-                <h3 class="firm-name mb-0"><?= $firm["name"] ?></h3>
+                <h3 class="firm-name mb-0"><?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></h3>
                 <?php if (!empty($firm["gstin"])): ?>
                   <div class="small fw-semibold text-muted font-monospace mt-1">
                     GSTIN: <span class="text-dark"><?= $firm["gstin"] ?></span>
@@ -341,14 +341,14 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                     <td class="text-center font-monospace small text-muted"><?= ($item["hsn_code"] ?: '--') ?></td>
                     <td class="text-center fw-bold"><?= $item["quantity"] ?></td>
                     <td class="text-center text-muted small"><?= ($item["unit"] ?: 'PCS') ?></td>
-                    <td class="text-end">₹ <?= number_format((float)($item["rate"]), 2) ?></td>
+                    <td class="text-end">₹ <?= number_format((float)($item["rate"] ?? 0), 2) ?></td>
                     <?php if ($hasDiscount): ?>
-                      <td class="text-end text-danger"><?= $item["discount_percent"] > 0 ? ($item["discount_percent"] . '%') : '--' ?></td>
+                      <td class="text-end text-danger"><?= (!empty($item["discount_percent"]) && (float)$item["discount_percent"] > 0) ? ($item["discount_percent"] . '%') : '--' ?></td>
                     <?php endif; ?>
                     <?php if (!empty($invoice["is_gst_bill"])): ?>
-                      <td class="text-center"><?= $item["tax_rate"] ?>%</td>
+                      <td class="text-center"><?= number_format((float)($item["tax_rate"] ?? 0), 0) ?>%</td>
                     <?php endif; ?>
-                    <td class="text-end fw-bold text-dark">₹ <?= number_format((float)($item["total_amount"]), 2) ?></td>
+                    <td class="text-end fw-bold text-dark">₹ <?= number_format((float)($item["total_amount"] ?? 0), 2) ?></td>
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
@@ -450,7 +450,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
         <div class="row align-items-end mt-4 pt-3 border-top">
           <div class="col-7">
             <div class="small text-muted" style="font-size: 0.76rem;">
-              Thank you for doing business with <strong><?= $firm["name"] ?></strong>.<br>
+              Thank you for doing business with <strong><?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></strong>.<br>
               This is a digitally generated invoice, authorized signature verified.
             </div>
           </div>
@@ -462,7 +462,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                 <div style="height: 38px;"></div>
               <?php endif; ?>
               <div class="sign-box">
-                <small class="fw-bold text-dark d-block" style="font-size: 0.78rem;">For <?= $firm["name"] ?></small>
+                <small class="fw-bold text-dark d-block" style="font-size: 0.78rem;">For <?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></small>
                 <small class="text-muted" style="font-size: 0.7rem;">Authorized Signatory</small>
               </div>
             </div>
@@ -483,7 +483,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
       <div class="row align-items-start mb-4">
         <!-- 1. Seller Column -->
         <div class="col-4">
-          <div class="simple-bill-header-title"><?= $firm["name"] ?></div>
+          <div class="simple-bill-header-title"><?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></div>
           <?php if (!empty($firm["phone"])): ?><div>Phone no. : <?= $firm["phone"] ?></div><?php endif; ?>
           <?php if (!empty($firm["address"])): ?><div>Address : <?= $firm["address"] ?></div><?php endif; ?>
           <?php if (!empty($firm["email"])): ?><div>Email : <?= $firm["email"] ?></div><?php endif; ?>
@@ -525,11 +525,11 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
             <?php foreach ($items as $idx => $item): ?>
               <tr>
                 <td><?= $idx + 1 ?></td>
-                <td class="fw-bold"><?= $item["item_name"] ?></td>
+                <td class="fw-bold"><?= htmlspecialchars($item["item_name"] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                 <td class="text-center"><?= $item["quantity"] ?></td>
-                <td class="text-center"><?= ($item["unit"] ?: 'cls') ?></td>
-                <td class="text-end">₹ <?= number_format((float)($item["rate"]), 4) ?></td>
-                <td class="text-end">₹ <?= number_format((float)($item["total_amount"]), 4) ?></td>
+                <td class="text-center"><?= (!empty($item["unit"]) ? htmlspecialchars($item["unit"], ENT_QUOTES, 'UTF-8') : 'PCS') ?></td>
+                <td class="text-end">₹ <?= number_format((float)($item["rate"] ?? 0), 2) ?></td>
+                <td class="text-end">₹ <?= number_format((float)($item["total_amount"] ?? 0), 2) ?></td>
               </tr>
             <?php endforeach; ?>
           <?php endif; ?>
@@ -540,7 +540,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
             <td class="text-center"><?= $totalQtyCount ?></td>
             <td></td>
             <td></td>
-            <td class="text-end">₹ <?= number_format((float)$cleanTaxable, 4) ?></td>
+            <td class="text-end">₹ <?= number_format((float)$cleanTaxable, 2) ?></td>
           </tr>
         </tbody>
       </table>
@@ -561,40 +561,40 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <table class="table table-borderless table-sm mb-0 ms-auto" style="max-width: 320px; font-size: 0.84rem;">
             <tr>
               <td>Sub Total</td>
-              <td class="text-end">₹ <?= number_format($cleanTaxable, 4) ?></td>
+              <td class="text-end">₹ <?= number_format($cleanTaxable, 2) ?></td>
             </tr>
             <?php if (!empty($invoice["is_gst_bill"]) && ($cleanSgst > 0 || $cleanCgst > 0 || $cleanIgst > 0)): ?>
               <?php if (!empty($invoice["is_interstate"])): ?>
                 <tr>
                   <td>IGST@<?= $firstTaxRate ?>%</td>
-                  <td class="text-end">₹ <?= number_format($cleanIgst, 4) ?></td>
+                  <td class="text-end">₹ <?= number_format($cleanIgst, 2) ?></td>
                 </tr>
               <?php else: ?>
                 <tr>
                   <td>SGST@<?= ($firstTaxRate / 2) ?>%</td>
-                  <td class="text-end">₹ <?= number_format($cleanSgst, 4) ?></td>
+                  <td class="text-end">₹ <?= number_format($cleanSgst, 2) ?></td>
                 </tr>
                 <tr>
                   <td>CGST@<?= ($firstTaxRate / 2) ?>%</td>
-                  <td class="text-end">₹ <?= number_format($cleanCgst, 4) ?></td>
+                  <td class="text-end">₹ <?= number_format($cleanCgst, 2) ?></td>
                 </tr>
               <?php endif; ?>
             <?php endif; ?>
             <tr>
               <td>Round off</td>
-              <td class="text-end">₹ <?= number_format($cleanRoundOff, 4) ?></td>
+              <td class="text-end">₹ <?= number_format($cleanRoundOff, 2) ?></td>
             </tr>
             <tr class="simple-total-bar">
               <td>Total</td>
-              <td class="text-end">₹ <?= number_format($cleanGrandTotal, 4) ?></td>
+              <td class="text-end">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
             </tr>
             <tr>
               <td>Received</td>
-              <td class="text-end">₹ <?= number_format($cleanPaid, 4) ?></td>
+              <td class="text-end">₹ <?= number_format($cleanPaid, 2) ?></td>
             </tr>
             <tr>
               <td>Balance</td>
-              <td class="text-end">₹ <?= number_format($cleanDue, 4) ?></td>
+              <td class="text-end">₹ <?= number_format($cleanDue, 2) ?></td>
             </tr>
           </table>
         </div>
@@ -625,7 +625,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <!-- Parties Side-by-Side in slip -->
           <div class="row g-1 mb-2" style="font-size: 0.7rem;">
             <div class="col-6">
-              <div class="fw-bold text-dark"><?= $firm["name"] ?></div>
+              <div class="fw-bold text-dark"><?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></div>
               <?php if (!empty($firm["phone"])): ?><div>Phone : <?= $firm["phone"] ?></div><?php endif; ?>
               <?php if (!empty($firm["address"])): ?><div>Address : <?= $firm["address"] ?></div><?php endif; ?>
               <?php if (!empty($firm["email"])): ?><div>Email : <?= $firm["email"] ?></div><?php endif; ?>
@@ -657,11 +657,11 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                 <?php foreach ($items as $idx => $item): ?>
                   <tr>
                     <td><?= $idx + 1 ?></td>
-                    <td class="fw-bold text-truncate" style="max-width: 80px;"><?= $item["item_name"] ?></td>
+                    <td class="fw-bold text-truncate" style="max-width: 80px;"><?= htmlspecialchars($item["item_name"] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                     <td class="text-center"><?= $item["quantity"] ?></td>
-                    <td class="text-center"><?= ($item["unit"] ?: 'cls') ?></td>
-                    <td class="text-end">₹ <?= number_format((float)($item["rate"]), 2) ?></td>
-                    <td class="text-end">₹ <?= number_format((float)($item["total_amount"]), 2) ?></td>
+                    <td class="text-center"><?= (!empty($item["unit"]) ? htmlspecialchars($item["unit"], ENT_QUOTES, 'UTF-8') : 'PCS') ?></td>
+                    <td class="text-end">₹ <?= number_format((float)($item["rate"] ?? 0), 2) ?></td>
+                    <td class="text-end">₹ <?= number_format((float)($item["total_amount"] ?? 0), 2) ?></td>
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
