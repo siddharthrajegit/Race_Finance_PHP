@@ -403,7 +403,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <option value="NOS" ${unitUpper === 'NOS' ? 'selected' : ''}>NOS</option>
           <option value="BAG" ${unitUpper === 'BAG' ? 'selected' : ''}>BAG</option>
           <option value="PKT" ${unitUpper === 'PKT' ? 'selected' : ''}>PKT</option>
-          ${!['PCS', 'KG', 'BOX', 'MTR', 'LTR', 'NOS', 'BAG', 'PKT'].includes(unitUpper) ? `<option value="${unitUpper}" selected>${unitUpper}</option>` : ''}
+          <option value="BDL" ${unitUpper === 'BDL' ? 'selected' : ''}>BDL</option>
+          <option value="DZ" ${unitUpper === 'DZ' ? 'selected' : ''}>DZ</option>
+          ${!['PCS', 'KG', 'BOX', 'MTR', 'LTR', 'NOS', 'BAG', 'PKT', 'BDL', 'DZ'].includes(unitUpper) ? `<option value="${unitUpper}" selected>${unitUpper}</option>` : ''}
         </select>
       </td>
       <td style="width: 95px;">
