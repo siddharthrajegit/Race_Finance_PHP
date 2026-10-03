@@ -41,6 +41,8 @@
                 <option value="NOS" <?= (!empty($item) && ($item['unit'] ?? '') === 'NOS') ? 'selected' : '' ?>>NOS (Numbers)</option>
                 <option value="BAG" <?= (!empty($item) && ($item['unit'] ?? '') === 'BAG') ? 'selected' : '' ?>>BAG (Bags)</option>
                 <option value="PKT" <?= (!empty($item) && ($item['unit'] ?? '') === 'PKT') ? 'selected' : '' ?>>PKT (Packets)</option>
+                <option value="BDL" <?= (!empty($item) && ($item['unit'] ?? '') === 'BDL') ? 'selected' : '' ?>>BDL (Bundle)</option>
+                <option value="DZ" <?= (!empty($item) && ($item['unit'] ?? '') === 'DZ') ? 'selected' : '' ?>>DZ (Dozen)</option>
               </select>
             </div>
           </div>

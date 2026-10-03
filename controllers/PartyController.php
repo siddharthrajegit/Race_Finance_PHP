@@ -108,7 +108,7 @@ class PartyController {
 
             Party::create([
                 'firm_id' => $firmId,
-                'type' => $_POST['type'] ?? 'customer',
+                'type' => in_array($_POST['type'] ?? '', ['customer', 'supplier'], true) ? $_POST['type'] : 'customer',
                 'name' => $name,
                 'phone' => $cleanPhone,
                 'email' => $email ?: null,

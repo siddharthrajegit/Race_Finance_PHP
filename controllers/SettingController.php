@@ -30,7 +30,8 @@ class SettingController {
         Auth::requireUserOnly();
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
-        $section = $_POST['section'] ?? 'sales';
+        $section = in_array($_POST['section'] ?? '', ['sales', 'purchases', 'print', 'general'], true)
+            ? $_POST['section'] : 'sales';
 
         try {
             if ($section === 'sales') {
@@ -56,7 +57,7 @@ class SettingController {
                 ]);
             } elseif ($section === 'general') {
                 Setting::update($firmId, 'general', [
-                    'currency_symbol' => $_POST['currency_symbol'] ?? '₹',
+                    'currency_symbol' => mb_substr(trim($_POST['currency_symbol'] ?? '₹'), 0, 5) ?: '₹',
                     'date_format' => in_array($_POST['date_format'] ?? '', ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'], true) ? $_POST['date_format'] : 'DD/MM/YYYY'
                 ]);
             }

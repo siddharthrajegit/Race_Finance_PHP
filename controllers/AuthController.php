@@ -59,7 +59,7 @@ class AuthController {
         try {
             $user = User::findByEmailOrPhone($identifier);
         } catch (Throwable $e) {
-            Flash::set('error_msg', 'Database connection error: ' . $e->getMessage());
+            Flash::set('error_msg', 'A system error occurred. Please try again.');
             header('Location: /auth/login');
             exit;
         }
