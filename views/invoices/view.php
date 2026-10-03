@@ -142,7 +142,7 @@ $due = (float)($invoice['balance_due'] ?? 0);
                 </td>
                 <td class="text-end">₹ <?= number_format((float)($item['rate'] ?? 0), 2) ?></td>
                 <?php if ($isGst): ?>
-                  <td class="text-center small"><?= number_format((float)($item['tax_rate'] ?? 0), 0) ?>%</td>
+                  <td class="text-center small"><?= ((float)($item['tax_rate'] ?? 0) == (int)($item['tax_rate'] ?? 0)) ? number_format((float)($item['tax_rate'] ?? 0), 0) : (float)($item['tax_rate'] ?? 0) ?>%</td>
                   <td class="text-end text-muted small">₹ <?= number_format((float)($item['cgst_amount'] ?? 0) + (float)($item['sgst_amount'] ?? 0) + (float)($item['igst_amount'] ?? 0), 2) ?></td>
                 <?php endif; ?>
                 <td class="text-end fw-bold">₹ <?= number_format((float)($item['total_amount'] ?? 0), 2) ?></td>

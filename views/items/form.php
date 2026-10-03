@@ -64,14 +64,29 @@
               </div>
             </div>
             <div class="col-md-4">
-              <label for="tax_rate" class="form-label">GST Tax Rate (%)</label>
-              <select class="form-select" id="tax_rate" name="tax_rate">
-                <option value="0" <?= (empty($item) || (float)($item['tax_rate'] ?? 0) === 0.0) ? 'selected' : '' ?>>0% (Exempt / Nil)</option>
-                <option value="5" <?= (!empty($item) && (float)$item['tax_rate'] === 5.0) ? 'selected' : '' ?>>5% (GST 5%)</option>
-                <option value="12" <?= (!empty($item) && (float)$item['tax_rate'] === 12.0) ? 'selected' : '' ?>>12% (GST 12%)</option>
-                <option value="18" <?= (!empty($item) && (float)$item['tax_rate'] === 18.0) ? 'selected' : '' ?>>18% (GST 18%)</option>
-                <option value="28" <?= (!empty($item) && (float)$item['tax_rate'] === 28.0) ? 'selected' : '' ?>>28% (GST 28%)</option>
+              <?php
+                $currentTaxRate = !empty($item) ? (float)($item['tax_rate'] ?? 0) : 0.0;
+                $isStandardTax = in_array($currentTaxRate, [0.0, 5.0, 12.0, 18.0, 28.0], true);
+                $isCustomTax = !empty($item) && !$isStandardTax;
+              ?>
+              <label for="tax_rate_select" class="form-label">GST Tax Rate (%)</label>
+              <select class="form-select" id="tax_rate_select">
+                <option value="0" <?= (empty($item) || ($isStandardTax && $currentTaxRate === 0.0)) ? 'selected' : '' ?>>0% (Exempt / Nil)</option>
+                <option value="5" <?= ($isStandardTax && $currentTaxRate === 5.0) ? 'selected' : '' ?>>5% (GST 5%)</option>
+                <option value="12" <?= ($isStandardTax && $currentTaxRate === 12.0) ? 'selected' : '' ?>>12% (GST 12%)</option>
+                <option value="18" <?= ($isStandardTax && $currentTaxRate === 18.0) ? 'selected' : '' ?>>18% (GST 18%)</option>
+                <option value="28" <?= ($isStandardTax && $currentTaxRate === 28.0) ? 'selected' : '' ?>>28% (GST 28%)</option>
+                <option value="custom" <?= $isCustomTax ? 'selected' : '' ?>>Custom Tax %</option>
               </select>
+              <div id="customTaxRateContainer" class="mt-2 <?= $isCustomTax ? '' : 'd-none' ?>">
+                <div class="input-group">
+                  <span class="input-group-text bg-light">Custom Rate</span>
+                  <input type="number" class="form-control text-end" id="custom_tax_rate_input" placeholder="1 - 100" min="1" max="100" step="any" value="<?= $isCustomTax ? htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                  <span class="input-group-text bg-light">%</span>
+                </div>
+                <div class="form-text small text-muted">Enter a custom rate strictly between 1 and 100%</div>
+              </div>
+              <input type="hidden" id="tax_rate" name="tax_rate" value="<?= htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') ?>">
             </div>
           </div>
 
@@ -107,3 +122,83 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const taxSelect = document.getElementById('tax_rate_select');
+  const customContainer = document.getElementById('customTaxRateContainer');
+  const customInput = document.getElementById('custom_tax_rate_input');
+  const hiddenInput = document.getElementById('tax_rate');
+  const itemForm = taxSelect ? taxSelect.closest('form') : null;
+
+  function syncTax() {
+    if (!taxSelect || !hiddenInput) return;
+    if (taxSelect.value === 'custom') {
+      if (customContainer) customContainer.classList.remove('d-none');
+      let val = customInput ? parseFloat(customInput.value) : 0;
+      hiddenInput.value = (isNaN(val) || val <= 0) ? '' : val;
+    } else {
+      if (customContainer) customContainer.classList.add('d-none');
+      hiddenInput.value = taxSelect.value;
+    }
+  }
+
+  if (taxSelect) {
+    taxSelect.addEventListener('change', function() {
+      syncTax();
+      if (taxSelect.value === 'custom' && customInput) {
+        customInput.focus();
+      }
+    });
+  }
+
+  if (customInput) {
+    customInput.addEventListener('input', function() {
+      let val = customInput.value;
+      if (val !== '') {
+        let num = parseFloat(val);
+        if (!isNaN(num)) {
+          if (num > 100) {
+            customInput.value = 100;
+            num = 100;
+          } else if (num < 0) {
+            customInput.value = 1;
+            num = 1;
+          }
+          if (hiddenInput) hiddenInput.value = num;
+        }
+      } else {
+        if (hiddenInput) hiddenInput.value = '';
+      }
+    });
+
+    customInput.addEventListener('blur', function() {
+      if (customInput.value !== '') {
+        let num = parseFloat(customInput.value);
+        if (isNaN(num) || num < 1) {
+          customInput.value = 1;
+          if (hiddenInput) hiddenInput.value = 1;
+        } else if (num > 100) {
+          customInput.value = 100;
+          if (hiddenInput) hiddenInput.value = 100;
+        }
+      }
+    });
+  }
+
+  if (itemForm) {
+    itemForm.addEventListener('submit', function(e) {
+      if (taxSelect && taxSelect.value === 'custom') {
+        let num = parseFloat(customInput ? customInput.value : '');
+        if (isNaN(num) || num < 1 || num > 100) {
+          e.preventDefault();
+          alert('Please enter a custom tax percentage strictly between 1 and 100.');
+          if (customInput) customInput.focus();
+          return false;
+        }
+        if (hiddenInput) hiddenInput.value = num;
+      }
+    });
+  }
+});
+</script>

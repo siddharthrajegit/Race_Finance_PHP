@@ -379,6 +379,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemName = itemData.item_name || itemData.name || '';
     const itemRate = (itemData.rate !== undefined && itemData.rate !== null && itemData.rate !== '') ? itemData.rate : (itemData.sale_price || '');
     const itemTaxRate = itemData.tax_rate !== undefined && itemData.tax_rate !== null ? parseFloat(itemData.tax_rate) : 18;
+    const isStandardTax = [0, 5, 12, 18, 28].includes(itemTaxRate);
+    const customTaxVal = !isStandardTax ? itemTaxRate : '';
     const unitUpper = (itemData.unit || 'PCS').toUpperCase();
 
     tr.innerHTML = `
@@ -415,15 +417,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="number" name="item_discount_percent[]" class="form-control form-control-sm row-discount-pct text-end" min="0" max="100" step="any" placeholder="0%" value="${itemData.discount_percent !== undefined ? itemData.discount_percent : '0'}">
         <input type="hidden" name="item_discount_amount[]" class="row-discount-amt" value="0">
       </td>
-      <td style="width: 85px;" class="gst-col ${!showRowTaxRate ? 'd-none' : ''}">
-        <select name="item_tax_rate[]" class="form-select form-select-sm row-tax-rate">
-          <option value="0" ${itemTaxRate === 0 ? 'selected' : ''}>0%</option>
-          <option value="5" ${itemTaxRate === 5 ? 'selected' : ''}>5%</option>
-          <option value="12" ${itemTaxRate === 12 ? 'selected' : ''}>12%</option>
-          <option value="18" ${itemTaxRate === 18 ? 'selected' : ''}>18%</option>
-          <option value="28" ${itemTaxRate === 28 ? 'selected' : ''}>28%</option>
-          ${![0, 5, 12, 18, 28].includes(itemTaxRate) ? `<option value="${itemTaxRate}" selected>${itemTaxRate}%</option>` : ''}
+      <td style="width: 96px;" class="gst-col ${!showRowTaxRate ? 'd-none' : ''}">
+        <select class="form-select form-select-sm row-tax-rate-select">
+          <option value="0" ${isStandardTax && itemTaxRate === 0 ? 'selected' : ''}>0%</option>
+          <option value="5" ${isStandardTax && itemTaxRate === 5 ? 'selected' : ''}>5%</option>
+          <option value="12" ${isStandardTax && itemTaxRate === 12 ? 'selected' : ''}>12%</option>
+          <option value="18" ${isStandardTax && itemTaxRate === 18 ? 'selected' : ''}>18%</option>
+          <option value="28" ${isStandardTax && itemTaxRate === 28 ? 'selected' : ''}>28%</option>
+          <option value="custom" ${!isStandardTax ? 'selected' : ''}>Custom %</option>
         </select>
+        <input type="number" class="form-control form-control-sm row-custom-tax text-end mt-1 ${!isStandardTax ? '' : 'd-none'}" placeholder="1-100" min="1" max="100" step="any" value="${customTaxVal}" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+        <input type="hidden" name="item_tax_rate[]" class="row-tax-rate" value="${itemTaxRate}">
         <input type="hidden" name="item_taxable[]" class="row-taxable" value="0">
         <input type="hidden" name="item_cgst_rate[]" class="row-cgst-rate" value="0">
         <input type="hidden" name="item_cgst_amount[]" class="row-cgst-amt" value="0">
@@ -448,12 +452,38 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAllCalculations();
   }
 
+  function applyRowTaxRate(row, rate) {
+    const select = row.querySelector('.row-tax-rate-select');
+    const customInput = row.querySelector('.row-custom-tax');
+    const hiddenInput = row.querySelector('.row-tax-rate');
+    if (!select || !hiddenInput) return;
+
+    const numRate = parseFloat(rate) || 0;
+    if ([0, 5, 12, 18, 28].includes(numRate)) {
+      select.value = String(numRate);
+      if (customInput) {
+        customInput.classList.add('d-none');
+        customInput.value = '';
+      }
+      hiddenInput.value = numRate;
+    } else {
+      select.value = 'custom';
+      if (customInput) {
+        customInput.classList.remove('d-none');
+        customInput.value = numRate > 0 ? numRate : '';
+      }
+      hiddenInput.value = numRate;
+    }
+  }
+
   function bindRowEvents(row) {
     const itemNameInput = row.querySelector('.row-item-name');
     const qtyInput = row.querySelector('.row-qty');
     const rateInput = row.querySelector('.row-rate');
     const discInput = row.querySelector('.row-discount-pct');
-    const taxRateSelect = row.querySelector('.row-tax-rate');
+    const taxRateSelect = row.querySelector('.row-tax-rate-select');
+    const customTaxInput = row.querySelector('.row-custom-tax');
+    const hiddenTaxInput = row.querySelector('.row-tax-rate');
     const btnRemove = row.querySelector('.btn-remove-row');
 
     // Autocomplete on name input
@@ -465,16 +495,14 @@ document.addEventListener('DOMContentLoaded', () => {
           row.querySelector('.row-hsn').value = option.dataset.hsn || '';
           row.querySelector('.row-unit').value = option.dataset.unit || 'PCS';
           row.querySelector('.row-rate').value = option.dataset.price || '0';
-          if (row.querySelector('.row-tax-rate')) {
-            row.querySelector('.row-tax-rate').value = option.dataset.tax || '0';
-          }
+          applyRowTaxRate(row, option.dataset.tax || '0');
         }
         updateRowCalculation(row);
         updateAllCalculations();
       });
     }
 
-    [qtyInput, rateInput, discInput, taxRateSelect].forEach(input => {
+    [qtyInput, rateInput, discInput].forEach(input => {
       if (input) {
         input.addEventListener('input', () => {
           updateRowCalculation(row);
@@ -486,6 +514,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     });
+
+    if (taxRateSelect) {
+      taxRateSelect.addEventListener('change', () => {
+        if (taxRateSelect.value === 'custom') {
+          if (customTaxInput) {
+            customTaxInput.classList.remove('d-none');
+            customTaxInput.focus();
+            let val = parseFloat(customTaxInput.value);
+            if (isNaN(val) || val < 1) {
+              val = 18;
+              customTaxInput.value = val;
+            }
+            if (hiddenTaxInput) hiddenTaxInput.value = val;
+          }
+        } else {
+          if (customTaxInput) {
+            customTaxInput.classList.add('d-none');
+          }
+          if (hiddenTaxInput) hiddenTaxInput.value = taxRateSelect.value;
+        }
+        updateRowCalculation(row);
+        updateAllCalculations();
+      });
+    }
+
+    if (customTaxInput) {
+      customTaxInput.addEventListener('input', () => {
+        let val = customTaxInput.value;
+        if (val !== '') {
+          let num = parseFloat(val);
+          if (!isNaN(num)) {
+            if (num > 100) {
+              customTaxInput.value = 100;
+              num = 100;
+            } else if (num < 0) {
+              customTaxInput.value = 1;
+              num = 1;
+            }
+            if (hiddenTaxInput) hiddenTaxInput.value = num;
+          }
+        } else {
+          if (hiddenTaxInput) hiddenTaxInput.value = 0;
+        }
+        updateRowCalculation(row);
+        updateAllCalculations();
+      });
+
+      customTaxInput.addEventListener('blur', () => {
+        if (customTaxInput.value !== '') {
+          let num = parseFloat(customTaxInput.value);
+          if (isNaN(num) || num < 1) {
+            customTaxInput.value = 1;
+            if (hiddenTaxInput) hiddenTaxInput.value = 1;
+          } else if (num > 100) {
+            customTaxInput.value = 100;
+            if (hiddenTaxInput) hiddenTaxInput.value = 100;
+          }
+        }
+        updateRowCalculation(row);
+        updateAllCalculations();
+      });
+    }
 
     if (btnRemove) {
       btnRemove.addEventListener('click', () => {
@@ -615,7 +705,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If GST on Final Amount Mode is active, compute composite tax on netBeforeTax
     if (isGst && !isSeparateGst) {
-      const finalTaxRate = finalTaxRateSelect ? parseFloat(finalTaxRateSelect.value) || 0 : 0;
+      let finalTaxRate = 0;
+      if (finalTaxRateSelect) {
+        if (finalTaxRateSelect.value === 'custom') {
+          const finalTaxRateCustom = document.getElementById('finalTaxRateCustom');
+          finalTaxRate = parseFloat(finalTaxRateCustom ? finalTaxRateCustom.value : 0) || 0;
+        } else {
+          finalTaxRate = parseFloat(finalTaxRateSelect.value) || 0;
+        }
+      }
+      const finalTaxRateInput = document.getElementById('finalTaxRateInput');
+      if (finalTaxRateInput) finalTaxRateInput.value = finalTaxRate;
+
       if (isInterstate) {
         totalIgst = netBeforeTax * (finalTaxRate / 100);
         totalCgst = 0;
@@ -744,7 +845,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (discountValueInput) discountValueInput.addEventListener('input', updateAllCalculations);
-  if (finalTaxRateSelect) finalTaxRateSelect.addEventListener('change', updateAllCalculations);
+
+  const finalTaxRateCustom = document.getElementById('finalTaxRateCustom');
+  const finalCustomTaxContainer = document.getElementById('finalCustomTaxContainer');
+  if (finalTaxRateSelect) {
+    finalTaxRateSelect.addEventListener('change', () => {
+      if (finalTaxRateSelect.value === 'custom') {
+        if (finalCustomTaxContainer) finalCustomTaxContainer.classList.remove('d-none');
+        if (finalTaxRateCustom) {
+          finalTaxRateCustom.focus();
+          let val = parseFloat(finalTaxRateCustom.value);
+          if (isNaN(val) || val < 1) {
+            val = 18;
+            finalTaxRateCustom.value = val;
+          }
+        }
+      } else {
+        if (finalCustomTaxContainer) finalCustomTaxContainer.classList.add('d-none');
+      }
+      updateAllCalculations();
+    });
+  }
+  if (finalTaxRateCustom) {
+    finalTaxRateCustom.addEventListener('input', () => {
+      let val = finalTaxRateCustom.value;
+      if (val !== '') {
+        let num = parseFloat(val);
+        if (!isNaN(num)) {
+          if (num > 100) finalTaxRateCustom.value = 100;
+          else if (num < 0) finalTaxRateCustom.value = 1;
+        }
+      }
+      updateAllCalculations();
+    });
+    finalTaxRateCustom.addEventListener('blur', () => {
+      if (finalTaxRateCustom.value !== '') {
+        let num = parseFloat(finalTaxRateCustom.value);
+        if (isNaN(num) || num < 1) finalTaxRateCustom.value = 1;
+        else if (num > 100) finalTaxRateCustom.value = 100;
+      }
+      updateAllCalculations();
+    });
+  }
+
   if (paidAmountInput) paidAmountInput.addEventListener('input', updateAllCalculations);
 
   // Quick action: Paid in full button
@@ -870,6 +1013,37 @@ document.addEventListener('DOMContentLoaded', () => {
           alert(`Invalid Discount: Flat discount amount (₹${dVal}) cannot exceed bill subtotal (₹${currentSubtotal.toFixed(2)}).`);
           discountValueInput.focus();
           return false;
+        }
+      }
+
+      // 8. Validate Custom Tax Rates
+      const isGst = isGstToggle ? isGstToggle.checked : true;
+      if (isGst) {
+        if (isSeparateGst) {
+          for (let i = 0; i < itemRows.length; i++) {
+            const r = itemRows[i];
+            const select = r.querySelector('.row-tax-rate-select');
+            const customInput = r.querySelector('.row-custom-tax');
+            if (select && select.value === 'custom') {
+              const val = parseFloat(customInput ? customInput.value : '');
+              if (isNaN(val) || val < 1 || val > 100) {
+                e.preventDefault();
+                alert(`Invalid Custom Tax: Row #${i + 1} has an invalid tax rate. Please enter a number strictly between 1 and 100%.`);
+                if (customInput) customInput.focus();
+                return false;
+              }
+            }
+          }
+        } else {
+          if (finalTaxRateSelect && finalTaxRateSelect.value === 'custom') {
+            const val = parseFloat(finalTaxRateCustom ? finalTaxRateCustom.value : '');
+            if (isNaN(val) || val < 1 || val > 100) {
+              e.preventDefault();
+              alert('Invalid Custom Tax: Final GST rate must be a number strictly between 1 and 100%.');
+              if (finalTaxRateCustom) finalTaxRateCustom.focus();
+              return false;
+            }
+          }
         }
       }
 
@@ -1299,6 +1473,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const quickItemAlert = document.getElementById('quickItemAlert');
   const quickItemSpinner = document.getElementById('quickItemSpinner');
   const btnSubmitQuickItem = document.getElementById('btnSubmitQuickItem');
+  const quickItemTaxRate = document.getElementById('quickItemTaxRate');
+  const quickItemCustomTaxContainer = document.getElementById('quickItemCustomTaxContainer');
+  const quickItemCustomTax = document.getElementById('quickItemCustomTax');
+  const quickItemTaxRateHidden = document.getElementById('quickItemTaxRateHidden');
+
+  if (quickItemTaxRate) {
+    quickItemTaxRate.addEventListener('change', () => {
+      if (quickItemTaxRate.value === 'custom') {
+        if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.remove('d-none');
+        if (quickItemCustomTax) {
+          quickItemCustomTax.focus();
+          let val = parseFloat(quickItemCustomTax.value);
+          if (isNaN(val) || val < 1) {
+            val = 18;
+            quickItemCustomTax.value = val;
+          }
+        }
+      } else {
+        if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('d-none');
+        if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = quickItemTaxRate.value;
+      }
+    });
+  }
+
+  if (quickItemCustomTax) {
+    quickItemCustomTax.addEventListener('input', () => {
+      let val = quickItemCustomTax.value;
+      if (val !== '') {
+        let num = parseFloat(val);
+        if (!isNaN(num)) {
+          if (num > 100) quickItemCustomTax.value = 100;
+          else if (num < 0) quickItemCustomTax.value = 1;
+        }
+      }
+    });
+    quickItemCustomTax.addEventListener('blur', () => {
+      if (quickItemCustomTax.value !== '') {
+        let num = parseFloat(quickItemCustomTax.value);
+        if (isNaN(num) || num < 1) quickItemCustomTax.value = 1;
+        else if (num > 100) quickItemCustomTax.value = 100;
+      }
+    });
+  }
 
   if (quickItemForm) {
     quickItemForm.addEventListener('submit', async (e) => {
@@ -1309,6 +1526,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const formData = new FormData(quickItemForm);
       const data = Object.fromEntries(formData.entries());
+
+      if (quickItemTaxRate && quickItemTaxRate.value === 'custom') {
+        const customTax = parseFloat(quickItemCustomTax ? quickItemCustomTax.value : '');
+        if (isNaN(customTax) || customTax < 1 || customTax > 100) {
+          if (quickItemAlert) {
+            quickItemAlert.textContent = 'Custom tax rate must be a valid number between 1 and 100.';
+            quickItemAlert.classList.remove('d-none');
+          }
+          if (btnSubmitQuickItem) btnSubmitQuickItem.disabled = false;
+          if (quickItemSpinner) quickItemSpinner.classList.add('d-none');
+          if (quickItemCustomTax) quickItemCustomTax.focus();
+          return;
+        }
+        data.tax_rate = customTax;
+      } else if (quickItemTaxRate) {
+        data.tax_rate = parseFloat(quickItemTaxRate.value) || 0;
+      }
 
       try {
         const response = await fetch('/items/quick-create', {
@@ -1359,9 +1593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetRow.querySelector('.row-hsn').value = item.hsn_code || '';
             targetRow.querySelector('.row-unit').value = item.unit || 'PCS';
             targetRow.querySelector('.row-rate').value = effectivePrice;
-            if (targetRow.querySelector('.row-tax-rate')) {
-              targetRow.querySelector('.row-tax-rate').value = item.tax_rate || 0;
-            }
+            applyRowTaxRate(targetRow, item.tax_rate || 0);
             updateRowCalculation(targetRow);
             updateAllCalculations();
           } else {
@@ -1383,6 +1615,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalInstance.hide();
           }
           quickItemForm.reset();
+          if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('d-none');
 
           showToastNotification(`✓ Item "${item.name}" created and added to record!`, 'success');
         } else {

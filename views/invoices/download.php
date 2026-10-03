@@ -346,7 +346,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                       <td class="text-end text-danger"><?= (!empty($item["discount_percent"]) && (float)$item["discount_percent"] > 0) ? ($item["discount_percent"] . '%') : '--' ?></td>
                     <?php endif; ?>
                     <?php if (!empty($invoice["is_gst_bill"])): ?>
-                      <td class="text-center"><?= number_format((float)($item["tax_rate"] ?? 0), 0) ?>%</td>
+                      <td class="text-center"><?= ((float)($item["tax_rate"] ?? 0) == (int)($item["tax_rate"] ?? 0)) ? number_format((float)($item["tax_rate"] ?? 0), 0) : (float)($item["tax_rate"] ?? 0) ?>%</td>
                     <?php endif; ?>
                     <td class="text-end fw-bold text-dark">₹ <?= number_format((float)($item["total_amount"] ?? 0), 2) ?></td>
                   </tr>

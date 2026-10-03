@@ -246,7 +246,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
               <th style="width: 78px;">Unit</th>
               <th style="width: 95px;" class="text-end">Rate (₹)</th>
               <th style="width: 72px;" class="text-end discount-col <?= !$showDiscountCol ? 'd-none' : '' ?>">Disc %</th>
-              <th style="width: 85px;" class="gst-col <?= (!$isGstDefault || !$isSeparateGst) ? 'd-none' : '' ?>">Tax %</th>
+              <th style="width: 96px;" class="gst-col <?= (!$isGstDefault || !$isSeparateGst) ? 'd-none' : '' ?>">Tax %</th>
               <th style="width: 105px;" class="text-end">Amount (₹)</th>
               <th style="width: 32px;" class="text-center"></th>
             </tr>
@@ -344,13 +344,24 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
                 <span class="text-muted small fw-semibold">GST Rate on Final Amount:</span>
               </div>
               <div class="col-6">
-                <select name="final_tax_rate" id="finalTaxRateSelect" class="form-select form-select-sm">
-                  <option value="0" <?= $existingFinalTaxRate === 0 ? 'selected' : '' ?>>0% (Tax Exempt)</option>
-                  <option value="5" <?= $existingFinalTaxRate === 5 ? 'selected' : '' ?>>5% GST</option>
-                  <option value="12" <?= $existingFinalTaxRate === 12 ? 'selected' : '' ?>>12% GST</option>
-                  <option value="18" <?= $existingFinalTaxRate === 18 ? 'selected' : '' ?>>18% GST</option>
-                  <option value="28" <?= $existingFinalTaxRate === 28 ? 'selected' : '' ?>>28% GST</option>
+                <?php
+                  $isStandardFinalTax = in_array((int)$existingFinalTaxRate, [0, 5, 12, 18, 28], true);
+                ?>
+                <select id="finalTaxRateSelect" class="form-select form-select-sm">
+                  <option value="0" <?= ($isStandardFinalTax && $existingFinalTaxRate === 0) ? 'selected' : '' ?>>0% (Tax Exempt)</option>
+                  <option value="5" <?= ($isStandardFinalTax && $existingFinalTaxRate === 5) ? 'selected' : '' ?>>5% GST</option>
+                  <option value="12" <?= ($isStandardFinalTax && $existingFinalTaxRate === 12) ? 'selected' : '' ?>>12% GST</option>
+                  <option value="18" <?= ($isStandardFinalTax && $existingFinalTaxRate === 18) ? 'selected' : '' ?>>18% GST</option>
+                  <option value="28" <?= ($isStandardFinalTax && $existingFinalTaxRate === 28) ? 'selected' : '' ?>>28% GST</option>
+                  <option value="custom" <?= !$isStandardFinalTax ? 'selected' : '' ?>>Custom Tax %</option>
                 </select>
+                <div id="finalCustomTaxContainer" class="mt-1 <?= !$isStandardFinalTax ? '' : 'd-none' ?>">
+                  <div class="input-group input-group-sm">
+                    <input type="number" id="finalTaxRateCustom" class="form-control form-control-sm text-end" min="1" max="100" step="any" placeholder="1-100" value="<?= !$isStandardFinalTax ? $existingFinalTaxRate : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+                <input type="hidden" name="final_tax_rate" id="finalTaxRateInput" value="<?= $existingFinalTaxRate ?>">
               </div>
             </div>
 
@@ -564,13 +575,21 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
             <div class="col-md-4">
               <label class="form-label small fw-bold">GST Tax Rate (%)</label>
-              <select class="form-select form-select-sm" name="tax_rate" id="quickItemTaxRate">
+              <select class="form-select form-select-sm" name="tax_rate_select" id="quickItemTaxRate">
                 <option value="0">0% (Nil / Exempt)</option>
                 <option value="5">5% GST</option>
                 <option value="12">12% GST</option>
                 <option value="18" selected>18% GST</option>
                 <option value="28">28% GST</option>
+                <option value="custom">Custom Tax %</option>
               </select>
+              <div id="quickItemCustomTaxContainer" class="mt-1 d-none">
+                <div class="input-group input-group-sm">
+                  <input type="number" class="form-control form-control-sm text-end" id="quickItemCustomTax" placeholder="1-100" min="1" max="100" step="any" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+              <input type="hidden" name="tax_rate" id="quickItemTaxRateHidden" value="18">
             </div>
 
             <div class="col-md-6">
@@ -596,5 +615,5 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
   </div>
 </div>
 
-<script src="/js/invoice-calc.js?v=2"></script>
+<script src="/js/invoice-calc.js?v=3"></script>
 
