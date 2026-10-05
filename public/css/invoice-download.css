@@ -309,8 +309,9 @@
     .horizontal-slip-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 4px 0;
+      margin: 4px 0 5px 0;
       font-size: 0.65rem;
+      border-bottom: 1px solid #000000;
     }
 
     .horizontal-slip-table thead th {

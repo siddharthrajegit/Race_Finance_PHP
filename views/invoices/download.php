@@ -14,7 +14,7 @@
   <!-- html2pdf.js for instant PDF generation (Offline Local with CDN Fallback) -->
   <script src="/vendor/html2pdf/html2pdf.bundle.min.js"></script>
   <script>if(typeof html2pdf==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>');}</script>
-  <link rel="stylesheet" href="/css/invoice-download.css">
+  <link rel="stylesheet" href="/css/invoice-download.css?v=2">
 </head>
 <body class="print-mode-detailed">
 
@@ -635,7 +635,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           </div>
 
           <!-- Slip Item Table -->
-          <table class="horizontal-slip-table">
+          <table class="horizontal-slip-table" style="border-bottom: 1px solid #000000; margin-bottom: 5px;">
             <thead>
               <tr>
                 <th style="width: 15px;">#</th>
@@ -686,20 +686,12 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
               <?php endif; ?>
             <?php endif; ?>
             <tr>
-              <td class="p-0">Round off</td>
-              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanRoundOff, 2) ?></td>
+              <td class="p-0">Received</td>
+              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanPaid, 2) ?></td>
             </tr>
             <tr class="simple-total-bar" style="font-size: 0.67rem;">
               <td class="py-1 px-1">Total</td>
               <td class="text-end py-1 px-1" style="white-space:nowrap;">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
-            </tr>
-            <tr>
-              <td class="p-0">Received</td>
-              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanPaid, 2) ?></td>
-            </tr>
-            <tr>
-              <td class="p-0">Balance</td>
-              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanDue, 2) ?></td>
             </tr>
           </table>
         </div>
