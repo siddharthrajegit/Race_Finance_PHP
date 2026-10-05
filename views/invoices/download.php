@@ -608,15 +608,10 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
   ============================================================= -->
   <div class="invoice-preview-container-horizontal print-template-target" id="simpleHorizontalInvoiceArea" style="display: none;">
     <div class="horizontal-tri-grid" id="horizontalPaperArea">
-      <?php $slipTitles = ["Original for Buyer", "Duplicate for Transporter", "Triplicate for Supplier"]; foreach ($slipTitles as $slipIndex => $slipLabel): ?>
-        <!-- Slip <?= $slipIndex + 1 ?> -->
+      <?php foreach ([1, 2, 3] as $slipIndex): ?>
+        <!-- Slip <?= $slipIndex ?> -->
         <div class="horizontal-slip-card">
-          <!-- Slip Label & Voucher Meta -->
-          <div class="horizontal-slip-badge">
-            <span style="font-size:0.55rem; font-weight:400; text-transform:uppercase; letter-spacing:0.04em;"><?= $slipLabel ?></span>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-start mb-2" style="font-size: 0.72rem;">
+          <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.72rem;">
             <div><strong>Invoice No. :</strong> <?= $invoice["invoice_number"] ?></div>
             <div><strong>Date :</strong> <?= formatDate($invoice["invoice_date"]) ?></div>
           </div>
@@ -670,7 +665,7 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                 <td class="text-center"><?= $totalQtyCount ?></td>
                 <td></td>
                 <td></td>
-                <td class="text-end">₹ <?= number_format($cleanTaxable, 2) ?></td>
+                <td class="text-end" style="white-space:nowrap;">₹ <?= number_format($cleanTaxable, 2) ?></td>
               </tr>
             </tbody>
           </table>
