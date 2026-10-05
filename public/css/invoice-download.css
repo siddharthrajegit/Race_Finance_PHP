@@ -288,42 +288,43 @@
     .horizontal-slip-card {
       border: 1px dashed #cbd5e1;
       border-radius: 8px;
-      padding: 0.9rem 0.8rem;
-      font-size: 0.73rem;
-      line-height: 1.25;
+      padding: 0.65rem 0.7rem;
+      font-size: 0.66rem;
+      line-height: 1.2;
       background: #ffffff;
       position: relative;
     }
 
     .horizontal-slip-badge {
-      font-size: 0.65rem;
-      font-weight: 800;
+      font-size: 0.55rem;
+      font-weight: 400;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       color: var(--theme-primary);
       border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 3px;
-      margin-bottom: 6px;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
     }
 
     .horizontal-slip-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 6px 0;
-      font-size: 0.72rem;
+      margin: 4px 0;
+      font-size: 0.65rem;
     }
 
     .horizontal-slip-table thead th {
       background-color: var(--theme-primary, #5c2411);
       color: #ffffff;
       font-weight: 700;
-      padding: 4px 5px;
-      font-size: 0.7rem;
+      padding: 3px 4px;
+      font-size: 0.63rem;
     }
 
     .horizontal-slip-table tbody td {
-      padding: 3px 5px;
+      padding: 2px 4px;
       border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
     }
 
     .horizontal-slip-table .total-row td {

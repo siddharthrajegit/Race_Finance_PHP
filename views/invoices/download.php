@@ -612,9 +612,8 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
         <!-- Slip <?= $slipIndex + 1 ?> -->
         <div class="horizontal-slip-card">
           <!-- Slip Label & Voucher Meta -->
-          <div class="d-flex justify-content-between align-items-center horizontal-slip-badge">
-            <span><?= $slipLabel ?></span>
-            <span><?= formatDate($invoice["invoice_date"]) ?></span>
+          <div class="horizontal-slip-badge">
+            <span style="font-size:0.55rem; font-weight:400; text-transform:uppercase; letter-spacing:0.04em;"><?= $slipLabel ?></span>
           </div>
 
           <div class="d-flex justify-content-between align-items-start mb-2" style="font-size: 0.72rem;">
@@ -646,10 +645,10 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
               <tr>
                 <th style="width: 15px;">#</th>
                 <th>Item</th>
-                <th style="width: 35px;" class="text-center">Qty</th>
-                <th style="width: 25px;" class="text-center">Unit</th>
-                <th style="width: 65px;" class="text-end">Price/Unit</th>
-                <th style="width: 65px;" class="text-end">Amount</th>
+                <th style="width: 28px;" class="text-center">Qty</th>
+                <th style="width: 22px;" class="text-center">Unit</th>
+                <th style="width: 55px; white-space:nowrap;" class="text-end">Price/Unit</th>
+                <th style="width: 55px; white-space:nowrap;" class="text-end">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -657,11 +656,11 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                 <?php foreach ($items as $idx => $item): ?>
                   <tr>
                     <td><?= $idx + 1 ?></td>
-                    <td class="fw-bold text-truncate" style="max-width: 80px;"><?= htmlspecialchars($item["item_name"] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
-                    <td class="text-center"><?= $item["quantity"] ?></td>
-                    <td class="text-center"><?= (!empty($item["unit"]) ? htmlspecialchars($item["unit"], ENT_QUOTES, 'UTF-8') : 'PCS') ?></td>
-                    <td class="text-end">₹ <?= number_format((float)($item["rate"] ?? 0), 2) ?></td>
-                    <td class="text-end">₹ <?= number_format((float)($item["total_amount"] ?? 0), 2) ?></td>
+                    <td class="fw-bold" style="word-break: break-word; white-space: normal;"><?= htmlspecialchars($item["item_name"] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td class="text-center" style="width:28px;"><?= $item["quantity"] ?></td>
+                    <td class="text-center" style="width:22px;"><?= (!empty($item["unit"]) ? htmlspecialchars($item["unit"], ENT_QUOTES, 'UTF-8') : 'PCS') ?></td>
+                    <td class="text-end" style="white-space:nowrap; width:55px;">₹ <?= number_format((float)($item["rate"] ?? 0), 2) ?></td>
+                    <td class="text-end" style="white-space:nowrap; width:55px;">₹ <?= number_format((float)($item["total_amount"] ?? 0), 2) ?></td>
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
@@ -677,43 +676,43 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           </table>
 
           <!-- Slip Summary Breakdown -->
-          <table class="table table-borderless table-sm mb-0 ms-auto" style="font-size: 0.7rem;">
+          <table class="table table-borderless table-sm mb-0 ms-auto" style="font-size: 0.65rem;">
             <tr>
               <td class="p-0">Sub Total</td>
-              <td class="text-end p-0">₹ <?= number_format($cleanTaxable, 2) ?></td>
+              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanTaxable, 2) ?></td>
             </tr>
             <?php if (!empty($invoice["is_gst_bill"]) && ($cleanSgst > 0 || $cleanCgst > 0 || $cleanIgst > 0)): ?>
               <?php if (!empty($invoice["is_interstate"])): ?>
                 <tr>
                   <td class="p-0">IGST</td>
-                  <td class="text-end p-0">₹ <?= number_format($cleanIgst, 2) ?></td>
+                  <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanIgst, 2) ?></td>
                 </tr>
               <?php else: ?>
                 <tr>
                   <td class="p-0">SGST</td>
-                  <td class="text-end p-0">₹ <?= number_format($cleanSgst, 2) ?></td>
+                  <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanSgst, 2) ?></td>
                 </tr>
                 <tr>
                   <td class="p-0">CGST</td>
-                  <td class="text-end p-0">₹ <?= number_format($cleanCgst, 2) ?></td>
+                  <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanCgst, 2) ?></td>
                 </tr>
               <?php endif; ?>
             <?php endif; ?>
             <tr>
               <td class="p-0">Round off</td>
-              <td class="text-end p-0">₹ <?= number_format($cleanRoundOff, 2) ?></td>
+              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanRoundOff, 2) ?></td>
             </tr>
-            <tr class="simple-total-bar" style="font-size: 0.72rem;">
+            <tr class="simple-total-bar" style="font-size: 0.67rem;">
               <td class="py-1 px-1">Total</td>
-              <td class="text-end py-1 px-1">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
+              <td class="text-end py-1 px-1" style="white-space:nowrap;">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
             </tr>
             <tr>
               <td class="p-0">Received</td>
-              <td class="text-end p-0">₹ <?= number_format($cleanPaid, 2) ?></td>
+              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanPaid, 2) ?></td>
             </tr>
             <tr>
               <td class="p-0">Balance</td>
-              <td class="text-end p-0">₹ <?= number_format($cleanDue, 2) ?></td>
+              <td class="text-end p-0" style="white-space:nowrap;">₹ <?= number_format($cleanDue, 2) ?></td>
             </tr>
           </table>
         </div>
