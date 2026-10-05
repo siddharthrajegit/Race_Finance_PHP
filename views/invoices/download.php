@@ -659,14 +659,6 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
-              <tr class="total-row">
-                <td></td>
-                <td>Total</td>
-                <td class="text-center"><?= $totalQtyCount ?></td>
-                <td></td>
-                <td></td>
-                <td class="text-end" style="white-space:nowrap;">₹ <?= number_format($cleanTaxable, 2) ?></td>
-              </tr>
             </tbody>
           </table>
 
