@@ -43,6 +43,7 @@
                 <option value="PKT" <?= (!empty($item) && ($item['unit'] ?? '') === 'PKT') ? 'selected' : '' ?>>PKT (Packets)</option>
                 <option value="BDL" <?= (!empty($item) && ($item['unit'] ?? '') === 'BDL') ? 'selected' : '' ?>>BDL (Bundle)</option>
                 <option value="DZ" <?= (!empty($item) && ($item['unit'] ?? '') === 'DZ') ? 'selected' : '' ?>>DZ (Dozen)</option>
+                <option value="ROL" <?= (!empty($item) && ($item['unit'] ?? '') === 'ROL') ? 'selected' : '' ?>>ROL (Rolls)</option>
               </select>
             </div>
           </div>

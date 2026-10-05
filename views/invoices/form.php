@@ -565,6 +565,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
                 <option value="PKT">PKT (Packets)</option>
                 <option value="BDL">BDL (Bundle)</option>
                 <option value="DZ">DZ (Dozen)</option>
+                <option value="ROL">ROL (Rolls)</option>
               </select>
             </div>
 
@@ -615,5 +616,5 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
   </div>
 </div>
 
-<script src="/js/invoice-calc.js?v=3"></script>
+<script src="/js/invoice-calc.js?v=4"></script>
 
