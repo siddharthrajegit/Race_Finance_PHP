@@ -453,6 +453,36 @@ class AdminController {
         ]);
     }
 
+    public function getInspectInvoice(array $params): void {
+        Auth::requireAdmin();
+        $admin = Auth::user();
+        $invoiceId = (int)($params['id'] ?? 0);
+
+        $invoice = Admin::getInvoiceForInspect($invoiceId);
+
+        if (!$invoice) {
+            Flash::set('error_msg', 'Invoice not found.');
+            header('Location: /admin/invoices');
+            exit;
+        }
+
+        Admin::logAction(
+            (int)$admin['id'],
+            $admin['name'],
+            'INSPECT_INVOICE',
+            'Invoice',
+            (string)$invoiceId,
+            "Admin inspected invoice #{$invoice['invoice_number']} belonging to subscriber \"{$invoice['user_name']}\" (Firm: {$invoice['firm_name']})",
+            Security::getClientIp()
+        );
+
+        view('admin/invoice-inspect', [
+            'title'      => "Inspect Invoice: {$invoice['invoice_number']}",
+            'activeMenu' => 'admin-invoices',
+            'invoice'    => $invoice,
+        ]);
+    }
+
     public function getSystemHealth(): void {
         Auth::requireAdmin();
 

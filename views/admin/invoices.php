@@ -91,7 +91,7 @@
                 <?php endif; ?>
               </td>
               <td class="text-end px-3">
-                <a href="/invoices/download/<?= htmlspecialchars((string)($inv['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3" target="_blank" title="Inspect &amp; View Record">
+                <a href="/admin/invoices/<?= htmlspecialchars((string)($inv['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3" title="Inspect &amp; View Record">
                   <i class="bi bi-eye-fill me-1"></i> Inspect
                 </a>
               </td>

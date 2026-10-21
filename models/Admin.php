@@ -399,6 +399,45 @@ class Admin extends Model {
         return $stmt->fetchAll();
     }
 
+    public static function getInvoiceForInspect(int $invoiceId): ?array {
+        $stmt = self::db()->prepare("
+            SELECT
+                inv.*,
+                f.name        AS firm_name,
+                f.gstin       AS firm_gstin,
+                f.address     AS firm_address,
+                f.city        AS firm_city,
+                f.state       AS firm_state,
+                f.pincode     AS firm_pincode,
+                f.phone       AS firm_phone,
+                f.email       AS firm_email,
+                f.logo_path   AS firm_logo_path,
+                u.id          AS user_id,
+                u.name        AS user_name,
+                u.phone       AS user_phone,
+                u.email       AS user_email,
+                u.status      AS user_status,
+                u.role        AS user_role,
+                u.subscription_expires_at AS user_subscription_expires_at
+            FROM invoices inv
+            JOIN firms f ON f.id = inv.firm_id
+            JOIN users u ON u.id = f.user_id
+            WHERE inv.id = ?
+        ");
+        $stmt->execute([$invoiceId]);
+        $invoice = $stmt->fetch();
+        if (!$invoice) return null;
+
+        // Fetch line items
+        $itemStmt = self::db()->prepare("
+            SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id ASC
+        ");
+        $itemStmt->execute([$invoiceId]);
+        $invoice['items'] = $itemStmt->fetchAll();
+
+        return $invoice;
+    }
+
     public static function getRecentActivities(int $limit = 15): array {
         $users = self::db()->query("
             SELECT 'user_registered' as type, name as title, COALESCE(phone, email, 'New Account') as subtitle, created_at, id as entity_id

@@ -167,6 +167,7 @@ Router::post('/admin/users/:id/reset-password', [AdminController::class, 'postRe
 Router::post('/admin/users/:id/delete', [AdminController::class, 'postDeleteUser']);
 Router::get('/admin/firms', [AdminController::class, 'getFirms']);
 Router::get('/admin/invoices', [AdminController::class, 'getInvoices']);
+Router::get('/admin/invoices/:id', [AdminController::class, 'getInspectInvoice']);
 Router::get('/admin/system', [AdminController::class, 'getSystemHealth']);
 Router::post('/admin/system/vacuum', [AdminController::class, 'postVacuumDb']);
 Router::post('/admin/system/clean-orphans', [AdminController::class, 'postCleanOrphans']);
