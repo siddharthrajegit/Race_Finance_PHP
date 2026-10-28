@@ -570,13 +570,21 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
             </div>
 
             <div class="col-md-3">
-              <label class="form-label small fw-bold"><?= $invoiceType === 'purchase' ? 'Price (Excl. GST)' : 'Sale Price (Without GST)' ?> <span class="text-danger">*</span></label>
-              <input type="number" class="form-control form-control-sm text-end" name="sale_price" id="quickItemPrice" min="0" step="any" placeholder="0.00" required>
+              <label class="form-label small fw-bold text-dark mb-1"><?= $invoiceType === 'purchase' ? 'Price (Excl. GST)' : 'Sale Price (Ex-GST)' ?> <span class="text-danger">*</span></label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light text-muted">₹</span>
+                <input type="number" class="form-control form-control-sm text-end font-monospace" name="sale_price" id="quickItemPrice" min="0" step="any" placeholder="0.00" required>
+              </div>
+              <div class="text-muted" style="font-size: 0.7rem;">Without GST</div>
             </div>
 
             <div class="col-md-3">
-              <label class="form-label small fw-bold"><?= $invoiceType === 'purchase' ? 'Price (Incl. GST)' : 'Sale Price (With GST)' ?></label>
-              <input type="number" class="form-control form-control-sm text-end" name="sale_price_with_tax" id="quickItemPriceWithTax" min="0" step="any" placeholder="0.00">
+              <label class="form-label small fw-bold text-dark mb-1"><?= $invoiceType === 'purchase' ? 'Price (Incl. GST)' : 'Sale Price (Inc-GST)' ?></label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light text-muted">₹</span>
+                <input type="number" class="form-control form-control-sm text-end font-monospace" name="sale_price_with_tax" id="quickItemPriceWithTax" min="0" step="any" placeholder="0.00">
+              </div>
+              <div class="text-muted" style="font-size: 0.7rem;">With GST (MRP)</div>
             </div>
 
             <div class="col-md-3">

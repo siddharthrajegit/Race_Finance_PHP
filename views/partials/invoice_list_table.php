@@ -1,15 +1,16 @@
-<!-- Floating / Sticky Bulk Action Bar -->
-<div class="bulk-action-bar card bg-dark text-white shadow-lg p-2 px-3 mb-2 rounded-3 d-none align-items-center justify-content-between flex-wrap gap-2" id="bulkActionBar_<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>">
+<!-- Floating Bulk Action Dock -->
+<div class="bulk-action-bar d-none align-items-center justify-content-between flex-wrap gap-3" id="bulkActionBar_<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>">
   <div class="d-flex align-items-center gap-2">
-    <span class="badge bg-warning text-dark fw-bold fs-6 bulk-selected-counter">0</span>
-    <span class="small fw-semibold">records selected</span>
-    <button type="button" class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none ms-2 bulk-select-all-filtered-btn" style="font-size: 0.8rem;">Select All Visible</button>
-    <span class="text-white-50">&bull;</span>
-    <button type="button" class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none bulk-clear-selection-btn" style="font-size: 0.8rem;">Clear Selection</button>
+    <span class="bulk-selected-counter">0</span>
+    <span class="small fw-semibold text-white">selected</span>
+    <span class="text-white-50 mx-1">&bull;</span>
+    <button type="button" class="btn btn-sm btn-link text-info p-0 text-decoration-none bulk-select-all-filtered-btn" style="font-size: 0.8rem;">Select All Visible</button>
+    <span class="text-white-50 mx-1">&bull;</span>
+    <button type="button" class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none bulk-clear-selection-btn" style="font-size: 0.8rem;">Clear</button>
   </div>
   <div class="d-flex align-items-center gap-2">
-    <button type="button" class="btn btn-success btn-sm fw-semibold rounded-pill px-3 shadow-sm bulk-print-btn" data-target-table="<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>" data-doc-type="<?= ($paymentType ?? '') === 'payment_out' ? 'purchase' : 'sale' ?>">
-      <i class="bi bi-printer me-1"></i> Print Selected (Bulk)
+    <button type="button" class="btn bulk-print-btn btn-sm shadow d-flex align-items-center" data-target-table="<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>" data-doc-type="<?= ($paymentType ?? '') === 'payment_out' ? 'purchase' : 'sale' ?>">
+      <i class="bi bi-printer-fill me-1"></i> Print Selected
     </button>
   </div>
 </div>
@@ -20,29 +21,37 @@
       <table class="table table-hover align-middle mb-0 w-100" id="<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>" style="font-size: 0.85rem;">
         <thead class="table-light">
           <tr>
-            <th style="width: 32px; padding: 0.5rem 0.45rem;" class="text-center">
+            <th style="width: 36px; padding: 0.6rem 0.5rem;" class="text-center">
               <input type="checkbox" class="form-check-input bulk-select-all" data-target-table="<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>" title="Select / Deselect All Visible">
             </th>
-            <th style="padding: 0.5rem 0.65rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="invoice-number" role="button" title="Click to sort by Invoice Number">
-              <span>Invoice #</span>
-              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            <th style="padding: 0.6rem 0.75rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="invoice-number" role="button" title="Click to sort by Invoice Number">
+              <div class="d-inline-flex align-items-center">
+                <span>Invoice #</span>
+                <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span>
+              </div>
             </th>
-            <th style="padding: 0.5rem 0.65rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="invoice-date" role="button" title="Click to sort by Date">
-              <span>Date</span>
-              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            <th style="padding: 0.6rem 0.75rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="invoice-date" role="button" title="Click to sort by Date">
+              <div class="d-inline-flex align-items-center">
+                <span>Date</span>
+                <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span>
+              </div>
             </th>
-            <th style="padding: 0.5rem 0.65rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="party-name" role="button" title="Click to sort by <?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?>">
-              <span><?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?></span>
-              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            <th style="padding: 0.6rem 0.75rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="party-name" role="button" title="Click to sort by <?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?>">
+              <div class="d-inline-flex align-items-center">
+                <span><?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span>
+              </div>
             </th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center text-nowrap">Type</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end sortable-th user-select-none text-nowrap" data-sort-key="grand-total" role="button" title="Click to sort by Amount">
-              <span>Total (₹)</span>
-              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            <th style="padding: 0.6rem 0.5rem;" class="text-center text-nowrap">Type</th>
+            <th style="padding: 0.6rem 0.75rem;" class="text-end sortable-th user-select-none text-nowrap" data-sort-key="grand-total" role="button" title="Click to sort by Amount">
+              <div class="d-inline-flex align-items-center justify-content-end w-100">
+                <span>Total (₹)</span>
+                <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span>
+              </div>
             </th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end text-nowrap">Paid / Balance</th>
-            <th style="width: 45px; padding: 0.5rem 0.25rem;" class="text-center text-nowrap">Status</th>
-            <th style="width: 36px; padding: 0.5rem 0.35rem;" class="text-center"></th>
+            <th style="padding: 0.6rem 0.75rem;" class="text-end text-nowrap">Paid / Balance</th>
+            <th style="width: 45px; padding: 0.6rem 0.35rem;" class="text-center text-nowrap">Status</th>
+            <th style="width: 36px; padding: 0.6rem 0.35rem;" class="text-center"></th>
           </tr>
         </thead>
         <tbody>

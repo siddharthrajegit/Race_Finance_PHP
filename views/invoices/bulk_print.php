@@ -27,8 +27,9 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
       margin: 0 auto 30px auto;
       background: #fff;
       padding: 12mm 15mm;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
       border: 1px solid #cbd5e1;
+      border-radius: 8px;
     }
     .tax-invoice-box {
       border: 1px solid #000;
@@ -72,20 +73,22 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
 </head>
 <body>
 
-  <!-- Sticky Top Action Bar for Bulk Printing -->
-  <div class="container mb-3 no-print" style="max-width: 210mm;">
-    <div class="d-flex flex-wrap justify-content-between align-items-center bg-dark text-white p-2 px-3 rounded shadow-sm gap-2">
-      <div class="d-flex align-items-center">
-        <i class="bi bi-printer fs-5 me-2 text-warning"></i>
-        <span class="fw-semibold">Bulk Print Queue: <strong><?= $invCount ?> Invoices / Records</strong></span>
-      </div>
-      <div class="d-flex gap-2">
-        <button onclick="window.print()" class="btn btn-primary btn-sm px-3 fw-bold">
-          <i class="bi bi-printer me-1"></i> Print All Now
-        </button>
-        <button onclick="window.close()" class="btn btn-outline-light btn-sm px-3">
-          Close Window
-        </button>
+  <!-- Floating Sticky Action Bar for Bulk Printing -->
+  <div class="sticky-top py-2 mb-3 no-print" style="background: rgba(241, 245, 249, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+    <div class="container" style="max-width: 210mm;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center bg-dark text-white p-2 px-3 rounded-pill shadow gap-2" style="border: 1px solid rgba(255, 255, 255, 0.15);">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary text-white rounded-pill px-2 py-1"><i class="bi bi-printer-fill"></i></span>
+          <span class="fw-semibold small">Bulk Print Queue: <strong class="text-warning"><?= $invCount ?></strong> invoices ready</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button onclick="window.print()" class="btn btn-success btn-sm px-3 rounded-pill fw-bold shadow-sm d-flex align-items-center">
+            <i class="bi bi-printer me-1"></i> Print All Now
+          </button>
+          <button onclick="window.close()" class="btn btn-outline-light btn-sm px-3 rounded-pill">
+            Close
+          </button>
+        </div>
       </div>
     </div>
   </div>

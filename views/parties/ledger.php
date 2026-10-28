@@ -127,43 +127,65 @@ foreach ($txList as $tx) {
 <!-- =============================================================
      1b. FILTER & PRINT CONTROLS (Custom Date Range & Last N Invoices)
 ============================================================= -->
-<div class="card shadow-sm border-0 mb-3 d-print-none">
-  <div class="card-body p-2 p-md-3">
-    <form method="GET" action="/parties/ledger/<?= $party['id'] ?>" class="row g-2 align-items-center">
-      <div class="col-md-3 col-sm-6">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-muted">From</span>
+<div class="card statement-filter-card mb-3 d-print-none shadow-sm">
+  <div class="card-body p-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 pb-2 border-bottom">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle p-2 rounded-circle">
+          <i class="bi bi-funnel-fill"></i>
+        </span>
+        <div>
+          <span class="fw-bold text-dark small">Statement Filter &amp; Range</span>
+          <span class="text-muted ms-1 small d-none d-md-inline">&bull; Filter by date range or recent transactions</span>
+        </div>
+      </div>
+      <?php if (!empty($from) || !empty($to) || !empty($lastN)): ?>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-semibold small">
+            <i class="bi bi-check-circle me-1"></i> Active Filter Applied
+          </span>
+          <a href="/parties/ledger/<?= $party['id'] ?>" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
+            <i class="bi bi-x-circle me-1"></i> Reset
+          </a>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <form method="GET" action="/parties/ledger/<?= $party['id'] ?>" class="row g-2 align-items-center pt-1">
+      <div class="col-lg-3 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white text-dark"><i class="bi bi-calendar-event text-primary me-1"></i> From</span>
           <input type="date" name="from" class="form-control" value="<?= htmlspecialchars($from ?? '', ENT_QUOTES, 'UTF-8') ?>">
         </div>
       </div>
-      <div class="col-md-3 col-sm-6">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-muted">To</span>
+      <div class="col-lg-3 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white text-dark"><i class="bi bi-calendar-event text-primary me-1"></i> To</span>
           <input type="date" name="to" class="form-control" value="<?= htmlspecialchars($to ?? '', ENT_QUOTES, 'UTF-8') ?>">
         </div>
       </div>
-      <div class="col-md-3 col-sm-6">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-muted">Records</span>
+      <div class="col-lg-3 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white text-dark"><i class="bi bi-collection text-primary me-1"></i> Limit</span>
           <select name="last_n" class="form-select">
             <option value="">All Transactions</option>
-            <option value="5" <?= (($lastN ?? null) === 5) ? 'selected' : '' ?>>Last 5 Invoices / Slips</option>
-            <option value="10" <?= (($lastN ?? null) === 10) ? 'selected' : '' ?>>Last 10 Invoices / Slips</option>
-            <option value="20" <?= (($lastN ?? null) === 20) ? 'selected' : '' ?>>Last 20 Invoices / Slips</option>
-            <option value="50" <?= (($lastN ?? null) === 50) ? 'selected' : '' ?>>Last 50 Invoices / Slips</option>
+            <option value="5" <?= (($lastN ?? null) === 5) ? 'selected' : '' ?>>Last 5 Invoices</option>
+            <option value="10" <?= (($lastN ?? null) === 10) ? 'selected' : '' ?>>Last 10 Invoices</option>
+            <option value="20" <?= (($lastN ?? null) === 20) ? 'selected' : '' ?>>Last 20 Invoices</option>
+            <option value="50" <?= (($lastN ?? null) === 50) ? 'selected' : '' ?>>Last 50 Invoices</option>
           </select>
         </div>
       </div>
-      <div class="col-md-3 col-sm-6 d-flex gap-1">
-        <button type="submit" class="btn btn-sm btn-primary flex-grow-1" style="background-color: #1e3a8a; border-color: #1e3a8a;">
-          <i class="bi bi-filter me-1"></i> Filter
+      <div class="col-lg-3 col-md-6 d-flex gap-2">
+        <button type="submit" class="btn btn-statement-filter flex-grow-1 shadow-sm d-flex align-items-center justify-content-center">
+          <i class="bi bi-funnel me-1"></i> Apply Filter
         </button>
         <?php if (!empty($from) || !empty($to) || !empty($lastN)): ?>
-          <a href="/parties/ledger/<?= $party['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Reset Filters">
-            <i class="bi bi-x-circle"></i>
+          <a href="/parties/ledger/<?= $party['id'] ?>" class="btn btn-outline-secondary px-2" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
           </a>
         <?php endif; ?>
-        <button type="submit" name="print" value="1" class="btn btn-sm btn-dark" title="Filter & Print Statement">
+        <button type="submit" name="print" value="1" class="btn btn-dark shadow-sm d-flex align-items-center" title="Filter & Print Statement">
           <i class="bi bi-printer me-1"></i> Print
         </button>
       </div>

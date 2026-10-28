@@ -1488,6 +1488,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return (isNaN(rate) || rate < 0) ? 0 : rate;
   }
 
+  function triggerQuickPricePulse(el) {
+    if (!el) return;
+    el.classList.remove('calc-highlight');
+    void el.offsetWidth;
+    el.classList.add('calc-highlight');
+  }
+
   function updateQuickPriceFromWithoutGst() {
     if (!quickItemPrice || !quickItemPriceWithTax) return;
     const val = quickItemPrice.value.trim();
@@ -1503,6 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taxRate = getQuickTaxRate();
     const withTax = base * (1 + (taxRate / 100));
     quickItemPriceWithTax.value = parseFloat(withTax.toFixed(2));
+    triggerQuickPricePulse(quickItemPriceWithTax);
   }
 
   function updateQuickPriceFromWithGst() {
@@ -1520,6 +1528,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taxRate = getQuickTaxRate();
     const withoutTax = total / (1 + (taxRate / 100));
     quickItemPrice.value = parseFloat(withoutTax.toFixed(2));
+    triggerQuickPricePulse(quickItemPrice);
   }
 
   if (quickItemPrice) {

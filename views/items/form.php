@@ -48,7 +48,7 @@
             </div>
           </div>
 
-          <!-- Pricing & GST Tax Rate -->
+          <!-- Pricing & GST Tax Rate Studio -->
           <?php
             $currentTaxRate = !empty($item) ? (float)($item['tax_rate'] ?? 0) : 0.0;
             $isStandardTax = in_array($currentTaxRate, [0.0, 5.0, 12.0, 18.0, 28.0], true);
@@ -56,50 +56,96 @@
             $initialSalePrice = !empty($item) && isset($item['sale_price']) && (float)$item['sale_price'] > 0 ? (float)$item['sale_price'] : null;
             $initialSaleWithTax = $initialSalePrice !== null ? round($initialSalePrice * (1 + ($currentTaxRate / 100)), 2) : null;
           ?>
-          <div class="row g-3 mb-3">
-            <div class="col-md-3">
-              <label for="sale_price" class="form-label">Sale Price (Without GST) <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <span class="input-group-text bg-light">₹</span>
-                <input type="number" class="form-control text-end" id="sale_price" name="sale_price" step="any" min="0" placeholder="0.00" value="<?= $initialSalePrice !== null ? htmlspecialchars((string)$initialSalePrice, ENT_QUOTES, 'UTF-8') : '' ?>">
-              </div>
-              <div class="form-text small text-muted">Excl. GST (Base Price)</div>
-            </div>
-            <div class="col-md-3">
-              <label for="sale_price_with_tax" class="form-label">Sale Price (With GST)</label>
-              <div class="input-group">
-                <span class="input-group-text bg-light">₹</span>
-                <input type="number" class="form-control text-end" id="sale_price_with_tax" name="sale_price_with_tax" step="any" min="0" placeholder="0.00" value="<?= $initialSaleWithTax !== null ? htmlspecialchars((string)$initialSaleWithTax, ENT_QUOTES, 'UTF-8') : '' ?>">
-              </div>
-              <div class="form-text small text-muted">Incl. GST (MRP / Final)</div>
-            </div>
-            <div class="col-md-3">
-              <label for="tax_rate_select" class="form-label">GST Tax Rate (%)</label>
-              <select class="form-select" id="tax_rate_select">
-                <option value="0" <?= (empty($item) || ($isStandardTax && $currentTaxRate === 0.0)) ? 'selected' : '' ?>>0% (Exempt / Nil)</option>
-                <option value="5" <?= ($isStandardTax && $currentTaxRate === 5.0) ? 'selected' : '' ?>>5% (GST 5%)</option>
-                <option value="12" <?= ($isStandardTax && $currentTaxRate === 12.0) ? 'selected' : '' ?>>12% (GST 12%)</option>
-                <option value="18" <?= ($isStandardTax && $currentTaxRate === 18.0) ? 'selected' : '' ?>>18% (GST 18%)</option>
-                <option value="28" <?= ($isStandardTax && $currentTaxRate === 28.0) ? 'selected' : '' ?>>28% (GST 28%)</option>
-                <option value="custom" <?= $isCustomTax ? 'selected' : '' ?>>Custom Tax %</option>
-              </select>
-              <div id="customTaxRateContainer" class="mt-2 <?= $isCustomTax ? '' : 'd-none' ?>">
-                <div class="input-group">
-                  <span class="input-group-text bg-light">Custom Rate</span>
-                  <input type="number" class="form-control text-end" id="custom_tax_rate_input" placeholder="1 - 100" min="1" max="100" step="any" value="<?= $isCustomTax ? htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
-                  <span class="input-group-text bg-light">%</span>
+          <div class="pricing-studio-card p-3 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary text-white p-2 rounded-circle">
+                  <i class="bi bi-calculator"></i>
+                </span>
+                <div>
+                  <h6 class="fw-bold text-dark mb-0">Item Pricing &amp; GST Configuration</h6>
+                  <span class="text-muted small" style="font-size: 0.75rem;">Enter either price &mdash; the other calculates automatically based on GST rate</span>
                 </div>
-                <div class="form-text small text-muted">Enter a custom rate between 1 and 100%</div>
               </div>
-              <input type="hidden" id="tax_rate" name="tax_rate" value="<?= htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') ?>">
+              <div class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 small fw-semibold">
+                <i class="bi bi-arrow-left-right me-1"></i> Bidirectional Auto-Calculation
+              </div>
             </div>
-            <div class="col-md-3">
-              <label for="purchase_price" class="form-label">Purchase Price (₹)</label>
-              <div class="input-group">
-                <span class="input-group-text bg-light">₹</span>
-                <input type="number" class="form-control text-end" id="purchase_price" name="purchase_price" step="any" min="0" placeholder="0.00" value="<?= htmlspecialchars((string)($item['purchase_price'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+
+            <!-- Dual Sales Pricing Row -->
+            <div class="row g-3 mb-3">
+              <!-- Without GST -->
+              <div class="col-md-6">
+                <div class="dual-price-box">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label for="sale_price" class="form-label fw-bold text-dark mb-0">
+                      Sale Price (Without GST) <span class="text-danger">*</span>
+                    </label>
+                    <span class="price-calc-badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                      Base / Excl. GST
+                    </span>
+                  </div>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light fw-bold text-dark">₹</span>
+                    <input type="number" class="form-control form-control-lg text-end fw-bold font-monospace" id="sale_price" name="sale_price" step="any" min="0" placeholder="0.00" value="<?= $initialSalePrice !== null ? htmlspecialchars((string)$initialSalePrice, ENT_QUOTES, 'UTF-8') : '' ?>">
+                  </div>
+                  <div class="form-text small text-muted mt-1">Base item selling price excluding GST</div>
+                </div>
               </div>
-              <div class="form-text small text-muted">Purchase / Cost Price</div>
+
+              <!-- With GST -->
+              <div class="col-md-6">
+                <div class="dual-price-box box-with-tax">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label for="sale_price_with_tax" class="form-label fw-bold text-dark mb-0">
+                      Sale Price (With GST)
+                    </label>
+                    <span class="price-calc-badge bg-primary-subtle text-primary border border-primary-subtle">
+                      MRP / Incl. GST
+                    </span>
+                  </div>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white fw-bold text-dark">₹</span>
+                    <input type="number" class="form-control form-control-lg text-end fw-bold font-monospace" id="sale_price_with_tax" name="sale_price_with_tax" step="any" min="0" placeholder="0.00" value="<?= $initialSaleWithTax !== null ? htmlspecialchars((string)$initialSaleWithTax, ENT_QUOTES, 'UTF-8') : '' ?>">
+                  </div>
+                  <div class="form-text small text-muted mt-1">Final customer bill amount including GST</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tax Rate & Purchase Price Sub-Row -->
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="tax_rate_select" class="form-label fw-semibold text-dark small">Applicable GST Tax Rate (%)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white text-primary"><i class="bi bi-percent"></i></span>
+                  <select class="form-select" id="tax_rate_select">
+                    <option value="0" <?= (empty($item) || ($isStandardTax && $currentTaxRate === 0.0)) ? 'selected' : '' ?>>0% (Exempt / Nil)</option>
+                    <option value="5" <?= ($isStandardTax && $currentTaxRate === 5.0) ? 'selected' : '' ?>>5% (GST 5%)</option>
+                    <option value="12" <?= ($isStandardTax && $currentTaxRate === 12.0) ? 'selected' : '' ?>>12% (GST 12%)</option>
+                    <option value="18" <?= ($isStandardTax && $currentTaxRate === 18.0) ? 'selected' : '' ?>>18% (GST 18%)</option>
+                    <option value="28" <?= ($isStandardTax && $currentTaxRate === 28.0) ? 'selected' : '' ?>>28% (GST 28%)</option>
+                    <option value="custom" <?= $isCustomTax ? 'selected' : '' ?>>Custom Tax %</option>
+                  </select>
+                </div>
+                <div id="customTaxRateContainer" class="mt-2 <?= $isCustomTax ? '' : 'd-none' ?>">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">Custom Rate</span>
+                    <input type="number" class="form-control text-end font-monospace" id="custom_tax_rate_input" placeholder="1 - 100" min="1" max="100" step="any" value="<?= $isCustomTax ? htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                    <span class="input-group-text bg-light">%</span>
+                  </div>
+                  <div class="form-text small text-muted">Enter custom rate (1 - 100%)</div>
+                </div>
+                <input type="hidden" id="tax_rate" name="tax_rate" value="<?= htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') ?>">
+              </div>
+              <div class="col-md-6">
+                <label for="purchase_price" class="form-label fw-semibold text-dark small">Purchase Price / Cost (₹)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white text-muted">₹</span>
+                  <input type="number" class="form-control text-end font-monospace" id="purchase_price" name="purchase_price" step="any" min="0" placeholder="0.00" value="<?= htmlspecialchars((string)($item['purchase_price'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                </div>
+                <div class="form-text small text-muted">Your acquisition / supplier cost per unit</div>
+              </div>
             </div>
           </div>
 
@@ -154,6 +200,13 @@ document.addEventListener('DOMContentLoaded', function() {
     return (isNaN(rate) || rate < 0) ? 0 : rate;
   }
 
+  function triggerPulse(element) {
+    if (!element) return;
+    element.classList.remove('calc-highlight');
+    void element.offsetWidth;
+    element.classList.add('calc-highlight');
+  }
+
   function updatePriceFromWithoutGst() {
     if (!salePriceWithoutTax || !salePriceWithTax) return;
     const val = salePriceWithoutTax.value.trim();
@@ -169,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const taxRate = getTaxRate();
     const withTax = base * (1 + (taxRate / 100));
     salePriceWithTax.value = parseFloat(withTax.toFixed(2));
+    triggerPulse(salePriceWithTax);
   }
 
   function updatePriceFromWithGst() {
@@ -186,6 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const taxRate = getTaxRate();
     const withoutTax = total / (1 + (taxRate / 100));
     salePriceWithoutTax.value = parseFloat(withoutTax.toFixed(2));
+    triggerPulse(salePriceWithoutTax);
   }
 
   if (salePriceWithoutTax) {

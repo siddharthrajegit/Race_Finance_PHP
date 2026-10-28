@@ -81,6 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       window.updateBulkBar = function(tId) {
         if (tId && tId !== tableId) return;
+        const visibleRows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
+        visibleRows.forEach(tr => {
+          const cb = tr.querySelector('.invoice-row-checkbox');
+          if (cb) tr.classList.toggle('row-selected', cb.checked);
+        });
+
         const checkedBoxes = table.querySelectorAll('tbody tr:not([style*="display: none"]) .invoice-row-checkbox:checked');
         const count = checkedBoxes.length;
 
@@ -203,16 +209,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (key === sortKey) {
           th.dataset.currentDirection = sortDirection;
-          th.classList.add('table-primary');
+          th.classList.add('table-primary', 'active-sort');
           if (sortDirection === 'asc') {
-            iconSpan.innerHTML = '<i class="bi bi-arrow-up text-primary fw-bold"></i>';
+            iconSpan.innerHTML = '<i class="bi bi-arrow-up"></i>';
           } else {
-            iconSpan.innerHTML = '<i class="bi bi-arrow-down text-primary fw-bold"></i>';
+            iconSpan.innerHTML = '<i class="bi bi-arrow-down"></i>';
           }
         } else {
           th.removeAttribute('data-current-direction');
-          th.classList.remove('table-primary');
-          iconSpan.innerHTML = '<i class="bi bi-arrow-down-up text-muted"></i>';
+          th.classList.remove('table-primary', 'active-sort');
+          iconSpan.innerHTML = '<i class="bi bi-arrow-down-up"></i>';
         }
       });
 

@@ -1,14 +1,48 @@
 /* Sortable Table Headers */
 .sortable-th {
   cursor: pointer;
-  transition: background-color 0.15s ease-in-out;
+  user-select: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 .sortable-th:hover {
-  background-color: #e2e8f0 !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  color: #1d4ed8 !important;
+}
+.sortable-th.table-primary,
+.sortable-th.active-sort {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  color: #1e3a8a !important;
+  font-weight: 600;
 }
 .sortable-th .sort-icon {
-  display: inline-block;
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  background: rgba(0, 0, 0, 0.04);
+  color: #64748b;
+  margin-left: 6px;
+  transition: all 0.18s ease;
+  vertical-align: middle;
+}
+.sortable-th:hover .sort-icon {
+  background: rgba(59, 130, 246, 0.18);
+  color: #2563eb;
+}
+.sortable-th.table-primary .sort-icon,
+.sortable-th.active-sort .sort-icon {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+.sortable-th.table-primary .sort-icon i,
+.sortable-th.active-sort .sort-icon i {
+  color: #ffffff !important;
+  font-weight: 700;
 }
 
 :root {
@@ -496,6 +530,219 @@ main {
 .setting-radio-card:has(input[type="radio"]:checked) {
   border-color: #2563eb !important;
   background-color: #eff6ff !important;
+}
+
+/* -------------------------------------------------------------
+   FEATURE 4: FLOATING BULK ACTION DOCK & SELECTION STYLES
+------------------------------------------------------------- */
+.bulk-action-bar {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 1060 !important;
+  min-width: 320px;
+  max-width: 92vw;
+  background: rgba(15, 23, 42, 0.96) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 50rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
+  padding: 0.55rem 1.25rem !important;
+  animation: bulkBarFloatUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bulkBarFloatUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.bulk-selected-counter {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  padding: 0.22rem 0.65rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+}
+
+.bulk-print-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 0.42rem 1.25rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+  transition: all 0.18s ease !important;
+  color: #ffffff !important;
+}
+
+.bulk-print-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* Enhanced Checkboxes & Row Selection Highlight */
+.bulk-select-all,
+.invoice-row-checkbox {
+  width: 17px !important;
+  height: 17px !important;
+  border-radius: 4px !important;
+  border: 1.5px solid #94a3b8 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.bulk-select-all:checked,
+.invoice-row-checkbox:checked {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+tr.row-selected {
+  background-color: rgba(59, 130, 246, 0.07) !important;
+}
+
+tr.row-selected td {
+  background-color: transparent !important;
+}
+
+/* -------------------------------------------------------------
+   FEATURE 1 & 4: INVOICE FILTER TOOLBAR STYLES
+------------------------------------------------------------- */
+.invoice-filter-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+.invoice-filter-card .input-group-text {
+  font-size: 0.84rem;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.invoice-filter-card .form-control,
+.invoice-filter-card .form-select {
+  border-color: #e2e8f0;
+  font-size: 0.84rem;
+}
+
+.invoice-filter-card .form-control:focus,
+.invoice-filter-card .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.btn-clear-date {
+  border-color: #e2e8f0 !important;
+  color: #64748b !important;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-date:hover {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+  border-color: #fca5a5 !important;
+}
+
+/* -------------------------------------------------------------
+   FEATURE 3: DUAL SALES PRICING STUDIO
+------------------------------------------------------------- */
+.pricing-studio-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pricing-studio-card:focus-within {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+.dual-price-box {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  transition: all 0.18s ease;
+  height: 100%;
+}
+
+.dual-price-box:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.dual-price-box.box-with-tax {
+  background: #faf5ff;
+  border-color: #e9d5ff;
+}
+
+.dual-price-box.box-with-tax:focus-within {
+  border-color: #9333ea;
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.12);
+}
+
+.price-calc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+
+@keyframes calcHighlightPulse {
+  0% { background-color: rgba(59, 130, 246, 0.25); }
+  100% { background-color: transparent; }
+}
+
+.calc-highlight {
+  animation: calcHighlightPulse 0.5s ease-out;
+}
+
+/* -------------------------------------------------------------
+   FEATURE 6: STATEMENT FILTER & CUSTOM RANGE STYLES
+------------------------------------------------------------- */
+.statement-filter-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.statement-filter-card .input-group-text {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.btn-statement-filter {
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-statement-filter:hover {
+  background: #1e40af !important;
+  border-color: #1e40af !important;
+  transform: translateY(-1px);
 }
 
 /* -------------------------------------------------------------
