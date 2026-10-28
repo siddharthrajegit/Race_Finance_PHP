@@ -14,13 +14,29 @@ $invList = !empty($invoices) ? $invoices : [];
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body p-2 p-md-3">
     <div class="row g-2 align-items-center">
-      <div class="col-md-6">
+      <div class="col-md-5">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
           <input type="text" class="form-control border-start-0" placeholder="Search sales by record no, customer, phone..." data-table-search="salesTable">
         </div>
       </div>
-      <div class="col-md-6 text-md-end">
+      <div class="col-md-4 col-sm-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white text-muted"><i class="bi bi-arrow-down-up me-1"></i> Sort</span>
+          <select class="form-select border-start-0" data-table-sort="salesTable">
+            <option value="">Default (Date: Newest First)</option>
+            <option value="invoice-date-desc">Date (Newest First)</option>
+            <option value="invoice-date-asc">Date (Oldest First)</option>
+            <option value="invoice-number-asc">Invoice # (Ascending 0 &rarr; 9)</option>
+            <option value="invoice-number-desc">Invoice # (Descending 9 &rarr; 0)</option>
+            <option value="party-name-asc">Customer Name (A &rarr; Z)</option>
+            <option value="party-name-desc">Customer Name (Z &rarr; A)</option>
+            <option value="grand-total-desc">Amount (Highest First)</option>
+            <option value="grand-total-asc">Amount (Lowest First)</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 text-md-end">
         <span class="badge bg-light text-dark border p-2">
           Total Records: <strong><?= count($invList) ?></strong>
         </span>

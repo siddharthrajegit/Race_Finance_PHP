@@ -25,6 +25,127 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 1b. Table Column Sorting & Sort Dropdown Handler
+  function initTableSorting() {
+    const sortDropdowns = document.querySelectorAll('[data-table-sort]');
+    const sortableHeaders = document.querySelectorAll('.sortable-th');
+
+    function camelCase(str) {
+      return str.replace(/-([a-z])/g, g => g[1].toUpperCase());
+    }
+
+    function sortTable(tableId, sortKey, sortDirection) {
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      const tbody = table.querySelector('tbody');
+      if (!tbody) return;
+
+      const camelKey = camelCase(sortKey);
+      const rows = Array.from(tbody.querySelectorAll('tr[data-' + sortKey + ']'));
+      if (rows.length === 0) return;
+
+      rows.sort((a, b) => {
+        const valA = a.dataset[camelKey] || '';
+        const valB = b.dataset[camelKey] || '';
+
+        let comparison = 0;
+        if (sortKey === 'grand-total') {
+          const numA = parseFloat(valA) || 0;
+          const numB = parseFloat(valB) || 0;
+          comparison = numA - numB;
+        } else if (sortKey === 'invoice-date') {
+          comparison = valA.localeCompare(valB);
+        } else if (sortKey === 'invoice-number') {
+          // Natural alphanumeric sort for invoice numbers (e.g. 2 comes before 10)
+          comparison = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+        } else {
+          // Party name or other text
+          comparison = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
+        }
+
+        return sortDirection === 'desc' ? -comparison : comparison;
+      });
+
+      // Append back to tbody in sorted order
+      rows.forEach(row => tbody.appendChild(row));
+
+      // Update Header Icons & Active State
+      const headers = table.querySelectorAll('.sortable-th');
+      headers.forEach(th => {
+        const key = th.dataset.sortKey;
+        const iconSpan = th.querySelector('.sort-icon');
+        if (!iconSpan) return;
+
+        if (key === sortKey) {
+          th.dataset.currentDirection = sortDirection;
+          th.classList.add('table-primary');
+          if (sortDirection === 'asc') {
+            iconSpan.innerHTML = '<i class="bi bi-arrow-up text-primary fw-bold"></i>';
+          } else {
+            iconSpan.innerHTML = '<i class="bi bi-arrow-down text-primary fw-bold"></i>';
+          }
+        } else {
+          th.removeAttribute('data-current-direction');
+          th.classList.remove('table-primary');
+          iconSpan.innerHTML = '<i class="bi bi-arrow-down-up text-muted"></i>';
+        }
+      });
+
+      // Synchronize select dropdown if present
+      const dropdown = document.querySelector(`[data-table-sort="${tableId}"]`);
+      if (dropdown) {
+        const optionVal = `${sortKey}-${sortDirection}`;
+        const hasOption = Array.from(dropdown.options).some(opt => opt.value === optionVal);
+        if (hasOption) {
+          dropdown.value = optionVal;
+        }
+      }
+    }
+
+    // Header click event
+    sortableHeaders.forEach(th => {
+      th.addEventListener('click', () => {
+        const table = th.closest('table');
+        if (!table) return;
+        const tableId = table.id;
+        const sortKey = th.dataset.sortKey;
+        if (!sortKey) return;
+
+        const currentDir = th.dataset.currentDirection;
+        let nextDir = 'asc';
+        if (currentDir === 'asc') {
+          nextDir = 'desc';
+        } else if (currentDir === 'desc') {
+          nextDir = 'asc';
+        } else {
+          // Default direction: descending for amounts and dates, ascending for names and numbers
+          nextDir = (sortKey === 'grand-total' || sortKey === 'invoice-date') ? 'desc' : 'asc';
+        }
+
+        sortTable(tableId, sortKey, nextDir);
+      });
+    });
+
+    // Dropdown change event
+    sortDropdowns.forEach(dropdown => {
+      const targetTableId = dropdown.dataset.tableSort;
+      dropdown.addEventListener('change', () => {
+        const val = dropdown.value;
+        if (!val) {
+          sortTable(targetTableId, 'invoice-date', 'desc');
+          return;
+        }
+        const lastDash = val.lastIndexOf('-');
+        if (lastDash === -1) return;
+        const sortKey = val.substring(0, lastDash);
+        const sortDir = val.substring(lastDash + 1);
+        sortTable(targetTableId, sortKey, sortDir);
+      });
+    });
+  }
+
+  initTableSorting();
+
   // 2. Generic Delete Confirmations
   const deleteForms = document.querySelectorAll('.form-delete-confirm');
   deleteForms.forEach(form => {

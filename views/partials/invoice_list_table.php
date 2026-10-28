@@ -1,27 +1,45 @@
 <div class="card shadow-sm border-0">
   <div class="card-body p-0">
-    <div style="overflow-x: hidden;">
+    <div class="table-responsive">
       <table class="table table-hover align-middle mb-0 w-100" id="<?= htmlspecialchars($tableId ?? 'invoiceTable', ENT_QUOTES, 'UTF-8') ?>" style="font-size: 0.85rem;">
         <thead class="table-light">
           <tr>
-            <th style="padding: 0.5rem 0.65rem;">Record & Date</th>
-            <th style="padding: 0.5rem 0.65rem;"><?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?></th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">Type</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Total (₹)</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Paid / Balance</th>
-            <th style="width: 45px; padding: 0.5rem 0.25rem;" class="text-center">Status</th>
+            <th style="padding: 0.5rem 0.65rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="invoice-number" role="button" title="Click to sort by Invoice Number">
+              <span>Invoice #</span>
+              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            </th>
+            <th style="padding: 0.5rem 0.65rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="invoice-date" role="button" title="Click to sort by Date">
+              <span>Date</span>
+              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            </th>
+            <th style="padding: 0.5rem 0.65rem;" class="sortable-th user-select-none text-nowrap" data-sort-key="party-name" role="button" title="Click to sort by <?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?>">
+              <span><?= htmlspecialchars($partyLabel ?? 'Party', ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            </th>
+            <th style="padding: 0.5rem 0.4rem;" class="text-center text-nowrap">Type</th>
+            <th style="padding: 0.5rem 0.65rem;" class="text-end sortable-th user-select-none text-nowrap" data-sort-key="grand-total" role="button" title="Click to sort by Amount">
+              <span>Total (₹)</span>
+              <span class="sort-icon ms-1 text-muted small"><i class="bi bi-arrow-down-up"></i></span>
+            </th>
+            <th style="padding: 0.5rem 0.65rem;" class="text-end text-nowrap">Paid / Balance</th>
+            <th style="width: 45px; padding: 0.5rem 0.25rem;" class="text-center text-nowrap">Status</th>
             <th style="width: 36px; padding: 0.5rem 0.35rem;" class="text-center"></th>
           </tr>
         </thead>
         <tbody>
           <?php if (!empty($invoices)): ?>
             <?php foreach ($invoices as $inv): ?>
-              <tr>
+              <tr data-invoice-number="<?= htmlspecialchars((string)($inv['invoice_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                  data-invoice-date="<?= htmlspecialchars((string)($inv['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                  data-party-name="<?= htmlspecialchars(mb_strtolower($inv['party_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                  data-grand-total="<?= (float)($inv['grand_total'] ?? 0) ?>">
                 <td style="padding: 0.45rem 0.65rem;">
                   <a href="/invoices/view/<?= $inv['id'] ?>" class="fw-bold font-monospace text-decoration-none text-primary">
                     <?= htmlspecialchars($inv['invoice_number'], ENT_QUOTES, 'UTF-8') ?>
                   </a>
-                  <div class="text-muted" style="font-size: 0.72rem;"><?= htmlspecialchars(formatDate($inv['invoice_date']), ENT_QUOTES, 'UTF-8') ?></div>
+                </td>
+                <td style="padding: 0.45rem 0.65rem;">
+                  <div class="text-dark small text-nowrap"><?= htmlspecialchars(formatDate($inv['invoice_date']), ENT_QUOTES, 'UTF-8') ?></div>
                 </td>
                 <td style="padding: 0.45rem 0.65rem;">
                   <div class="fw-semibold text-dark text-truncate" style="max-width: 170px;"><?= htmlspecialchars($inv['party_name'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -103,7 +121,7 @@
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="7" class="text-center py-5 text-muted">
+              <td colspan="8" class="text-center py-5 text-muted">
                 <i class="bi <?= htmlspecialchars($emptyIcon ?? 'bi-inbox', ENT_QUOTES, 'UTF-8') ?> fs-2 d-block mb-2 text-secondary"></i>
                 <?= $emptyMessage ?? 'No records found' ?>
               </td>

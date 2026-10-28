@@ -1,3 +1,16 @@
+/* Sortable Table Headers */
+.sortable-th {
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+.sortable-th:hover {
+  background-color: #e2e8f0 !important;
+}
+.sortable-th .sort-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+}
+
 :root {
   --app-primary: #3b82f6;
   --app-primary-dark: #1d4ed8;
