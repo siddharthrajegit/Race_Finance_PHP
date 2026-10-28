@@ -165,8 +165,8 @@ class Backup extends Model {
                     INSERT INTO firms (
                         user_id, name, gstin, pan, phone, email, address, city, state, state_code,
                         pincode, bank_name, bank_account_no, bank_ifsc, bank_branch, upi_id, terms,
-                        logo_path, signature_path, is_default
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        logo_path, signature_path, qr_code_path, is_default
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
 
                 foreach ($backupData['firms'] as $f) {
@@ -174,7 +174,7 @@ class Backup extends Model {
                         $userId, $f['name'], $f['gstin'] ?? null, $f['pan'] ?? null, $f['phone'] ?? null, $f['email'] ?? null,
                         $f['address'] ?? null, $f['city'] ?? null, $f['state'] ?? null, $f['state_code'] ?? null, $f['pincode'] ?? null,
                         $f['bank_name'] ?? null, $f['bank_account_no'] ?? null, $f['bank_ifsc'] ?? null, $f['bank_branch'] ?? null,
-                        $f['upi_id'] ?? null, $f['terms'] ?? null, $f['logo_path'] ?? null, $f['signature_path'] ?? null, $f['is_default'] ?? 0
+                        $f['upi_id'] ?? null, $f['terms'] ?? null, $f['logo_path'] ?? null, $f['signature_path'] ?? null, $f['qr_code_path'] ?? null, $f['is_default'] ?? 0
                     ]);
                     $firmIdMap[$f['id']] = (int)$db->lastInsertId();
                 }

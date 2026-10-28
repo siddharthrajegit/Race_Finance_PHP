@@ -174,6 +174,12 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <i class="bi bi-sliders2 me-1"></i> Customise
         </button>
 
+        <!-- Bank Details & QR Code Toggle -->
+        <button type="button" class="btn btn-outline-light btn-sm d-flex align-items-center rounded-pill px-3 shadow-sm" id="btnToggleBankQr" onclick="toggleBankQr()" title="Show or hide Bank Details and QR Code on invoice">
+          <i class="bi bi-qr-code me-1 text-info" id="bankQrToggleIcon"></i>
+          <span id="bankQrToggleText">Hide Bank &amp; QR</span>
+        </button>
+
         <!-- 1. Download PDF Button -->
         <button id="btnDownloadPdf" class="btn btn-primary btn-sm fw-semibold rounded-pill px-3 shadow-sm d-flex align-items-center">
           <i class="bi bi-download me-1"></i> Download PDF
@@ -360,8 +366,8 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
         <div class="row g-4 mb-4">
           <!-- Left: Bank Details & Terms -->
           <div class="col-md-6">
-            <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"])): ?>
-              <div class="bank-box mb-3">
+            <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"]) || !empty($firm["qr_code_path"])): ?>
+              <div class="bank-box bank-qr-block mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                   <div class="small fw-bold text-uppercase text-dark" style="font-size: 0.75rem;">
                     <i class="bi bi-bank2 text-primary me-1"></i> Bank & Payment Details
@@ -370,11 +376,19 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">UPI Accepted</span>
                   <?php endif; ?>
                 </div>
-                <div class="small text-muted" style="font-size: 0.82rem; line-height: 1.45;">
-                  <?php if (!empty($firm["bank_name"])): ?><div>Bank Name: <strong class="text-dark"><?= $firm["bank_name"] ?></strong> (<?= ($firm["bank_branch"] ?: '') ?>)</div><?php endif; ?>
-                  <?php if (!empty($firm["bank_account_no"])): ?><div>A/C Number: <strong class="text-dark font-monospace"><?= $firm["bank_account_no"] ?></strong></div><?php endif; ?>
-                  <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC Code: <strong class="text-dark font-monospace"><?= $firm["bank_ifsc"] ?></strong></div><?php endif; ?>
-                  <?php if (!empty($firm["upi_id"])): ?><div>UPI ID: <strong class="text-primary font-monospace"><?= $firm["upi_id"] ?></strong></div><?php endif; ?>
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                  <div class="small text-muted flex-grow-1" style="font-size: 0.82rem; line-height: 1.45;">
+                    <?php if (!empty($firm["bank_name"])): ?><div>Bank Name: <strong class="text-dark"><?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?></strong> (<?= htmlspecialchars($firm["bank_branch"] ?: '', ENT_QUOTES, 'UTF-8') ?>)</div><?php endif; ?>
+                    <?php if (!empty($firm["bank_account_no"])): ?><div>A/C Number: <strong class="text-dark font-monospace"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                    <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC Code: <strong class="text-dark font-monospace"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                    <?php if (!empty($firm["upi_id"])): ?><div>UPI ID: <strong class="text-primary font-monospace"><?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                  </div>
+                  <?php if (!empty($firm["qr_code_path"])): ?>
+                    <div class="text-center ps-3 border-start d-flex flex-column align-items-center">
+                      <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="Scan & Pay QR" class="rounded border p-1 bg-white" style="width: 78px; height: 78px; object-fit: contain;">
+                      <span class="text-uppercase fw-semibold text-muted mt-1" style="font-size: 0.62rem; letter-spacing: 0.5px;">Scan to Pay</span>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
             <?php endif; ?>
@@ -547,10 +561,34 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
 
       <!-- Bottom 2-Column Section -->
       <div class="row align-items-start mt-3">
-        <!-- Left: Words & Terms -->
+        <!-- Left: Words, Bank Details & Terms -->
         <div class="col-6">
           <div class="fw-bold mb-1">Invoice Amount In Words</div>
-          <div class="mb-4"><?= $wordsTotal ?></div>
+          <div class="mb-3"><?= $wordsTotal ?></div>
+
+          <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"]) || !empty($firm["qr_code_path"])): ?>
+            <div class="bank-qr-block mb-3 p-2 border rounded" style="background-color: #fafafa; font-size: 0.8rem;">
+              <div class="fw-bold mb-1 pb-1 border-bottom d-flex justify-content-between align-items-center">
+                <span>Bank &amp; Payment Details</span>
+                <?php if (!empty($firm["upi_id"])): ?>
+                  <span class="badge bg-light text-dark border" style="font-size: 0.68rem;">UPI: <?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></span>
+                <?php endif; ?>
+              </div>
+              <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                <div class="lh-sm" style="font-size: 0.78rem;">
+                  <?php if (!empty($firm["bank_name"])): ?><div>Bank: <strong><?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?></strong> <?= !empty($firm["bank_branch"]) ? '(' . htmlspecialchars($firm["bank_branch"], ENT_QUOTES, 'UTF-8') . ')' : '' ?></div><?php endif; ?>
+                  <?php if (!empty($firm["bank_account_no"])): ?><div>A/C: <span class="font-monospace fw-bold"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+                  <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC: <span class="font-monospace"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+                </div>
+                <?php if (!empty($firm["qr_code_path"])): ?>
+                  <div class="text-center ps-2 border-start d-flex flex-column align-items-center">
+                    <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="QR Code" class="border p-1 bg-white rounded" style="width: 68px; height: 68px; object-fit: contain;">
+                    <span style="font-size: 0.6rem; color: #555;" class="mt-1">Scan to Pay</span>
+                  </div>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php endif; ?>
 
           <div class="fw-bold mb-1">Terms and Conditions</div>
           <div style="white-space: pre-line;"><?= htmlspecialchars(!empty($invoice['terms']) ? $invoice['terms'] : (!empty($firm['terms']) ? $firm['terms'] : 'Thanks for doing business with us!'), ENT_QUOTES, 'UTF-8') ?></div>
@@ -694,6 +732,26 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
               <td class="text-end py-1 px-1" style="white-space:nowrap;">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
             </tr>
           </table>
+
+          <!-- Bank Details & QR for Horizontal Slip -->
+          <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"]) || !empty($firm["qr_code_path"])): ?>
+            <div class="bank-qr-block horizontal-bank-qr mt-2 pt-1 border-top" style="font-size: 0.62rem; line-height: 1.25;">
+              <div class="d-flex align-items-center justify-content-between gap-1">
+                <div>
+                  <?php if (!empty($firm["bank_name"])): ?><div><strong>Bank:</strong> <?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+                  <?php if (!empty($firm["bank_account_no"])): ?><div><strong>A/C:</strong> <span class="font-monospace"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+                  <?php if (!empty($firm["bank_ifsc"])): ?><div><strong>IFSC:</strong> <span class="font-monospace"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+                  <?php if (!empty($firm["upi_id"])): ?><div><strong>UPI:</strong> <?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+                </div>
+                <?php if (!empty($firm["qr_code_path"])): ?>
+                  <div class="text-center">
+                    <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="QR" class="border p-1 bg-white rounded" style="height: 44px; width: 44px; object-fit: contain;">
+                    <div style="font-size: 0.52rem; color: #555;">Scan &amp; Pay</div>
+                  </div>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>

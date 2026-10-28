@@ -115,6 +115,29 @@
               <label for="upi_id" class="form-label">UPI ID / VPA</label>
               <input type="text" class="form-control font-monospace" id="upi_id" name="upi_id" placeholder="e.g. business@okaxis" value="<?= htmlspecialchars($firm['upi_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
+            <div class="col-12">
+              <label class="form-label fw-medium text-dark">Payment QR Code (UPI / Bank QR Code) <small class="text-muted">(JPG/PNG/WebP, Max 2MB)</small></label>
+              <div class="row align-items-center g-2">
+                <div class="col-md-7">
+                  <input type="file" class="form-control" name="qr_code" accept=".jpg,.jpeg,.png,.webp">
+                  <div class="form-text">Upload your Google Pay, PhonePe, Paytm, or Bank UPI QR code to display on all invoice formats.</div>
+                </div>
+                <?php if (!empty($firm['qr_code_path'])): ?>
+                  <div class="col-md-5">
+                    <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <img src="<?= htmlspecialchars($firm['qr_code_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current QR Code" class="rounded border p-1 me-2 bg-white" height="42" style="max-width: 60px; object-fit: contain;">
+                        <span class="text-muted small">Current QR uploaded</span>
+                      </div>
+                      <div class="form-check form-check-inline m-0">
+                        <input class="form-check-input" type="checkbox" id="remove_qr_code" name="remove_qr_code" value="1">
+                        <label class="form-check-label text-danger small fw-medium" for="remove_qr_code">Remove</label>
+                      </div>
+                    </div>
+                  </div>
+                <?php endif; ?>
+              </div>
+            </div>
           </div>
 
           <!-- Section 4: Invoice Terms -->

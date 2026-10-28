@@ -52,8 +52,8 @@ class Firm extends Model {
                 INSERT INTO firms (
                     user_id, name, gstin, pan, phone, email, address, city, state, state_code,
                     pincode, bank_name, bank_account_no, bank_ifsc, bank_branch, upi_id, terms,
-                    logo_path, signature_path, is_default
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    logo_path, signature_path, qr_code_path, is_default
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -76,6 +76,7 @@ class Firm extends Model {
                 !empty($data['terms']) ? trim($data['terms']) : null,
                 $data['logo_path'] ?? null,
                 $data['signature_path'] ?? null,
+                $data['qr_code_path'] ?? null,
                 $defaultFlag
             ]);
 
@@ -124,6 +125,10 @@ class Firm extends Model {
             if (array_key_exists('signature_path', $data)) {
                 $query .= ", signature_path = ?";
                 $params[] = $data['signature_path'];
+            }
+            if (array_key_exists('qr_code_path', $data)) {
+                $query .= ", qr_code_path = ?";
+                $params[] = $data['qr_code_path'];
             }
 
             $query .= " WHERE id = ? AND user_id = ?";

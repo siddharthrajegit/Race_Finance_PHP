@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `firms` (
   `terms` TEXT NULL,
   `logo_path` VARCHAR(255) NULL,
   `signature_path` VARCHAR(255) NULL,
+  `qr_code_path` VARCHAR(255) NULL,
   `is_default` TINYINT(1) DEFAULT 0,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE

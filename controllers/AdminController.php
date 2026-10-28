@@ -602,11 +602,12 @@ class AdminController {
             $freedBytes = 0;
 
             if (is_dir($uploadsDir)) {
-                $rows = DB::getConnection()->query("SELECT logo_path, signature_path FROM firms")->fetchAll();
+                $rows = DB::getConnection()->query("SELECT logo_path, signature_path, qr_code_path FROM firms")->fetchAll();
                 $activeFiles = [];
                 foreach ($rows as $r) {
                     if (!empty($r['logo_path'])) $activeFiles[basename($r['logo_path'])] = true;
                     if (!empty($r['signature_path'])) $activeFiles[basename($r['signature_path'])] = true;
+                    if (!empty($r['qr_code_path'])) $activeFiles[basename($r['qr_code_path'])] = true;
                 }
 
                 $files = scandir($uploadsDir);

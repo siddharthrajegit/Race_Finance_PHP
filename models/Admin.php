@@ -80,7 +80,7 @@ class Admin extends Model {
             $user = $userStmt->fetch();
             if (!$user) return null;
 
-            $firmStmt = self::db()->prepare("SELECT id, name, logo_path, signature_path FROM firms WHERE user_id = ?");
+            $firmStmt = self::db()->prepare("SELECT id, name, logo_path, signature_path, qr_code_path FROM firms WHERE user_id = ?");
             $firmStmt->execute([$userId]);
             $userFirms = $firmStmt->fetchAll();
             $firmCount = count($userFirms);
@@ -122,6 +122,10 @@ class Admin extends Model {
                 if (!empty($firm['signature_path'])) {
                     $sp = $publicDir . '/' . ltrim($firm['signature_path'], '/');
                     if (file_exists($sp)) $mediaBytes += filesize($sp);
+                }
+                if (!empty($firm['qr_code_path'])) {
+                    $qp = $publicDir . '/' . ltrim($firm['qr_code_path'], '/');
+                    if (file_exists($qp)) $mediaBytes += filesize($qp);
                 }
 
                 $firmTotalUsedBytes = $dbAllocatedBytes + $mediaBytes;

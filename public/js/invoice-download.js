@@ -431,6 +431,42 @@
     }
   }
 
+  function toggleBankQr() {
+    const isHidden = document.body.classList.toggle('hide-bank-qr');
+    localStorage.setItem('race_hide_bank_qr', isHidden ? '1' : '0');
+    updateBankQrToggleBtn(isHidden);
+  }
+
+  function updateBankQrToggleBtn(isHidden) {
+    const btn = byId('btnToggleBankQr');
+    const icon = byId('bankQrToggleIcon');
+    const text = byId('bankQrToggleText');
+    if (!btn || !icon || !text) return;
+
+    if (isHidden) {
+      btn.classList.remove('btn-outline-light');
+      btn.classList.add('btn-secondary');
+      icon.className = 'bi bi-eye text-warning me-1';
+      text.textContent = 'Show Bank & QR';
+    } else {
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-outline-light');
+      icon.className = 'bi bi-qr-code text-info me-1';
+      text.textContent = 'Hide Bank & QR';
+    }
+  }
+
+  function restoreBankQrState() {
+    const isHidden = localStorage.getItem('race_hide_bank_qr') === '1';
+    if (isHidden) {
+      document.body.classList.add('hide-bank-qr');
+    } else {
+      document.body.classList.remove('hide-bank-qr');
+    }
+    updateBankQrToggleBtn(isHidden);
+  }
+
+  window.toggleBankQr = toggleBankQr;
   window.switchInvoiceTemplate = switchInvoiceTemplate;
   window.triggerPrintMode = triggerPrintMode;
   window.stepHsv = stepHsv;
@@ -441,6 +477,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindHsvControls();
     restoreThemeAndTemplate();
+    restoreBankQrState();
     bindPdfDownload();
     bindWhatsApp();
   });

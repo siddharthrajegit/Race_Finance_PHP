@@ -214,6 +214,11 @@
       padding: 0.9rem 1rem;
     }
 
+    /* Toggleable Bank Details & QR Code */
+    body.hide-bank-qr .bank-qr-block {
+      display: none !important;
+    }
+
     .sign-box {
       border-top: 1.5px solid #cbd5e1;
       min-width: 170px;
@@ -491,5 +496,10 @@
       }
       body.print-mode-horizontal #simpleHorizontalInvoiceArea {
         display: block !important;
+      }
+
+      /* Hide Bank & QR if toggled off */
+      body.hide-bank-qr .bank-qr-block {
+        display: none !important;
       }
     }

@@ -37,6 +37,7 @@ class DB {
                 ];
                 self::$instance = new PDO($dsn, $dbUser, $dbPass, $options);
                 self::$driver = 'mysql';
+                self::ensureSchema(self::$instance, self::$driver);
                 return self::$instance;
             } catch (PDOException $e) {
                 // If MySQL was explicitly requested and failed, log error
@@ -66,8 +67,29 @@ class DB {
         self::$instance->exec("PRAGMA foreign_keys = ON;");
         self::$instance->exec("PRAGMA journal_mode = WAL;");
         self::$driver = 'sqlite';
+        self::ensureSchema(self::$instance, self::$driver);
 
         return self::$instance;
+    }
+
+    private static function ensureSchema(PDO $pdo, string $driver): void {
+        try {
+            if ($driver === 'sqlite') {
+                $cols = $pdo->query("PRAGMA table_info(firms)")->fetchAll();
+                $colNames = array_column($cols, 'name');
+                if (!empty($colNames) && !in_array('qr_code_path', $colNames, true)) {
+                    $pdo->exec("ALTER TABLE firms ADD COLUMN qr_code_path VARCHAR(255) NULL;");
+                }
+            } else {
+                $check = $pdo->query("SHOW COLUMNS FROM firms LIKE 'qr_code_path'")->fetch();
+                if (!$check) {
+                    $pdo->exec("ALTER TABLE firms ADD COLUMN qr_code_path VARCHAR(255) NULL;");
+                }
+            }
+        } catch (Throwable $e) {
+            // Table might not exist yet during fresh setup, safe to ignore
+            error_log("Schema update notice: " . $e->getMessage());
+        }
     }
 
     public static function getDriver(): string {

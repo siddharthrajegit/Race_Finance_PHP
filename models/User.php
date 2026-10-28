@@ -112,13 +112,14 @@ class User extends Model {
 
     public static function delete(int $id): bool {
         return self::transaction(function($db) use ($id) {
-            // Delete uploaded logo & signature files from disk
-            $stmt = $db->prepare("SELECT logo_path, signature_path FROM firms WHERE user_id = ?");
+            // Delete uploaded logo, signature & QR code files from disk
+            $stmt = $db->prepare("SELECT logo_path, signature_path, qr_code_path FROM firms WHERE user_id = ?");
             $stmt->execute([$id]);
             $firms = $stmt->fetchAll();
             foreach ($firms as $f) {
                 Security::safeDeleteUpload($f['logo_path']);
                 Security::safeDeleteUpload($f['signature_path']);
+                Security::safeDeleteUpload($f['qr_code_path'] ?? null);
             }
 
             // Cascade deletes

@@ -72,6 +72,7 @@ class FirmController {
 
             $logoPath = Upload::handle('logo');
             $signaturePath = Upload::handle('signature');
+            $qrCodePath = Upload::handle('qr_code');
 
             $state = trim($_POST['state'] ?? '');
             $stateCode = trim($_POST['state_code'] ?? '');
@@ -104,6 +105,7 @@ class FirmController {
                 'terms' => $_POST['terms'] ?? null,
                 'logo_path' => $logoPath,
                 'signature_path' => $signaturePath,
+                'qr_code_path' => $qrCodePath,
                 'is_default' => !empty($_POST['is_default']) ? 1 : 0
             ]);
 
@@ -197,6 +199,15 @@ class FirmController {
                 $firmData['signature_path'] = $newSig;
             }
 
+            $newQr = Upload::handle('qr_code');
+            if ($newQr) {
+                Security::safeDeleteUpload($existing['qr_code_path'] ?? null);
+                $firmData['qr_code_path'] = $newQr;
+            } elseif (!empty($_POST['remove_qr_code'])) {
+                Security::safeDeleteUpload($existing['qr_code_path'] ?? null);
+                $firmData['qr_code_path'] = null;
+            }
+
             Firm::update($firmId, (int)$user['id'], $firmData);
 
             Flash::set('success_msg', 'Firm details updated successfully!');
@@ -258,6 +269,7 @@ class FirmController {
             if ((int)$f['id'] === $firmId) {
                 Security::safeDeleteUpload($f['logo_path']);
                 Security::safeDeleteUpload($f['signature_path']);
+                Security::safeDeleteUpload($f['qr_code_path'] ?? null);
                 break;
             }
         }

@@ -221,12 +221,17 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
         <!-- Summary & Totals -->
         <div class="row g-0">
           <div class="col-7 p-2 border-end border-dark" style="font-size: 10px;">
-            <?php if (!empty($firm['bank_name']) || !empty($firm['bank_account_no'])): ?>
-              <div class="p-1 border rounded bg-white mb-2">
-                <strong>Bank:</strong> <?= htmlspecialchars($firm['bank_name'] ?? '', ENT_QUOTES, 'UTF-8') ?> | 
-                <strong>A/C:</strong> <?= htmlspecialchars($firm['bank_account_no'] ?? '', ENT_QUOTES, 'UTF-8') ?> | 
-                <strong>IFSC:</strong> <?= htmlspecialchars($firm['bank_ifsc'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                <?php if (!empty($firm['upi_id'])): ?> | <strong>UPI:</strong> <?= htmlspecialchars($firm['upi_id'], ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+            <?php if (!empty($firm['bank_name']) || !empty($firm['bank_account_no']) || !empty($firm['qr_code_path'])): ?>
+              <div class="p-1 border rounded bg-white mb-2 d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Bank:</strong> <?= htmlspecialchars($firm['bank_name'] ?? '', ENT_QUOTES, 'UTF-8') ?> | 
+                  <strong>A/C:</strong> <?= htmlspecialchars($firm['bank_account_no'] ?? '', ENT_QUOTES, 'UTF-8') ?> | 
+                  <strong>IFSC:</strong> <?= htmlspecialchars($firm['bank_ifsc'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                  <?php if (!empty($firm['upi_id'])): ?> | <strong>UPI:</strong> <?= htmlspecialchars($firm['upi_id'], ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+                </div>
+                <?php if (!empty($firm['qr_code_path'])): ?>
+                  <img src="<?= htmlspecialchars($firm['qr_code_path'], ENT_QUOTES, 'UTF-8') ?>" alt="QR" style="height: 36px; width: 36px; object-fit: contain;" class="ms-1 border p-0 bg-white">
+                <?php endif; ?>
               </div>
             <?php endif; ?>
             <div>Terms: <?= htmlspecialchars(!empty($invoice['terms']) ? $invoice['terms'] : 'Thank you for your business!', ENT_QUOTES, 'UTF-8') ?></div>
