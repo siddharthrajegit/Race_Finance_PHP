@@ -125,6 +125,53 @@ foreach ($txList as $tx) {
 </div>
 
 <!-- =============================================================
+     1b. FILTER & PRINT CONTROLS (Custom Date Range & Last N Invoices)
+============================================================= -->
+<div class="card shadow-sm border-0 mb-3 d-print-none">
+  <div class="card-body p-2 p-md-3">
+    <form method="GET" action="/parties/ledger/<?= $party['id'] ?>" class="row g-2 align-items-center">
+      <div class="col-md-3 col-sm-6">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-muted">From</span>
+          <input type="date" name="from" class="form-control" value="<?= htmlspecialchars($from ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-muted">To</span>
+          <input type="date" name="to" class="form-control" value="<?= htmlspecialchars($to ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-muted">Records</span>
+          <select name="last_n" class="form-select">
+            <option value="">All Transactions</option>
+            <option value="5" <?= (($lastN ?? null) === 5) ? 'selected' : '' ?>>Last 5 Invoices / Slips</option>
+            <option value="10" <?= (($lastN ?? null) === 10) ? 'selected' : '' ?>>Last 10 Invoices / Slips</option>
+            <option value="20" <?= (($lastN ?? null) === 20) ? 'selected' : '' ?>>Last 20 Invoices / Slips</option>
+            <option value="50" <?= (($lastN ?? null) === 50) ? 'selected' : '' ?>>Last 50 Invoices / Slips</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 d-flex gap-1">
+        <button type="submit" class="btn btn-sm btn-primary flex-grow-1" style="background-color: #1e3a8a; border-color: #1e3a8a;">
+          <i class="bi bi-filter me-1"></i> Filter
+        </button>
+        <?php if (!empty($from) || !empty($to) || !empty($lastN)): ?>
+          <a href="/parties/ledger/<?= $party['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Reset Filters">
+            <i class="bi bi-x-circle"></i>
+          </a>
+        <?php endif; ?>
+        <button type="submit" name="print" value="1" class="btn btn-sm btn-dark" title="Filter & Print Statement">
+          <i class="bi bi-printer me-1"></i> Print
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =============================================================
      2. PRINTABLE STATEMENT HEADER (Visible ONLY When Printing)
         - Party Name on top instead of Party Statement & Ledger
         - Color: Pure Black & Dark Blue (#1e3a8a)
@@ -148,7 +195,12 @@ foreach ($txList as $tx) {
         Account Statement
       </div>
       <div class="small text-muted mt-1" style="font-size: 8pt;">
-        Date: <strong><?= date('d M Y') ?></strong>
+        <div>Date: <strong><?= date('d M Y') ?></strong></div>
+        <?php if (!empty($from) || !empty($to)): ?>
+          <div>Period: <strong><?= !empty($from) ? formatDate($from) : 'Beginning' ?></strong> to <strong><?= !empty($to) ? formatDate($to) : 'Today' ?></strong></div>
+        <?php elseif (!empty($lastN)): ?>
+          <div>Statement: <strong>Last <?= $lastN ?> Invoices / Records</strong></div>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -456,5 +508,11 @@ foreach ($txList as $tx) {
         }
       });
     });
+
+    <?php if (!empty($autoPrint)): ?>
+      setTimeout(() => {
+        window.print();
+      }, 350);
+    <?php endif; ?>
   });
 </script>

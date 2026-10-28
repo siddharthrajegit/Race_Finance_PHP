@@ -238,7 +238,17 @@ class PartyController {
         Auth::requireUserOnly();
         $firm = Auth::requireActiveFirm();
         $partyId = (int)($params['id'] ?? 0);
-        $ledgerData = Party::getLedger($partyId, (int)$firm['id']);
+
+        $from = !empty($_GET['from']) ? trim($_GET['from']) : null;
+        $to = !empty($_GET['to']) ? trim($_GET['to']) : null;
+        $lastN = !empty($_GET['last_n']) && is_numeric($_GET['last_n']) ? (int)$_GET['last_n'] : null;
+        $autoPrint = !empty($_GET['print']);
+
+        $ledgerData = Party::getLedger($partyId, (int)$firm['id'], [
+            'from' => $from,
+            'to' => $to,
+            'last_n' => $lastN
+        ]);
 
         if (!$ledgerData) {
             Flash::set('error_msg', 'Party not found.');
@@ -256,6 +266,11 @@ class PartyController {
             'closing_balance' => $ledgerData['closing_balance'],
             'pending_bills' => $ledgerData['pending_bills'],
             'transactions' => $ledgerData['transactions'],
+            'filters' => $ledgerData['filters'],
+            'from' => $from,
+            'to' => $to,
+            'lastN' => $lastN,
+            'autoPrint' => $autoPrint,
             'activeMenu' => 'parties'
         ]);
     }

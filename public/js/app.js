@@ -3,27 +3,152 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Instant Table Quick Search Filter
-  const tableSearchInputs = document.querySelectorAll('[data-table-search]');
-  tableSearchInputs.forEach(input => {
-    const targetTableId = input.dataset.tableSearch;
-    const table = document.getElementById(targetTableId);
-    if (!table) return;
+  // 1. Instant Table Quick Search Filter & Custom Date Range Filter
+  function initTableDateAndSearchFilters() {
+    const tableSearchInputs = document.querySelectorAll('[data-table-search]');
+    tableSearchInputs.forEach(input => {
+      const targetTableId = input.dataset.tableSearch;
+      const table = document.getElementById(targetTableId);
+      if (!table) return;
 
-    input.addEventListener('input', () => {
-      const query = input.value.toLowerCase().trim();
-      const rows = table.querySelectorAll('tbody tr');
+      const fromInput = document.querySelector(`[data-date-filter-from="${targetTableId}"]`);
+      const toInput = document.querySelector(`[data-date-filter-to="${targetTableId}"]`);
+      const clearBtn = document.querySelector(`[data-date-filter-clear="${targetTableId}"]`);
+      const countBadge = document.getElementById(`visibleRecordsCount_${targetTableId}`);
 
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        if (text.includes(query)) {
-          row.style.display = '';
+      function applyFilter() {
+        const query = input.value.toLowerCase().trim();
+        const fromVal = fromInput ? fromInput.value : '';
+        const toVal = toInput ? toInput.value : '';
+
+        const rows = table.querySelectorAll('tbody tr[data-invoice-date], tbody tr[data-invoice-number]');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+          const invDate = row.dataset.invoiceDate || '';
+          const text = row.textContent.toLowerCase();
+
+          let matchDate = true;
+          if (fromVal && invDate < fromVal) matchDate = false;
+          if (toVal && invDate > toVal) matchDate = false;
+
+          let matchQuery = true;
+          if (query && !text.includes(query)) matchQuery = false;
+
+          if (matchDate && matchQuery) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        if (countBadge) {
+          countBadge.textContent = visibleCount;
+        }
+
+        if (window.updateBulkBar) {
+          window.updateBulkBar(targetTableId);
+        }
+      }
+
+      input.addEventListener('input', applyFilter);
+      if (fromInput) fromInput.addEventListener('change', applyFilter);
+      if (toInput) toInput.addEventListener('change', applyFilter);
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          if (fromInput) fromInput.value = '';
+          if (toInput) toInput.value = '';
+          applyFilter();
+        });
+      }
+    });
+  }
+
+  // 1c. Bulk Checkbox Selection & Bulk Print Queue
+  function initBulkPrintSelection() {
+    const tables = document.querySelectorAll('table[id]');
+    tables.forEach(table => {
+      const tableId = table.id;
+      const selectAllMaster = table.querySelector('.bulk-select-all');
+      const bulkBar = document.getElementById(`bulkActionBar_${tableId}`);
+      if (!bulkBar) return;
+
+      const counterSpan = bulkBar.querySelector('.bulk-selected-counter');
+      const printBtn = bulkBar.querySelector('.bulk-print-btn');
+      const selectAllFilteredBtn = bulkBar.querySelector('.bulk-select-all-filtered-btn');
+      const clearBtn = bulkBar.querySelector('.bulk-clear-selection-btn');
+
+      window.updateBulkBar = function(tId) {
+        if (tId && tId !== tableId) return;
+        const checkedBoxes = table.querySelectorAll('tbody tr:not([style*="display: none"]) .invoice-row-checkbox:checked');
+        const count = checkedBoxes.length;
+
+        if (counterSpan) counterSpan.textContent = count;
+        if (count > 0) {
+          bulkBar.classList.remove('d-none');
+          bulkBar.classList.add('d-flex');
         } else {
-          row.style.display = 'none';
+          bulkBar.classList.add('d-none');
+          bulkBar.classList.remove('d-flex');
+        }
+
+        if (selectAllMaster) {
+          const visibleBoxes = table.querySelectorAll('tbody tr:not([style*="display: none"]) .invoice-row-checkbox');
+          selectAllMaster.checked = visibleBoxes.length > 0 && checkedBoxes.length === visibleBoxes.length;
+          selectAllMaster.indeterminate = count > 0 && count < visibleBoxes.length;
+        }
+      };
+
+      if (selectAllMaster) {
+        selectAllMaster.addEventListener('change', () => {
+          const isChecked = selectAllMaster.checked;
+          const visibleBoxes = table.querySelectorAll('tbody tr:not([style*="display: none"]) .invoice-row-checkbox');
+          visibleBoxes.forEach(cb => { cb.checked = isChecked; });
+          window.updateBulkBar(tableId);
+        });
+      }
+
+      table.addEventListener('change', (e) => {
+        if (e.target && e.target.classList.contains('invoice-row-checkbox')) {
+          window.updateBulkBar(tableId);
         }
       });
+
+      if (selectAllFilteredBtn) {
+        selectAllFilteredBtn.addEventListener('click', () => {
+          const visibleBoxes = table.querySelectorAll('tbody tr:not([style*="display: none"]) .invoice-row-checkbox');
+          visibleBoxes.forEach(cb => { cb.checked = true; });
+          window.updateBulkBar(tableId);
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          const allBoxes = table.querySelectorAll('.invoice-row-checkbox');
+          allBoxes.forEach(cb => { cb.checked = false; });
+          window.updateBulkBar(tableId);
+        });
+      }
+
+      if (printBtn) {
+        printBtn.addEventListener('click', () => {
+          const checkedBoxes = Array.from(table.querySelectorAll('.invoice-row-checkbox:checked'));
+          if (checkedBoxes.length === 0) {
+            alert('Please select at least one invoice to print.');
+            return;
+          }
+          const ids = checkedBoxes.map(cb => cb.value).join(',');
+          const docType = printBtn.dataset.docType || 'sale';
+          const bulkPrintUrl = `/invoices/bulk-print?ids=${encodeURIComponent(ids)}&type=${encodeURIComponent(docType)}`;
+          window.open(bulkPrintUrl, '_blank');
+        });
+      }
     });
-  });
+  }
+
+  initTableDateAndSearchFilters();
+  initBulkPrintSelection();
 
   // 1b. Table Column Sorting & Sort Dropdown Handler
   function initTableSorting() {

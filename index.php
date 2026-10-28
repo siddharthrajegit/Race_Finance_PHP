@@ -113,6 +113,7 @@ Router::get('/sales', [InvoiceController::class, 'listSales']);
 Router::get('/sales/create', [InvoiceController::class, 'getCreateSale']);
 Router::get('/purchases', [InvoiceController::class, 'listPurchases']);
 Router::get('/purchases/create', [InvoiceController::class, 'getCreatePurchase']);
+Router::get('/invoices/bulk-print', [InvoiceController::class, 'getBulkPrint']);
 Router::post('/invoices/create', [InvoiceController::class, 'postCreate']);
 Router::get('/invoices/edit/:id', [InvoiceController::class, 'getEdit']);
 Router::post('/invoices/edit/:id', [InvoiceController::class, 'postEdit']);

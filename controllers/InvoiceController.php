@@ -471,6 +471,47 @@ class InvoiceController {
         ], false);
     }
 
+    public function getBulkPrint(): void {
+        Auth::requireUserOnly();
+        $firm = Auth::requireActiveFirm();
+        $firmId = (int)$firm['id'];
+
+        $idsParam = $_GET['ids'] ?? '';
+        $ids = [];
+        if (!empty($idsParam)) {
+            $ids = array_filter(array_map('trim', explode(',', $idsParam)));
+        }
+
+        $type = $_GET['type'] ?? 'sale';
+        $from = !empty($_GET['from']) ? trim($_GET['from']) : null;
+        $to = !empty($_GET['to']) ? trim($_GET['to']) : null;
+
+        if (empty($ids) && ($from !== null || $to !== null)) {
+            $all = Invoice::getByFirmId($firmId, $type);
+            foreach ($all as $inv) {
+                $d = $inv['invoice_date'];
+                if ($from !== null && $d < $from) continue;
+                if ($to !== null && $d > $to) continue;
+                $ids[] = (int)$inv['id'];
+            }
+        }
+
+        $invoices = Invoice::getByIds($ids, $firmId);
+
+        if (empty($invoices)) {
+            Flash::set('error_msg', 'No records found for bulk printing.');
+            header('Location: ' . ($type === 'purchase' ? '/purchases' : '/sales'));
+            exit;
+        }
+
+        view('invoices/bulk_print', [
+            'title' => "Bulk Print - " . count($invoices) . " Records",
+            'invoices' => $invoices,
+            'firm' => $firm,
+            'type' => $type
+        ], false);
+    }
+
     public function postDelete(array $params): void {
         Auth::requireUserOnly();
         $firm = Auth::requireActiveFirm();

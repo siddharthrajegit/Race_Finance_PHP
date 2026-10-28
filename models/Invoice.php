@@ -36,6 +36,31 @@ class Invoice extends Model {
         return $invoice;
     }
 
+    public static function getByIds(array $ids, int $firmId): array {
+        $cleanIds = array_filter(array_map('intval', $ids), fn($n) => $n > 0);
+        if (empty($cleanIds)) return [];
+
+        $inClause = implode(',', array_fill(0, count($cleanIds), '?'));
+        $params = array_merge([$firmId], $cleanIds);
+
+        $stmt = self::db()->prepare("
+            SELECT * FROM invoices 
+            WHERE firm_id = ? AND id IN ($inClause)
+            ORDER BY invoice_date ASC, id ASC
+        ");
+        $stmt->execute($params);
+        $invoices = $stmt->fetchAll();
+
+        $itemStmt = self::db()->prepare("SELECT * FROM invoice_items WHERE invoice_id = ?");
+        foreach ($invoices as &$inv) {
+            $itemStmt->execute([$inv['id']]);
+            $inv['items'] = $itemStmt->fetchAll();
+        }
+        unset($inv);
+
+        return $invoices;
+    }
+
     public static function getOrInitLastSequence(int $firmId, string $docType): int {
         $stmt = self::db()->prepare("SELECT last_number FROM document_sequences WHERE firm_id = ? AND doc_type = ?");
         $stmt->execute([$firmId, $docType]);

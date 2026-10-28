@@ -177,9 +177,9 @@ class Party extends Model {
     }
 
     /**
-     * Comprehensive Party Ledger with FIFO Step-by-Step Breakdown
+     * Comprehensive Party Ledger with FIFO Step-by-Step Breakdown & Filter Support
      */
-    public static function getLedger(int $partyId, int $firmId): ?array {
+    public static function getLedger(int $partyId, int $firmId, array $filters = []): ?array {
         self::syncFIFOSettlement($partyId, $firmId);
 
         $party = self::getById($partyId, $firmId);
@@ -329,16 +329,68 @@ class Party extends Model {
             ]);
         }
 
+        // Filter support (Custom Date Range & Last N Records)
+        $fromDate = !empty($filters['from']) ? trim($filters['from']) : null;
+        $toDate = !empty($filters['to']) ? trim($filters['to']) : null;
+        $lastN = !empty($filters['last_n']) && (int)$filters['last_n'] > 0 ? (int)$filters['last_n'] : null;
+
+        $hasFilter = ($fromDate !== null || $toDate !== null || $lastN !== null);
+        $filteredTransactions = $transactions;
+        $effectiveOpeningBalance = (float)($party['opening_balance'] ?? 0);
+
+        if ($hasFilter) {
+            // 1. Filter by Date Range (From / To)
+            if ($fromDate !== null || $toDate !== null) {
+                $tempList = [];
+                $runningOpBal = (float)($party['opening_balance'] ?? 0);
+
+                foreach ($transactions as $t) {
+                    $tDate = $t['date'];
+                    if ($fromDate !== null && $tDate < $fromDate) {
+                        $runningOpBal = (float)$t['running_balance'];
+                        continue;
+                    }
+                    if ($toDate !== null && $tDate > $toDate) {
+                        continue;
+                    }
+                    $tempList[] = $t;
+                }
+                $effectiveOpeningBalance = $runningOpBal;
+                $filteredTransactions = $tempList;
+            }
+
+            // 2. Filter by Last N Records
+            if ($lastN !== null && count($filteredTransactions) > $lastN) {
+                $totalCount = count($filteredTransactions);
+                $sliceStart = $totalCount - $lastN;
+                if ($sliceStart > 0) {
+                    $priorTx = $filteredTransactions[$sliceStart - 1];
+                    $effectiveOpeningBalance = (float)$priorTx['running_balance'];
+                }
+                $filteredTransactions = array_slice($filteredTransactions, $sliceStart);
+            }
+        }
+
         $pendingBills = array_values(array_filter($invoices, fn($i) => (float)$i['balance_due'] > 0.001));
+
+        $closingBalance = !empty($filteredTransactions) 
+            ? (float)end($filteredTransactions)['running_balance'] 
+            : $effectiveOpeningBalance;
 
         return [
             'party' => $party,
-            'opening_balance' => (float)($party['opening_balance'] ?? 0),
+            'opening_balance' => $effectiveOpeningBalance,
             'total_billed' => $totalBilled,
             'total_paid' => $totalPaid,
-            'closing_balance' => $runningBalance,
+            'closing_balance' => $closingBalance,
             'pending_bills' => $pendingBills,
-            'transactions' => $transactions
+            'transactions' => $filteredTransactions,
+            'all_transactions_count' => count($transactions),
+            'filters' => [
+                'from' => $fromDate,
+                'to' => $toDate,
+                'last_n' => $lastN
+            ]
         ];
     }
 
