@@ -247,8 +247,9 @@ class PartyController {
         }
 
         view('parties/ledger', [
-            'title' => "Ledger Statement - {$ledgerData['party']['name']}",
+            'title' => "Statement - {$ledgerData['party']['name']}",
             'party' => $ledgerData['party'],
+            'firm' => $firm,
             'opening_balance' => $ledgerData['opening_balance'],
             'total_billed' => $ledgerData['total_billed'],
             'total_paid' => $ledgerData['total_paid'],
