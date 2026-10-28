@@ -1474,10 +1474,67 @@ document.addEventListener('DOMContentLoaded', () => {
   const quickItemAlert = document.getElementById('quickItemAlert');
   const quickItemSpinner = document.getElementById('quickItemSpinner');
   const btnSubmitQuickItem = document.getElementById('btnSubmitQuickItem');
+  const quickItemPrice = document.getElementById('quickItemPrice');
+  const quickItemPriceWithTax = document.getElementById('quickItemPriceWithTax');
   const quickItemTaxRate = document.getElementById('quickItemTaxRate');
   const quickItemCustomTaxContainer = document.getElementById('quickItemCustomTaxContainer');
   const quickItemCustomTax = document.getElementById('quickItemCustomTax');
   const quickItemTaxRateHidden = document.getElementById('quickItemTaxRateHidden');
+  let lastEditedQuickPrice = 'without_gst';
+
+  function getQuickTaxRate() {
+    if (!quickItemTaxRateHidden) return 18;
+    const rate = parseFloat(quickItemTaxRateHidden.value);
+    return (isNaN(rate) || rate < 0) ? 0 : rate;
+  }
+
+  function updateQuickPriceFromWithoutGst() {
+    if (!quickItemPrice || !quickItemPriceWithTax) return;
+    const val = quickItemPrice.value.trim();
+    if (val === '') {
+      quickItemPriceWithTax.value = '';
+      return;
+    }
+    const base = parseFloat(val);
+    if (isNaN(base) || base < 0) {
+      quickItemPriceWithTax.value = '';
+      return;
+    }
+    const taxRate = getQuickTaxRate();
+    const withTax = base * (1 + (taxRate / 100));
+    quickItemPriceWithTax.value = parseFloat(withTax.toFixed(2));
+  }
+
+  function updateQuickPriceFromWithGst() {
+    if (!quickItemPrice || !quickItemPriceWithTax) return;
+    const val = quickItemPriceWithTax.value.trim();
+    if (val === '') {
+      quickItemPrice.value = '';
+      return;
+    }
+    const total = parseFloat(val);
+    if (isNaN(total) || total < 0) {
+      quickItemPrice.value = '';
+      return;
+    }
+    const taxRate = getQuickTaxRate();
+    const withoutTax = total / (1 + (taxRate / 100));
+    quickItemPrice.value = parseFloat(withoutTax.toFixed(2));
+  }
+
+  if (quickItemPrice) {
+    quickItemPrice.addEventListener('input', () => {
+      lastEditedQuickPrice = 'without_gst';
+      updateQuickPriceFromWithoutGst();
+    });
+  }
+
+  if (quickItemPriceWithTax) {
+    quickItemPriceWithTax.addEventListener('input', () => {
+      lastEditedQuickPrice = 'with_gst';
+      updateQuickPriceFromWithGst();
+    });
+  }
 
   if (quickItemTaxRate) {
     quickItemTaxRate.addEventListener('change', () => {
@@ -1490,10 +1547,16 @@ document.addEventListener('DOMContentLoaded', () => {
             val = 18;
             quickItemCustomTax.value = val;
           }
+          if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = val;
         }
       } else {
         if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('d-none');
         if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = quickItemTaxRate.value;
+      }
+      if (lastEditedQuickPrice === 'with_gst') {
+        updateQuickPriceFromWithGst();
+      } else {
+        updateQuickPriceFromWithoutGst();
       }
     });
   }
@@ -1506,7 +1569,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNaN(num)) {
           if (num > 100) quickItemCustomTax.value = 100;
           else if (num < 0) quickItemCustomTax.value = 1;
+          if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = quickItemCustomTax.value;
         }
+      }
+      if (lastEditedQuickPrice === 'with_gst') {
+        updateQuickPriceFromWithGst();
+      } else {
+        updateQuickPriceFromWithoutGst();
       }
     });
     quickItemCustomTax.addEventListener('blur', () => {
@@ -1514,6 +1583,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let num = parseFloat(quickItemCustomTax.value);
         if (isNaN(num) || num < 1) quickItemCustomTax.value = 1;
         else if (num > 100) quickItemCustomTax.value = 100;
+        if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = quickItemCustomTax.value;
+      }
+      if (lastEditedQuickPrice === 'with_gst') {
+        updateQuickPriceFromWithGst();
+      } else {
+        updateQuickPriceFromWithoutGst();
       }
     });
   }
@@ -1521,6 +1596,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quickItemForm) {
     quickItemForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (quickItemPrice && quickItemPriceWithTax) {
+        if (quickItemPrice.value.trim() === '' && quickItemPriceWithTax.value.trim() !== '') {
+          updateQuickPriceFromWithGst();
+        }
+      }
       if (quickItemAlert) quickItemAlert.classList.add('d-none');
       if (quickItemSpinner) quickItemSpinner.classList.remove('d-none');
       if (btnSubmitQuickItem) btnSubmitQuickItem.disabled = true;

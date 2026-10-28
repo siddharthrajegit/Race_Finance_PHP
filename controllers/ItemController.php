@@ -53,6 +53,13 @@ class ItemController {
             $purchasePrice = Security::parseCleanFloat($_POST['purchase_price'] ?? 0);
             $taxRate = Security::parseCleanFloat($_POST['tax_rate'] ?? 0);
 
+            if ($salePrice <= 0 && !empty($_POST['sale_price_with_tax'])) {
+                $priceWithTax = Security::parseCleanFloat($_POST['sale_price_with_tax']);
+                if ($priceWithTax > 0) {
+                    $salePrice = round($priceWithTax / (1 + ($taxRate / 100)), 2);
+                }
+            }
+
             if ($salePrice < 0 || $purchasePrice < 0) {
                 Flash::set('error_msg', 'Sale price and purchase price cannot be negative.');
                 header('Location: /items/create');
@@ -126,6 +133,13 @@ class ItemController {
             $salePrice = Security::parseCleanFloat($_POST['sale_price'] ?? 0);
             $purchasePrice = Security::parseCleanFloat($_POST['purchase_price'] ?? 0);
             $taxRate = Security::parseCleanFloat($_POST['tax_rate'] ?? 0);
+
+            if ($salePrice <= 0 && !empty($_POST['sale_price_with_tax'])) {
+                $priceWithTax = Security::parseCleanFloat($_POST['sale_price_with_tax']);
+                if ($priceWithTax > 0) {
+                    $salePrice = round($priceWithTax / (1 + ($taxRate / 100)), 2);
+                }
+            }
 
             if ($salePrice < 0 || $purchasePrice < 0) {
                 Flash::set('error_msg', 'Sale price and purchase price cannot be negative.');
@@ -240,7 +254,14 @@ class ItemController {
                 exit;
             }
 
+            $taxRate = min(100.0, max(0.0, Security::parseCleanFloat($input['tax_rate'] ?? 0)));
             $salePrice = max(0.0, Security::parseCleanFloat($input['sale_price'] ?? 0));
+            if ($salePrice <= 0.0 && !empty($input['sale_price_with_tax'])) {
+                $priceWithTax = Security::parseCleanFloat($input['sale_price_with_tax']);
+                if ($priceWithTax > 0.0) {
+                    $salePrice = round($priceWithTax / (1 + ($taxRate / 100)), 2);
+                }
+            }
             $purchasePrice = max(0.0, Security::parseCleanFloat($input['purchase_price'] ?? 0));
             if ($purchasePrice === 0.0 && $salePrice > 0.0) {
                 $purchasePrice = $salePrice;
@@ -248,8 +269,6 @@ class ItemController {
             if ($salePrice === 0.0 && $purchasePrice > 0.0) {
                 $salePrice = $purchasePrice;
             }
-
-            $taxRate = min(100.0, max(0.0, Security::parseCleanFloat($input['tax_rate'] ?? 0)));
 
             $item = Item::create([
                 'firm_id' => (int)$firm['id'],

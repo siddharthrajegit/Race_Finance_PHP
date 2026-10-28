@@ -569,12 +569,17 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
               </select>
             </div>
 
-            <div class="col-md-4">
-              <label class="form-label small fw-bold"><?= $invoiceType === 'purchase' ? 'Purchase Price (₹)' : 'Sale Price (₹)' ?> <span class="text-danger">*</span></label>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold"><?= $invoiceType === 'purchase' ? 'Price (Excl. GST)' : 'Sale Price (Without GST)' ?> <span class="text-danger">*</span></label>
               <input type="number" class="form-control form-control-sm text-end" name="sale_price" id="quickItemPrice" min="0" step="any" placeholder="0.00" required>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
+              <label class="form-label small fw-bold"><?= $invoiceType === 'purchase' ? 'Price (Incl. GST)' : 'Sale Price (With GST)' ?></label>
+              <input type="number" class="form-control form-control-sm text-end" name="sale_price_with_tax" id="quickItemPriceWithTax" min="0" step="any" placeholder="0.00">
+            </div>
+
+            <div class="col-md-3">
               <label class="form-label small fw-bold">GST Tax Rate (%)</label>
               <select class="form-select form-select-sm" name="tax_rate_select" id="quickItemTaxRate">
                 <option value="0">0% (Nil / Exempt)</option>
@@ -593,12 +598,12 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
               <input type="hidden" name="tax_rate" id="quickItemTaxRateHidden" value="18">
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label small fw-bold">Opening Stock Quantity</label>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Opening Stock Qty</label>
               <input type="number" class="form-control form-control-sm" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-12">
               <label class="form-label small fw-bold">Item Description (Optional)</label>
               <input type="text" class="form-control form-control-sm" name="description" id="quickItemDesc" placeholder="Optional details...">
             </div>
