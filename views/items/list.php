@@ -26,7 +26,7 @@ $lowStock = $lowStockCount ?? 0;
       </div>
       <div class="col-md-6 text-md-end">
         <span class="badge bg-light text-dark border p-2 me-2">
-          Total Products: <strong><?= $itemCount ?></strong>
+          Total Products: <strong id="visibleRecordsCount_itemsTable"><?= $itemCount ?></strong>
         </span>
         <?php if ($lowStock > 0): ?>
           <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-2">

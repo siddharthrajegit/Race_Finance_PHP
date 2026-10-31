@@ -80,11 +80,37 @@ class DB {
                 if (!empty($colNames) && !in_array('qr_code_path', $colNames, true)) {
                     $pdo->exec("ALTER TABLE firms ADD COLUMN qr_code_path VARCHAR(255) NULL;");
                 }
+
+                // Ensure custom_units table exists for user-scoped measurement units
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS custom_units (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL,
+                        unit_code TEXT NOT NULL,
+                        unit_label TEXT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(user_id, unit_code),
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                    );
+                ");
             } else {
                 $check = $pdo->query("SHOW COLUMNS FROM firms LIKE 'qr_code_path'")->fetch();
                 if (!$check) {
                     $pdo->exec("ALTER TABLE firms ADD COLUMN qr_code_path VARCHAR(255) NULL;");
                 }
+
+                // Ensure custom_units table exists for user-scoped measurement units
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `custom_units` (
+                        `id` INT AUTO_INCREMENT PRIMARY KEY,
+                        `user_id` INT NOT NULL,
+                        `unit_code` VARCHAR(20) NOT NULL,
+                        `unit_label` VARCHAR(50) NOT NULL,
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE KEY `uq_user_unit` (`user_id`, `unit_code`),
+                        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                ");
             }
         } catch (Throwable $e) {
             // Table might not exist yet during fresh setup, safe to ignore

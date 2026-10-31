@@ -197,11 +197,16 @@ class InvoiceController {
             $igstTotal += $tax['igst_amount'];
             $taxTotal += $tax['total'];
 
+            $rawHsn = self::formArrayValue($body['hsn_code'] ?? null, $i, '');
+            $cleanHsn = $rawHsn ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($rawHsn))), 0, 20) : null;
+            $rawUnit = self::formArrayValue($body['unit'] ?? null, $i, 'PCS');
+            $cleanUnit = $rawUnit ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($rawUnit)), 0, 15)) : 'PCS';
+
             $items[] = [
                 'item_id' => self::resolveItemId($body, $i, $firmId, $type, $isGst, $itemName),
                 'item_name' => $itemName,
-                'hsn_code' => self::formArrayValue($body['hsn_code'] ?? null, $i, '') ?: null,
-                'unit' => self::formArrayValue($body['unit'] ?? null, $i, 'PCS') ?: 'PCS',
+                'hsn_code' => $cleanHsn,
+                'unit' => $cleanUnit ?: 'PCS',
                 'quantity' => $qty,
                 'rate' => $rate,
                 'discount_percent' => $discPct,

@@ -28,9 +28,14 @@ $fType = $filterType ?? 'all';
         </div>
       </div>
       <div class="col-md-6">
-        <div class="input-group">
-          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" class="form-control border-start-0" placeholder="Search parties by name, phone, or GSTIN..." data-table-search="partiesTable">
+        <div class="d-flex gap-2">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" placeholder="Search parties by name, phone, or GSTIN..." data-table-search="partiesTable">
+          </div>
+          <span class="badge bg-light text-dark border p-2 text-nowrap d-inline-flex align-items-center">
+            Total: <strong class="ms-1" id="visibleRecordsCount_partiesTable"><?= count($parties ?? []) ?></strong>
+          </span>
         </div>
       </div>
     </div>

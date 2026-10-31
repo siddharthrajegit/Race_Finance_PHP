@@ -21,16 +21,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const fromVal = fromInput ? fromInput.value : '';
         const toVal = toInput ? toInput.value : '';
 
-        const rows = table.querySelectorAll('tbody tr[data-invoice-date], tbody tr[data-invoice-number]');
+        const rows = table.querySelectorAll('tbody tr');
         let visibleCount = 0;
 
         rows.forEach(row => {
+          // Skip empty-state placeholder rows that span full width
+          if (row.querySelector('td[colspan]')) return;
+
           const invDate = row.dataset.invoiceDate || '';
           const text = row.textContent.toLowerCase();
 
           let matchDate = true;
-          if (fromVal && invDate < fromVal) matchDate = false;
-          if (toVal && invDate > toVal) matchDate = false;
+          if (fromVal && invDate && invDate < fromVal) matchDate = false;
+          if (toVal && invDate && invDate > toVal) matchDate = false;
 
           let matchQuery = true;
           if (query && !text.includes(query)) matchQuery = false;
@@ -393,6 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (formatSetting === 'DD/MM/YYYY') {
         fpFormat = 'd/m/Y';
       }
+
+      // Light restriction: limit characters to digits and date separators, max length 10
+      input.setAttribute('maxlength', '10');
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);
+      });
 
       flatpickr(input, {
         dateFormat: fpFormat,

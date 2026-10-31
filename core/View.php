@@ -12,6 +12,7 @@ require_once __DIR__ . '/Flash.php';
 require_once __DIR__ . '/../models/Admin.php';
 require_once __DIR__ . '/../models/Firm.php';
 require_once __DIR__ . '/../models/Setting.php';
+require_once __DIR__ . '/../models/CustomUnit.php';
 
 class View {
     public static function render(string $viewName, array $data = [], bool $layout = true): void {
@@ -42,6 +43,15 @@ class View {
             $platformSettings = [];
         }
 
+        $allUnits = CustomUnit::SYSTEM_UNITS;
+        if ($currentUser) {
+            try {
+                $allUnits = CustomUnit::getAllForUser((int)$currentUser['id']);
+            } catch (Throwable $e) {
+                $allUnits = CustomUnit::SYSTEM_UNITS;
+            }
+        }
+
         $globals = [
             'appUrl' => APP_URL,
             'appDomain' => parse_url(APP_URL, PHP_URL_HOST) ?: 'racefinance.site',
@@ -52,6 +62,7 @@ class View {
             'activeFirm' => $activeFirm,
             'userFirms' => $userFirms,
             'firmSettings' => $firmSettings,
+            'allUnits' => $allUnits,
             'csrfToken' => CSRF::getToken(),
             'success_msg' => Flash::get('success_msg'),
             'error_msg' => Flash::get('error_msg'),
@@ -152,7 +163,8 @@ function normalizeDate(?string $dateStr): ?string {
     if (empty($dateStr)) {
         return null;
     }
-    $trimmed = trim($dateStr);
+    // Light sanitization: strip HTML tags and restrict characters to date characters up to 10 chars
+    $trimmed = substr(preg_replace('/[^0-9\/\-\.]/', '', strip_tags(trim($dateStr))), 0, 10);
     if ($trimmed === '' || $trimmed === '0000-00-00' || $trimmed === '0000-00-00 00:00:00') {
         return null;
     }

@@ -48,6 +48,7 @@ require_once __DIR__ . '/controllers/SettingController.php';
 require_once __DIR__ . '/controllers/BackupController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/LegalController.php';
+require_once __DIR__ . '/controllers/UnitController.php';
 
 // -----------------------------------------------------------------------------
 // Root & Dashboard
@@ -92,6 +93,13 @@ Router::post('/items/edit/:id', [ItemController::class, 'postEdit']);
 Router::post('/items/adjust/:id', [ItemController::class, 'postAdjustStock']);
 Router::post('/items/delete/:id', [ItemController::class, 'postDelete']);
 Router::get('/items/api/search', [ItemController::class, 'apiGetItems']);
+
+// -----------------------------------------------------------------------------
+// Measurement Units API Routes (User-Scoped Custom Units)
+// -----------------------------------------------------------------------------
+Router::get('/api/units', [UnitController::class, 'apiGetUnits']);
+Router::post('/api/units/create', [UnitController::class, 'postCreate']);
+Router::post('/api/units/delete/:id', [UnitController::class, 'postDelete']);
 
 // -----------------------------------------------------------------------------
 // Parties (Customers & Suppliers) Routes

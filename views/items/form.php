@@ -28,22 +28,34 @@
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label for="hsn_code" class="form-label">HSN / SAC Code</label>
-              <input type="text" class="form-control font-monospace" id="hsn_code" name="hsn_code" placeholder="e.g. 61091000" value="<?= htmlspecialchars($item['hsn_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+              <input type="text" class="form-control font-monospace" id="hsn_code" name="hsn_code" placeholder="e.g. 61091000" value="<?= htmlspecialchars($item['hsn_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
+              <div class="form-text small text-muted">2 to 8 digits HSN or SAC code</div>
             </div>
             <div class="col-md-6">
-              <label for="unit" class="form-label">Unit of Measurement</label>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="unit" class="form-label mb-0">Unit of Measurement</label>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddCustomUnit">
+                  <i class="bi bi-plus-circle me-1"></i>+ Add Unit
+                </button>
+              </div>
               <select class="form-select" id="unit" name="unit">
-                <option value="PCS" <?= (empty($item) || ($item['unit'] ?? '') === 'PCS') ? 'selected' : '' ?>>PCS (Pieces)</option>
-                <option value="KG" <?= (!empty($item) && ($item['unit'] ?? '') === 'KG') ? 'selected' : '' ?>>KG (Kilograms)</option>
-                <option value="BOX" <?= (!empty($item) && ($item['unit'] ?? '') === 'BOX') ? 'selected' : '' ?>>BOX (Boxes)</option>
-                <option value="MTR" <?= (!empty($item) && ($item['unit'] ?? '') === 'MTR') ? 'selected' : '' ?>>MTR (Meters)</option>
-                <option value="LTR" <?= (!empty($item) && ($item['unit'] ?? '') === 'LTR') ? 'selected' : '' ?>>LTR (Liters)</option>
-                <option value="NOS" <?= (!empty($item) && ($item['unit'] ?? '') === 'NOS') ? 'selected' : '' ?>>NOS (Numbers)</option>
-                <option value="BAG" <?= (!empty($item) && ($item['unit'] ?? '') === 'BAG') ? 'selected' : '' ?>>BAG (Bags)</option>
-                <option value="PKT" <?= (!empty($item) && ($item['unit'] ?? '') === 'PKT') ? 'selected' : '' ?>>PKT (Packets)</option>
-                <option value="BDL" <?= (!empty($item) && ($item['unit'] ?? '') === 'BDL') ? 'selected' : '' ?>>BDL (Bundle)</option>
-                <option value="DZ" <?= (!empty($item) && ($item['unit'] ?? '') === 'DZ') ? 'selected' : '' ?>>DZ (Dozen)</option>
-                <option value="ROL" <?= (!empty($item) && ($item['unit'] ?? '') === 'ROL') ? 'selected' : '' ?>>ROL (Rolls)</option>
+                <?php 
+                  $currentUnitUpper = strtoupper($item['unit'] ?? 'PCS');
+                  $unitFound = false;
+                ?>
+                <?php foreach (($allUnits ?? []) as $u): ?>
+                  <?php 
+                    $uCode = strtoupper($u['code']);
+                    $isSel = ($uCode === $currentUnitUpper);
+                    if ($isSel) $unitFound = true;
+                  ?>
+                  <option value="<?= htmlspecialchars($uCode, ENT_QUOTES, 'UTF-8') ?>" <?= $isSel ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($u['label'] ?? $uCode, ENT_QUOTES, 'UTF-8') ?><?= !empty($u['is_custom']) ? ' (Custom)' : '' ?>
+                  </option>
+                <?php endforeach; ?>
+                <?php if (!$unitFound && !empty($item['unit'])): ?>
+                  <option value="<?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endif; ?>
               </select>
             </div>
           </div>
@@ -350,5 +362,120 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // Custom Unit Modal AJAX Creation
+  const customUnitForm = document.getElementById('customUnitForm');
+  const customUnitAlert = document.getElementById('customUnitAlert');
+  const btnSaveCustomUnit = document.getElementById('btnSaveCustomUnit');
+  const unitSelect = document.getElementById('unit');
+
+  if (customUnitForm) {
+    customUnitForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (customUnitAlert) customUnitAlert.classList.add('d-none');
+      if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = true;
+
+      const codeInput = document.getElementById('newUnitCode');
+      const labelInput = document.getElementById('newUnitLabel');
+      const codeVal = codeInput ? codeInput.value.trim().toUpperCase() : '';
+      const labelVal = labelInput ? labelInput.value.trim() : '';
+
+      if (!codeVal) {
+        if (customUnitAlert) {
+          customUnitAlert.textContent = 'Please enter a unit code (e.g. PAIR, SET).';
+          customUnitAlert.classList.remove('d-none');
+        }
+        if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
+        return;
+      }
+
+      try {
+        const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+        const res = await fetch('/api/units/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({
+            unit_code: codeVal,
+            unit_label: labelVal || codeVal,
+            _csrf: csrfToken
+          })
+        });
+
+        const data = await res.json();
+        if (data.success && data.unit) {
+          const newCode = data.unit.code.toUpperCase();
+          const newLabel = (data.unit.label || newCode) + ' (Custom)';
+
+          // Check if option already exists in select
+          let opt = Array.from(unitSelect.options).find(o => o.value === newCode);
+          if (!opt) {
+            opt = document.createElement('option');
+            opt.value = newCode;
+            opt.textContent = newLabel;
+            unitSelect.appendChild(opt);
+          }
+          unitSelect.value = newCode;
+
+          // Close modal
+          const modalEl = document.getElementById('modalAddCustomUnit');
+          if (modalEl) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modalInstance.hide();
+          }
+          customUnitForm.reset();
+        } else {
+          if (customUnitAlert) {
+            customUnitAlert.textContent = data.error || 'Failed to create unit.';
+            customUnitAlert.classList.remove('d-none');
+          }
+        }
+      } catch (err) {
+        if (customUnitAlert) {
+          customUnitAlert.textContent = 'Network error: ' + err.message;
+          customUnitAlert.classList.remove('d-none');
+        }
+      } finally {
+        if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
+      }
+    });
+  }
 });
 </script>
+
+<!-- Modal: Add Custom Unit -->
+<div class="modal fade" id="modalAddCustomUnit" tabindex="-1" aria-labelledby="modalAddCustomUnitLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white py-2 px-3">
+        <h6 class="modal-title fw-bold" id="modalAddCustomUnitLabel">
+          <i class="bi bi-plus-circle me-1"></i> Add Custom Unit
+        </h6>
+        <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="customUnitForm">
+        <div class="modal-body p-3">
+          <div id="customUnitAlert" class="alert alert-danger d-none py-1 px-2 small mb-2"></div>
+          <p class="small text-muted mb-2">Add a custom measurement unit visible only in your account.</p>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold mb-1" for="newUnitCode">Unit Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm text-uppercase font-monospace" id="newUnitCode" name="new_unit_code" placeholder="e.g. PAIR, SET, CAN" maxlength="15" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 15).toUpperCase();">
+            <div class="form-text small text-muted" style="font-size: 0.72rem;">Short symbol (1-15 chars, alphanumeric)</div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold mb-1" for="newUnitLabel">Display Label (Optional)</label>
+            <input type="text" class="form-control form-control-sm" id="newUnitLabel" name="new_unit_label" placeholder="e.g. PAIR (Pairs)" maxlength="50">
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2 px-3 border-0">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm fw-semibold" id="btnSaveCustomUnit">
+            <i class="bi bi-check-circle me-1"></i> Save Unit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

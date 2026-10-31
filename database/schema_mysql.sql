@@ -230,7 +230,19 @@ CREATE TABLE IF NOT EXISTS `document_sequences` (
   FOREIGN KEY (`firm_id`) REFERENCES `firms`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- User-scoped Custom Units Table
+CREATE TABLE IF NOT EXISTS `custom_units` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `unit_code` VARCHAR(20) NOT NULL,
+  `unit_label` VARCHAR(50) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_user_unit` (`user_id`, `unit_code`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Performance Indexes
+CREATE INDEX `idx_custom_units_user` ON `custom_units`(`user_id`);
 CREATE INDEX `idx_firms_user` ON `firms`(`user_id`);
 CREATE INDEX `idx_parties_firm` ON `parties`(`firm_id`);
 CREATE INDEX `idx_items_firm` ON `items`(`firm_id`);

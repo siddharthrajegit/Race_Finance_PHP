@@ -72,12 +72,15 @@ class ItemController {
                 exit;
             }
 
+            $cleanHsn = !empty($_POST['hsn_code']) ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($_POST['hsn_code']))), 0, 20) : null;
+            $cleanUnit = !empty($_POST['unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_POST['unit'])), 0, 15)) : 'PCS';
+
             Item::create([
                 'firm_id' => $firmId,
                 'name' => $name,
                 'item_code' => $_POST['item_code'] ?? null,
-                'hsn_code' => $_POST['hsn_code'] ?? null,
-                'unit' => $_POST['unit'] ?? 'PCS',
+                'hsn_code' => $cleanHsn,
+                'unit' => $cleanUnit,
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,
@@ -153,11 +156,14 @@ class ItemController {
                 exit;
             }
 
+            $cleanHsn = !empty($_POST['hsn_code']) ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($_POST['hsn_code']))), 0, 20) : null;
+            $cleanUnit = !empty($_POST['unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_POST['unit'])), 0, 15)) : 'PCS';
+
             Item::update($itemId, $firmId, [
                 'name' => $name,
                 'item_code' => $_POST['item_code'] ?? null,
-                'hsn_code' => $_POST['hsn_code'] ?? null,
-                'unit' => $_POST['unit'] ?? 'PCS',
+                'hsn_code' => $cleanHsn,
+                'unit' => $cleanUnit,
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,
@@ -270,12 +276,15 @@ class ItemController {
                 $salePrice = $purchasePrice;
             }
 
+            $cleanHsn = !empty($input['hsn_code']) ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($input['hsn_code']))), 0, 20) : null;
+            $cleanUnit = !empty($input['unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($input['unit'])), 0, 15)) : 'PCS';
+
             $item = Item::create([
                 'firm_id' => (int)$firm['id'],
                 'name' => $name,
                 'item_code' => $input['item_code'] ?? null,
-                'hsn_code' => $input['hsn_code'] ?? null,
-                'unit' => $input['unit'] ?? 'PCS',
+                'hsn_code' => $cleanHsn,
+                'unit' => $cleanUnit,
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,

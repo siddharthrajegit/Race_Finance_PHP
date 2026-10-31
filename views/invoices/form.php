@@ -89,7 +89,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
         <div class="col-sm-6 col-md-3">
           <label class="form-label small mb-1" for="invoiceDateInput">Record Date <span class="text-danger">*</span></label>
           <div class="input-group input-group-sm">
-            <input type="text" class="form-control form-control-sm date-picker" id="invoiceDateInput" name="invoice_date" value="<?= htmlspecialchars($formattedInvoiceDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" required autocomplete="off">
+            <input type="text" class="form-control form-control-sm date-picker" id="invoiceDateInput" name="invoice_date" value="<?= htmlspecialchars($formattedInvoiceDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" oninput="this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);" required autocomplete="off">
             <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('invoiceDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
           </div>
         </div>
@@ -98,7 +98,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
         <div class="col-sm-6 col-md-2">
           <label class="form-label small mb-1" for="dueDateInput">Due Date</label>
           <div class="input-group input-group-sm">
-            <input type="text" class="form-control form-control-sm date-picker" id="dueDateInput" name="due_date" value="<?= htmlspecialchars($formattedDueDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
+            <input type="text" class="form-control form-control-sm date-picker" id="dueDateInput" name="due_date" value="<?= htmlspecialchars($formattedDueDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" oninput="this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);" autocomplete="off">
             <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('dueDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
           </div>
         </div>
@@ -261,6 +261,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
   <!-- Preloaded Items Element for JS -->
   <div id="preloadedInvoiceItems" data-items="<?= htmlspecialchars(json_encode(!empty($invoice['items']) ? $invoice['items'] : []), ENT_QUOTES, 'UTF-8') ?>" class="d-none"></div>
+  <div id="unitOptionsData" data-units="<?= htmlspecialchars(json_encode($allUnits ?? []), ENT_QUOTES, 'UTF-8') ?>" class="d-none"></div>
 
   <!-- Row 4: Calculation Summary, Discounts, Payments, Notes -->
   <div class="row g-3">
@@ -549,23 +550,22 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
             <div class="col-md-4">
               <label class="form-label small fw-bold">HSN / SAC Code</label>
-              <input type="text" class="form-control form-control-sm font-monospace" name="hsn_code" id="quickItemHsn" placeholder="e.g. 6205">
+              <input type="text" class="form-control form-control-sm font-monospace" name="hsn_code" id="quickItemHsn" placeholder="e.g. 6205" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
             </div>
 
             <div class="col-md-4">
-              <label class="form-label small fw-bold">Measurement Unit <span class="text-danger">*</span></label>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-bold mb-0">Measurement Unit <span class="text-danger">*</span></label>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#modalAddCustomUnit">
+                  <i class="bi bi-plus-circle me-1"></i>+ Add Unit
+                </button>
+              </div>
               <select class="form-select form-select-sm" name="unit" id="quickItemUnit" required>
-                <option value="PCS" selected>PCS (Pieces)</option>
-                <option value="KG">KG (Kilograms)</option>
-                <option value="BOX">BOX (Boxes)</option>
-                <option value="MTR">MTR (Meters)</option>
-                <option value="LTR">LTR (Liters)</option>
-                <option value="NOS">NOS (Numbers)</option>
-                <option value="BAG">BAG (Bags)</option>
-                <option value="PKT">PKT (Packets)</option>
-                <option value="BDL">BDL (Bundle)</option>
-                <option value="DZ">DZ (Dozen)</option>
-                <option value="ROL">ROL (Rolls)</option>
+                <?php foreach (($allUnits ?? []) as $u): ?>
+                  <option value="<?= htmlspecialchars(strtoupper($u['code']), ENT_QUOTES, 'UTF-8') ?>" <?= strtoupper($u['code']) === 'PCS' ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($u['label'] ?? $u['code'], ENT_QUOTES, 'UTF-8') ?><?= !empty($u['is_custom']) ? ' (Custom)' : '' ?>
+                  </option>
+                <?php endforeach; ?>
               </select>
             </div>
 
@@ -629,5 +629,40 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
   </div>
 </div>
 
-<script src="/js/invoice-calc.js?v=4"></script>
+<!-- Modal: Add Custom Unit -->
+<div class="modal fade" id="modalAddCustomUnit" tabindex="-1" aria-labelledby="modalAddCustomUnitLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white py-2 px-3">
+        <h6 class="modal-title fw-bold" id="modalAddCustomUnitLabel">
+          <i class="bi bi-plus-circle me-1"></i> Add Custom Unit
+        </h6>
+        <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="customUnitForm">
+        <div class="modal-body p-3">
+          <div id="customUnitAlert" class="alert alert-danger d-none py-1 px-2 small mb-2"></div>
+          <p class="small text-muted mb-2">Add a custom measurement unit visible only in your account.</p>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold mb-1" for="newUnitCode">Unit Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm text-uppercase font-monospace" id="newUnitCode" name="new_unit_code" placeholder="e.g. PAIR, SET, CAN" maxlength="15" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 15).toUpperCase();">
+            <div class="form-text small text-muted" style="font-size: 0.72rem;">Short symbol (1-15 chars, alphanumeric)</div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold mb-1" for="newUnitLabel">Display Label (Optional)</label>
+            <input type="text" class="form-control form-control-sm" id="newUnitLabel" name="new_unit_label" placeholder="e.g. PAIR (Pairs)" maxlength="50">
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2 px-3 border-0">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm fw-semibold" id="btnSaveCustomUnit">
+            <i class="bi bi-check-circle me-1"></i> Save Unit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/js/invoice-calc.js?v=5"></script>
 

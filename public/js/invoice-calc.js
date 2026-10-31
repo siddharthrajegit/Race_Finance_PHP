@@ -254,7 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         selectParty(p);
       });
 
@@ -282,27 +284,43 @@ document.addEventListener('DOMContentLoaded', () => {
     partySearchResults.classList.remove('d-none');
   }
 
+  function getPartyMatches(rawQuery) {
+    const query = (rawQuery || '').trim().toLowerCase();
+    if (!query) return partiesList;
+    return partiesList.filter(p => {
+      const name = (p.name || '').toLowerCase();
+      const phone = (p.phone || '').toLowerCase();
+      const gstin = (p.gstin || '').toLowerCase();
+      const combo = `${name} (${phone})`.toLowerCase();
+      return name.includes(query) ||
+             phone.includes(query) ||
+             gstin.includes(query) ||
+             combo.includes(query) ||
+             query.includes(name);
+    });
+  }
+
   if (partySearchInput) {
     partySearchInput.addEventListener('focus', () => {
+      partySearchInput.select();
       const query = partySearchInput.value.trim().toLowerCase();
-      const matches = partiesList.filter(p => 
-        !query ||
-        p.name.toLowerCase().includes(query) ||
-        p.phone.toLowerCase().includes(query) ||
-        p.gstin.toLowerCase().includes(query)
-      );
-      renderPartyResults(matches);
+      if (partySelect && partySelect.value) {
+        renderPartyResults(partiesList);
+      } else {
+        renderPartyResults(getPartyMatches(query));
+      }
     });
 
     partySearchInput.addEventListener('input', () => {
       const query = partySearchInput.value.trim().toLowerCase();
-      const matches = partiesList.filter(p => 
-        !query ||
-        p.name.toLowerCase().includes(query) ||
-        p.phone.toLowerCase().includes(query) ||
-        p.gstin.toLowerCase().includes(query)
-      );
-      renderPartyResults(matches);
+      if (partySelect && partySelect.value) {
+        const currentOpt = partySelect.options[partySelect.selectedIndex];
+        const selectedName = currentOpt ? (currentOpt.dataset.name || '').toLowerCase() : '';
+        if (query !== selectedName && !selectedName.includes(query)) {
+          partySelect.value = '';
+        }
+      }
+      renderPartyResults(getPartyMatches(query));
       if (btnClearPartySearch) {
         btnClearPartySearch.style.display = query.length > 0 ? 'block' : 'none';
       }
@@ -383,6 +401,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const customTaxVal = !isStandardTax ? itemTaxRate : '';
     const unitUpper = (itemData.unit || 'PCS').toUpperCase();
 
+    // Dynamically retrieve user-scoped units (defaults + custom units)
+    function getAvailableUnits() {
+      const unitEl = document.getElementById('unitOptionsData');
+      if (unitEl && unitEl.dataset.units) {
+        try {
+          const parsed = JSON.parse(unitEl.dataset.units);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {}
+      }
+      return [
+        { code: 'PCS', label: 'PCS (Pieces)' },
+        { code: 'KG', label: 'KG (Kilograms)' },
+        { code: 'BOX', label: 'BOX (Boxes)' },
+        { code: 'MTR', label: 'MTR (Meters)' },
+        { code: 'LTR', label: 'LTR (Liters)' },
+        { code: 'NOS', label: 'NOS (Numbers)' },
+        { code: 'BAG', label: 'BAG (Bags)' },
+        { code: 'PKT', label: 'PKT (Packets)' },
+        { code: 'BDL', label: 'BDL (Bundle)' },
+        { code: 'DZ', label: 'DZ (Dozen)' },
+        { code: 'ROL', label: 'ROL (Rolls)' }
+      ];
+    }
+
+    const unitsList = getAvailableUnits();
+    let unitOptionsHtml = '';
+    let unitMatched = false;
+    unitsList.forEach(u => {
+      const code = (u.code || '').toUpperCase();
+      const isSel = (code === unitUpper);
+      if (isSel) unitMatched = true;
+      unitOptionsHtml += `<option value="${code}" ${isSel ? 'selected' : ''}>${u.label || code}${u.is_custom ? ' (Custom)' : ''}</option>`;
+    });
+    if (!unitMatched && unitUpper) {
+      unitOptionsHtml += `<option value="${unitUpper}" selected>${unitUpper}</option>`;
+    }
+
     tr.innerHTML = `
       <td class="text-center row-num text-muted small p-1">${rowCount + 1}</td>
       <td>
@@ -390,25 +445,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="text" name="item_name[]" class="form-control form-control-sm row-item-name" placeholder="Item name / Description" value="${itemName}" list="itemsDataList" required>
       </td>
       <td style="width: 85px;">
-        <input type="text" name="hsn_code[]" class="form-control form-control-sm row-hsn" placeholder="HSN/SAC" value="${itemData.hsn_code || ''}">
+        <input type="text" name="hsn_code[]" class="form-control form-control-sm row-hsn" placeholder="HSN/SAC" value="${itemData.hsn_code || ''}" maxlength="20">
       </td>
       <td style="width: 82px;">
         <input type="number" name="quantity[]" class="form-control form-control-sm row-qty text-end" min="0.01" step="any" value="${itemData.quantity !== undefined ? itemData.quantity : '1'}" required>
       </td>
       <td style="width: 78px;">
         <select name="unit[]" class="form-select form-select-sm row-unit">
-          <option value="PCS" ${unitUpper === 'PCS' ? 'selected' : ''}>PCS</option>
-          <option value="KG" ${unitUpper === 'KG' ? 'selected' : ''}>KG</option>
-          <option value="BOX" ${unitUpper === 'BOX' ? 'selected' : ''}>BOX</option>
-          <option value="MTR" ${unitUpper === 'MTR' ? 'selected' : ''}>MTR</option>
-          <option value="LTR" ${unitUpper === 'LTR' ? 'selected' : ''}>LTR</option>
-          <option value="NOS" ${unitUpper === 'NOS' ? 'selected' : ''}>NOS</option>
-          <option value="BAG" ${unitUpper === 'BAG' ? 'selected' : ''}>BAG</option>
-          <option value="PKT" ${unitUpper === 'PKT' ? 'selected' : ''}>PKT</option>
-          <option value="BDL" ${unitUpper === 'BDL' ? 'selected' : ''}>BDL</option>
-          <option value="DZ" ${unitUpper === 'DZ' ? 'selected' : ''}>DZ</option>
-          <option value="ROL" ${unitUpper === 'ROL' ? 'selected' : ''}>ROL</option>
-          ${!['PCS', 'KG', 'BOX', 'MTR', 'LTR', 'NOS', 'BAG', 'PKT', 'BDL', 'DZ', 'ROL'].includes(unitUpper) ? `<option value="${unitUpper}" selected>${unitUpper}</option>` : ''}
+          ${unitOptionsHtml}
         </select>
       </td>
       <td style="width: 95px;">
@@ -485,22 +529,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const taxRateSelect = row.querySelector('.row-tax-rate-select');
     const customTaxInput = row.querySelector('.row-custom-tax');
     const hiddenTaxInput = row.querySelector('.row-tax-rate');
+    const hsnInput = row.querySelector('.row-hsn');
     const btnRemove = row.querySelector('.btn-remove-row');
 
-    // Autocomplete on name input
+    // Light restriction: sanitize HSN input characters (letters, numbers, dot, dash, slash, space), max 20
+    if (hsnInput) {
+      hsnInput.addEventListener('input', () => {
+        hsnInput.value = hsnInput.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);
+      });
+    }
+
+    // Autocomplete on name input (case-insensitive & safe against quotes/special chars)
     if (itemNameInput) {
-      itemNameInput.addEventListener('input', () => {
-        const option = document.querySelector(`#itemsDataList option[value="${itemNameInput.value}"]`);
-        if (option) {
-          row.querySelector('.row-item-id').value = option.dataset.id || '';
-          row.querySelector('.row-hsn').value = option.dataset.hsn || '';
-          row.querySelector('.row-unit').value = option.dataset.unit || 'PCS';
-          row.querySelector('.row-rate').value = option.dataset.price || '0';
-          applyRowTaxRate(row, option.dataset.tax || '0');
+      const matchAndApplyItem = () => {
+        const queryVal = (itemNameInput.value || '').trim().toLowerCase();
+        if (!queryVal) {
+          updateRowCalculation(row);
+          updateAllCalculations();
+          return;
+        }
+        const dl = document.getElementById('itemsDataList');
+        if (!dl) return;
+        let matched = null;
+        for (let i = 0; i < dl.options.length; i++) {
+          const opt = dl.options[i];
+          if ((opt.value || '').trim().toLowerCase() === queryVal) {
+            matched = opt;
+            break;
+          }
+        }
+        if (matched) {
+          const idEl = row.querySelector('.row-item-id');
+          const hsnEl = row.querySelector('.row-hsn');
+          const unitEl = row.querySelector('.row-unit');
+          const rateEl = row.querySelector('.row-rate');
+
+          if (idEl) idEl.value = matched.dataset.id || '';
+          if (hsnEl && matched.dataset.hsn !== undefined) hsnEl.value = matched.dataset.hsn || '';
+          if (unitEl && matched.dataset.unit) unitEl.value = matched.dataset.unit;
+          if (rateEl && matched.dataset.price !== undefined && matched.dataset.price !== '') rateEl.value = matched.dataset.price;
+          if (matched.dataset.tax !== undefined) applyRowTaxRate(row, matched.dataset.tax);
         }
         updateRowCalculation(row);
         updateAllCalculations();
-      });
+      };
+
+      itemNameInput.addEventListener('input', matchAndApplyItem);
+      itemNameInput.addEventListener('change', matchAndApplyItem);
     }
 
     [qtyInput, rateInput, discInput].forEach(input => {
@@ -1723,6 +1798,113 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         if (quickItemSpinner) quickItemSpinner.classList.add('d-none');
         if (btnSubmitQuickItem) btnSubmitQuickItem.disabled = false;
+      }
+    });
+  }
+
+  // 3. Custom Unit Modal Handlers for Invoices
+  const customUnitForm = document.getElementById('customUnitForm');
+  const customUnitAlert = document.getElementById('customUnitAlert');
+  const btnSaveCustomUnit = document.getElementById('btnSaveCustomUnit');
+  const quickItemUnit = document.getElementById('quickItemUnit');
+
+  if (customUnitForm) {
+    customUnitForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (customUnitAlert) customUnitAlert.classList.add('d-none');
+      if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = true;
+
+      const codeInput = document.getElementById('newUnitCode');
+      const labelInput = document.getElementById('newUnitLabel');
+      const codeVal = codeInput ? codeInput.value.trim().toUpperCase() : '';
+      const labelVal = labelInput ? labelInput.value.trim() : '';
+
+      if (!codeVal) {
+        if (customUnitAlert) {
+          customUnitAlert.textContent = 'Please enter a unit code (e.g. PAIR, SET).';
+          customUnitAlert.classList.remove('d-none');
+        }
+        if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
+        return;
+      }
+
+      try {
+        const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+        const res = await fetch('/api/units/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({
+            unit_code: codeVal,
+            unit_label: labelVal || codeVal,
+            _csrf: csrfToken
+          })
+        });
+
+        const data = await res.json();
+        if (data.success && data.unit) {
+          const newCode = data.unit.code.toUpperCase();
+          const newLabel = (data.unit.label || newCode) + ' (Custom)';
+
+          // Update #unitOptionsData
+          const unitEl = document.getElementById('unitOptionsData');
+          if (unitEl) {
+            let currentUnits = [];
+            try {
+              currentUnits = JSON.parse(unitEl.dataset.units || '[]');
+            } catch (e) {}
+            if (!currentUnits.some(u => (u.code || '').toUpperCase() === newCode)) {
+              currentUnits.push({ code: newCode, label: newLabel, is_custom: true });
+              unitEl.dataset.units = JSON.stringify(currentUnits);
+            }
+          }
+
+          // Update #quickItemUnit in Quick Add Item modal
+          if (quickItemUnit) {
+            let opt = Array.from(quickItemUnit.options).find(o => o.value === newCode);
+            if (!opt) {
+              opt = document.createElement('option');
+              opt.value = newCode;
+              opt.textContent = newLabel;
+              quickItemUnit.appendChild(opt);
+            }
+            quickItemUnit.value = newCode;
+          }
+
+          // Update any existing row-unit selects
+          document.querySelectorAll('.row-unit').forEach(select => {
+            let opt = Array.from(select.options).find(o => o.value === newCode);
+            if (!opt) {
+              opt = document.createElement('option');
+              opt.value = newCode;
+              opt.textContent = newLabel;
+              select.appendChild(opt);
+            }
+          });
+
+          // Close modal
+          const modalEl = document.getElementById('modalAddCustomUnit');
+          if (modalEl) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modalInstance.hide();
+          }
+          customUnitForm.reset();
+          showToastNotification(`✓ Custom unit "${newCode}" added!`, 'success');
+        } else {
+          if (customUnitAlert) {
+            customUnitAlert.textContent = data.error || 'Failed to create unit.';
+            customUnitAlert.classList.remove('d-none');
+          }
+        }
+      } catch (err) {
+        if (customUnitAlert) {
+          customUnitAlert.textContent = 'Network error: ' + err.message;
+          customUnitAlert.classList.remove('d-none');
+        }
+      } finally {
+        if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
       }
     });
   }
