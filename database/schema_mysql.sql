@@ -77,9 +77,12 @@ CREATE TABLE IF NOT EXISTS `items` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `firm_id` INT NOT NULL,
   `name` VARCHAR(255) NOT NULL,
+  `category` VARCHAR(100) NULL DEFAULT NULL,
   `item_code` VARCHAR(100) NULL,
   `hsn_code` VARCHAR(50) NULL,
   `unit` VARCHAR(50) DEFAULT 'PCS',
+  `sub_unit` VARCHAR(50) NULL DEFAULT NULL,
+  `sub_unit_qty` DECIMAL(10,2) NULL DEFAULT NULL,
   `sale_price` DECIMAL(15,2) DEFAULT 0.00,
   `purchase_price` DECIMAL(15,2) DEFAULT 0.00,
   `tax_rate` DECIMAL(5,2) DEFAULT 0.00,
@@ -241,11 +244,54 @@ CREATE TABLE IF NOT EXISTS `custom_units` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 13. Estimates & Quotations
+CREATE TABLE IF NOT EXISTS `estimates` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `firm_id` INT NOT NULL,
+  `estimate_number` VARCHAR(100) NOT NULL,
+  `estimate_date` DATE NOT NULL,
+  `customer_name` VARCHAR(255) NULL,
+  `subtotal` DECIMAL(15,2) DEFAULT 0.00,
+  `discount_amount` DECIMAL(15,2) DEFAULT 0.00,
+  `tax_amount` DECIMAL(15,2) DEFAULT 0.00,
+  `grand_total` DECIMAL(15,2) DEFAULT 0.00,
+  `notes` TEXT NULL,
+  `status` VARCHAR(50) DEFAULT 'draft',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_estimate_firm_number` (`firm_id`, `estimate_number`),
+  FOREIGN KEY (`firm_id`) REFERENCES `firms`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 14. Estimate Line Items
+CREATE TABLE IF NOT EXISTS `estimate_items` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `estimate_id` INT NOT NULL,
+  `item_id` INT NULL,
+  `item_name` VARCHAR(255) NOT NULL,
+  `hsn_code` VARCHAR(50) NULL,
+  `unit` VARCHAR(50) DEFAULT 'PCS',
+  `sub_unit` VARCHAR(50) NULL,
+  `sub_unit_qty` DECIMAL(10,2) NULL,
+  `quantity` DECIMAL(15,2) NOT NULL DEFAULT 1.00,
+  `rate` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  `tax_rate` DECIMAL(5,2) DEFAULT 0.00,
+  `discount_percent` DECIMAL(5,2) DEFAULT 0.00,
+  `discount_amount` DECIMAL(15,2) DEFAULT 0.00,
+  `taxable_amount` DECIMAL(15,2) DEFAULT 0.00,
+  `tax_amount` DECIMAL(15,2) DEFAULT 0.00,
+  `total_amount` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  FOREIGN KEY (`estimate_id`) REFERENCES `estimates`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`item_id`) REFERENCES `items`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Performance Indexes
 CREATE INDEX `idx_custom_units_user` ON `custom_units`(`user_id`);
 CREATE INDEX `idx_firms_user` ON `firms`(`user_id`);
 CREATE INDEX `idx_parties_firm` ON `parties`(`firm_id`);
 CREATE INDEX `idx_items_firm` ON `items`(`firm_id`);
+CREATE INDEX `idx_items_category` ON `items`(`firm_id`, `category`);
+CREATE INDEX `idx_estimates_firm` ON `estimates`(`firm_id`);
+CREATE INDEX `idx_estimate_items_est` ON `estimate_items`(`estimate_id`);
 CREATE INDEX `idx_invoices_firm` ON `invoices`(`firm_id`);
 CREATE INDEX `idx_invoices_party` ON `invoices`(`party_id`);
 CREATE INDEX `idx_invoice_items_invoice` ON `invoice_items`(`invoice_id`);

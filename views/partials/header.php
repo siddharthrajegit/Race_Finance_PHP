@@ -262,6 +262,11 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
+              <i class="bi bi-file-earmark-spreadsheet"></i> Rate List &amp; Estimate
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
               <i class="bi bi-people"></i> Parties & Customers
             </a>

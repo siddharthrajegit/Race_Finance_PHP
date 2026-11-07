@@ -5,9 +5,12 @@ $lowStock = $lowStockCount ?? 0;
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
   <div>
     <h3 class="fw-bold mb-1">Items & Inventory</h3>
-    <p class="text-muted small mb-0">Track stock levels, pricing, GST tax rates, and HSN codes</p>
+    <p class="text-muted small mb-0">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
   </div>
   <div class="d-flex gap-2">
+    <a href="/estimates/builder" class="btn btn-outline-primary shadow-sm">
+      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Rate List &amp; Estimate
+    </a>
     <a href="/items/create" class="btn btn-primary shadow-sm">
       <i class="bi bi-plus-circle me-1"></i> Add New Item
     </a>
@@ -18,19 +21,30 @@ $lowStock = $lowStockCount ?? 0;
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body p-2 p-md-3">
     <div class="row g-2 align-items-center">
-      <div class="col-md-6">
+      <div class="col-md-5">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
           <input type="text" class="form-control border-start-0" placeholder="Quick search items by name, code, or HSN..." data-table-search="itemsTable">
         </div>
       </div>
-      <div class="col-md-6 text-md-end">
+      <div class="col-md-3">
+        <select class="form-select" id="categoryFilter" onchange="window.location='/items' + (this.value ? '?category=' + encodeURIComponent(this.value) : '')">
+          <option value="" <?= empty($selectedCategory) ? 'selected' : '' ?>>All Categories</option>
+          <option value="__none__" <?= ($selectedCategory === '__none__') ? 'selected' : '' ?>>-- Uncategorized (No Category) --</option>
+          <?php foreach (($categories ?? []) as $cat): ?>
+            <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>" <?= ($selectedCategory === $cat) ? 'selected' : '' ?>>
+              <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-md-4 text-md-end">
         <span class="badge bg-light text-dark border p-2 me-2">
           Total Products: <strong id="visibleRecordsCount_itemsTable"><?= $itemCount ?></strong>
         </span>
         <?php if ($lowStock > 0): ?>
           <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-2">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i> <?= (int)$lowStock ?> Low Stock Items
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> <?= (int)$lowStock ?> Low Stock
           </span>
         <?php endif; ?>
       </div>
@@ -61,9 +75,19 @@ $lowStock = $lowStockCount ?? 0;
               <?php $isLowStock = (float)($it['current_stock'] ?? 0) <= (float)($it['low_stock_threshold'] ?? 0); ?>
               <tr>
                 <td style="padding: 0.45rem 0.65rem;">
-                  <div class="fw-bold text-dark"><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></div>
+                  <div class="fw-bold text-dark d-flex align-items-center gap-1 flex-wrap">
+                    <span><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php if (!empty($it['category'])): ?>
+                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><?= htmlspecialchars($it['category'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php endif; ?>
+                  </div>
+                  <?php if (!empty($it['sub_unit']) && !empty($it['sub_unit_qty'])): ?>
+                    <div class="text-primary small" style="font-size: 0.72rem;">
+                      <i class="bi bi-box me-1"></i>1 <?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?> = <?= (float)$it['sub_unit_qty'] ?> <?= htmlspecialchars($it['sub_unit'], ENT_QUOTES, 'UTF-8') ?>
+                    </div>
+                  <?php endif; ?>
                   <?php if (!empty($it['description'])): ?>
-                    <div class="small text-muted text-truncate" style="max-width: 180px;"><?= htmlspecialchars($it['description'], ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="small text-muted text-truncate" style="max-width: 220px;"><?= htmlspecialchars($it['description'], ENT_QUOTES, 'UTF-8') ?></div>
                   <?php endif; ?>
                 </td>
                 <td style="padding: 0.45rem 0.65rem;" class="font-monospace text-muted small"><?= htmlspecialchars($it['item_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>

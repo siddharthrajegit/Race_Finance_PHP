@@ -14,24 +14,37 @@ class ItemController {
     public function listItems(): void {
         Auth::requireUserOnly();
         $firm = Auth::requireActiveFirm();
-        $items = Item::getByFirmId((int)$firm['id']);
-        $lowStock = Item::getLowStock((int)$firm['id']);
+        $firmId = (int)$firm['id'];
+        $selectedCategory = trim($_GET['category'] ?? '');
+        
+        if ($selectedCategory !== '') {
+            $items = Item::getByCategory($firmId, $selectedCategory);
+        } else {
+            $items = Item::getByFirmId($firmId);
+        }
+
+        $lowStock = Item::getLowStock($firmId);
+        $categories = Item::getCategories($firmId);
 
         view('items/list', [
             'title' => 'Items & Inventory',
             'items' => $items,
             'lowStockCount' => count($lowStock),
+            'categories' => $categories,
+            'selectedCategory' => $selectedCategory,
             'activeMenu' => 'items'
         ]);
     }
 
     public function getCreate(): void {
         Auth::requireUserOnly();
-        Auth::requireActiveFirm();
+        $firm = Auth::requireActiveFirm();
+        $categories = Item::getCategories((int)$firm['id']);
 
         view('items/form', [
             'title' => 'Add New Item',
             'item' => null,
+            'categories' => $categories,
             'activeMenu' => 'items'
         ]);
     }
@@ -74,13 +87,21 @@ class ItemController {
 
             $cleanHsn = !empty($_POST['hsn_code']) ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($_POST['hsn_code']))), 0, 20) : null;
             $cleanUnit = !empty($_POST['unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_POST['unit'])), 0, 15)) : 'PCS';
+            $cleanCategory = !empty($_POST['category']) ? trim($_POST['category']) : null;
+            $cleanSubUnit = !empty($_POST['sub_unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_POST['sub_unit'])), 0, 15)) : null;
+            $cleanSubUnitQty = isset($_POST['sub_unit_qty']) && $_POST['sub_unit_qty'] !== '' && (float)$_POST['sub_unit_qty'] > 0
+                ? Security::parseCleanFloat($_POST['sub_unit_qty'])
+                : null;
 
             Item::create([
                 'firm_id' => $firmId,
                 'name' => $name,
+                'category' => $cleanCategory,
                 'item_code' => $_POST['item_code'] ?? null,
                 'hsn_code' => $cleanHsn,
                 'unit' => $cleanUnit,
+                'sub_unit' => $cleanSubUnit,
+                'sub_unit_qty' => $cleanSubUnitQty,
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,
@@ -112,9 +133,12 @@ class ItemController {
             exit;
         }
 
+        $categories = Item::getCategories((int)$firm['id']);
+
         view('items/form', [
             'title' => "Edit {$item['name']}",
             'item' => $item,
+            'categories' => $categories,
             'activeMenu' => 'items'
         ]);
     }
@@ -158,12 +182,20 @@ class ItemController {
 
             $cleanHsn = !empty($_POST['hsn_code']) ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($_POST['hsn_code']))), 0, 20) : null;
             $cleanUnit = !empty($_POST['unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_POST['unit'])), 0, 15)) : 'PCS';
+            $cleanCategory = !empty($_POST['category']) ? trim($_POST['category']) : null;
+            $cleanSubUnit = !empty($_POST['sub_unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_POST['sub_unit'])), 0, 15)) : null;
+            $cleanSubUnitQty = isset($_POST['sub_unit_qty']) && $_POST['sub_unit_qty'] !== '' && (float)$_POST['sub_unit_qty'] > 0
+                ? Security::parseCleanFloat($_POST['sub_unit_qty'])
+                : null;
 
             Item::update($itemId, $firmId, [
                 'name' => $name,
+                'category' => $cleanCategory,
                 'item_code' => $_POST['item_code'] ?? null,
                 'hsn_code' => $cleanHsn,
                 'unit' => $cleanUnit,
+                'sub_unit' => $cleanSubUnit,
+                'sub_unit_qty' => $cleanSubUnitQty,
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,
@@ -278,13 +310,21 @@ class ItemController {
 
             $cleanHsn = !empty($input['hsn_code']) ? substr(preg_replace('/[^a-zA-Z0-9\-\.\/ ]/', '', strip_tags(trim($input['hsn_code']))), 0, 20) : null;
             $cleanUnit = !empty($input['unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($input['unit'])), 0, 15)) : 'PCS';
+            $cleanCategory = !empty($input['category']) ? trim($input['category']) : null;
+            $cleanSubUnit = !empty($input['sub_unit']) ? strtoupper(substr(preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($input['sub_unit'])), 0, 15)) : null;
+            $cleanSubUnitQty = isset($input['sub_unit_qty']) && $input['sub_unit_qty'] !== '' && (float)$input['sub_unit_qty'] > 0
+                ? Security::parseCleanFloat($input['sub_unit_qty'])
+                : null;
 
             $item = Item::create([
                 'firm_id' => (int)$firm['id'],
                 'name' => $name,
+                'category' => $cleanCategory,
                 'item_code' => $input['item_code'] ?? null,
                 'hsn_code' => $cleanHsn,
                 'unit' => $cleanUnit,
+                'sub_unit' => $cleanSubUnit,
+                'sub_unit_qty' => $cleanSubUnitQty,
                 'sale_price' => $salePrice,
                 'purchase_price' => $purchasePrice,
                 'tax_rate' => $taxRate,

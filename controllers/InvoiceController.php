@@ -346,7 +346,36 @@ class InvoiceController {
     }
 
     public function getCreateSale(): void {
-        self::renderForm('sale', 'Create Sales Record');
+        $firm = Auth::requireActiveFirm();
+        $prefilled = null;
+        if (!empty($_GET['estimate_id'])) {
+            require_once __DIR__ . '/../models/Estimate.php';
+            $est = Estimate::getById((int)$_GET['estimate_id'], (int)$firm['id']);
+            if ($est) {
+                Estimate::updateStatus((int)$est['id'], (int)$firm['id'], 'converted');
+                $prefilled = [
+                    'party_name' => $est['customer_name'] ?? '',
+                    'invoice_date' => date('Y-m-d'),
+                    'type' => 'sale',
+                    'notes' => $est['notes'] ?? '',
+                    'items' => array_map(function($it) {
+                        return [
+                            'item_id' => $it['item_id'],
+                            'item_name' => $it['item_name'],
+                            'hsn_code' => $it['hsn_code'],
+                            'unit' => $it['unit'],
+                            'quantity' => $it['quantity'],
+                            'rate' => $it['rate'],
+                            'tax_rate' => $it['tax_rate'],
+                            'discount_percent' => $it['discount_percent'] ?? 0,
+                            'taxable_amount' => $it['taxable_amount'] ?? 0,
+                            'total_amount' => $it['total_amount'] ?? 0
+                        ];
+                    }, $est['items'] ?? [])
+                ];
+            }
+        }
+        self::renderForm('sale', 'Create Sales Record', $prefilled);
     }
 
     public function getCreatePurchase(): void {

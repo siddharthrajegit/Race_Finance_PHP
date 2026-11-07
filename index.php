@@ -49,6 +49,7 @@ require_once __DIR__ . '/controllers/BackupController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/LegalController.php';
 require_once __DIR__ . '/controllers/UnitController.php';
+require_once __DIR__ . '/controllers/EstimateController.php';
 
 // -----------------------------------------------------------------------------
 // Root & Dashboard
@@ -129,6 +130,19 @@ Router::get('/invoices/view/:id', [InvoiceController::class, 'getView']);
 Router::get('/invoices/download/:id', [InvoiceController::class, 'getDownload']);
 Router::get('/invoices/print/:id', [InvoiceController::class, 'getPrintA4']);
 Router::post('/invoices/delete/:id', [InvoiceController::class, 'postDelete']);
+
+// -----------------------------------------------------------------------------
+// Estimates & Rate List Routes
+// -----------------------------------------------------------------------------
+Router::get('/estimates', [EstimateController::class, 'listEstimates']);
+Router::get('/estimates/builder', [EstimateController::class, 'getBuilder']);
+Router::get('/rate-list', [EstimateController::class, 'getBuilder']);
+Router::post('/estimates/save', [EstimateController::class, 'postSave']);
+Router::get('/estimates/view/:id', [EstimateController::class, 'getView']);
+Router::get('/estimates/print/:id', [EstimateController::class, 'getPrint']);
+Router::post('/estimates/print-direct', [EstimateController::class, 'postPrintDirect']);
+Router::post('/estimates/delete/:id', [EstimateController::class, 'postDelete']);
+Router::get('/api/items/by-category', [EstimateController::class, 'apiItemsByCategory']);
 
 // -----------------------------------------------------------------------------
 // Payments Routes

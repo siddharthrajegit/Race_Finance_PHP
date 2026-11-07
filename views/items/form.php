@@ -12,28 +12,38 @@
       <div class="card-body p-4">
         <form action="<?= !empty($item) ? '/items/edit/' . $item['id'] : '/items/create' ?>" method="POST">
           <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-          <!-- Item Name & Code -->
+          <!-- Item Name, Category & Code -->
           <div class="row g-3 mb-3">
-            <div class="col-md-8">
+            <div class="col-md-5">
               <label for="name" class="form-label">Item / Product Name <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Cotton T-Shirt / Steel Rod 10mm" value="<?= htmlspecialchars($item['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required autofocus>
             </div>
             <div class="col-md-4">
+              <label for="category" class="form-label">Category <span class="text-muted small">(Optional)</span></label>
+              <input type="text" class="form-control" id="category" name="category" list="categoryList" placeholder="e.g. Electronics, Clothing..." value="<?= htmlspecialchars($item['category'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+              <datalist id="categoryList">
+                <?php foreach (($categories ?? []) as $cat): ?>
+                  <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"></option>
+                <?php endforeach; ?>
+              </datalist>
+              <div class="form-text small text-muted">Type to select or add new category</div>
+            </div>
+            <div class="col-md-3">
               <label for="item_code" class="form-label">Item Code / Barcode</label>
               <input type="text" class="form-control font-monospace" id="item_code" name="item_code" placeholder="e.g. SKU-101" value="<?= htmlspecialchars($item['item_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
           </div>
 
-          <!-- HSN & Unit -->
+          <!-- HSN & Measurement Units (Primary & Optional Sub-Unit) -->
           <div class="row g-3 mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label for="hsn_code" class="form-label">HSN / SAC Code</label>
               <input type="text" class="form-control font-monospace" id="hsn_code" name="hsn_code" placeholder="e.g. 61091000" value="<?= htmlspecialchars($item['hsn_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
               <div class="form-text small text-muted">2 to 8 digits HSN or SAC code</div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <label for="unit" class="form-label mb-0">Unit of Measurement</label>
+                <label for="unit" class="form-label mb-0">Primary Unit</label>
                 <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddCustomUnit">
                   <i class="bi bi-plus-circle me-1"></i>+ Add Unit
                 </button>
@@ -57,6 +67,15 @@
                   <option value="<?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?></option>
                 <?php endif; ?>
               </select>
+            </div>
+            <div class="col-md-4">
+              <label for="sub_unit" class="form-label">Sub-Unit <span class="text-muted small">(Optional Pack Unit)</span></label>
+              <div class="input-group">
+                <input type="text" class="form-control text-uppercase" id="sub_unit" name="sub_unit" placeholder="e.g. PCS, NOS" value="<?= htmlspecialchars($item['sub_unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="15">
+                <span class="input-group-text bg-light text-muted small">Qty:</span>
+                <input type="number" step="any" min="0.01" class="form-control text-end" id="sub_unit_qty" name="sub_unit_qty" placeholder="10" value="<?= !empty($item['sub_unit_qty']) ? (float)$item['sub_unit_qty'] : '' ?>" style="max-width: 90px;" title="Items per primary unit (e.g. 10)">
+              </div>
+              <div class="form-text small text-muted">e.g. 1 BOX = 10 PCS (leave empty if none)</div>
             </div>
           </div>
 

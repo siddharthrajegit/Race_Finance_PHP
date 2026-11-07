@@ -14,6 +14,31 @@ class Item extends Model {
         return $stmt->fetchAll();
     }
 
+    public static function getCategories(int $firmId): array {
+        $stmt = self::db()->prepare("
+            SELECT DISTINCT category 
+            FROM items 
+            WHERE firm_id = ? AND category IS NOT NULL AND TRIM(category) != '' 
+            ORDER BY category ASC
+        ");
+        $stmt->execute([$firmId]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    }
+
+    public static function getByCategory(int $firmId, ?string $category = null): array {
+        if ($category === null || $category === 'all') {
+            return self::getByFirmId($firmId);
+        }
+        if ($category === '' || $category === '__none__') {
+            $stmt = self::db()->prepare("SELECT * FROM items WHERE firm_id = ? AND (category IS NULL OR TRIM(category) = '') ORDER BY name ASC");
+            $stmt->execute([$firmId]);
+            return $stmt->fetchAll();
+        }
+        $stmt = self::db()->prepare("SELECT * FROM items WHERE firm_id = ? AND category = ? ORDER BY name ASC");
+        $stmt->execute([$firmId, $category]);
+        return $stmt->fetchAll();
+    }
+
     public static function getById(int $id, int $firmId): ?array {
         $stmt = self::db()->prepare("SELECT * FROM items WHERE id = ? AND firm_id = ?");
         $stmt->execute([$id, $firmId]);
@@ -40,20 +65,29 @@ class Item extends Model {
     public static function create(array $data): ?array {
         $firmId = (int)$data['firm_id'];
         $initialStock = Security::parseCleanFloat($data['opening_stock'] ?? 0);
+        $category = !empty($data['category']) ? trim($data['category']) : null;
+        $subUnit = !empty($data['sub_unit']) ? strtoupper(trim($data['sub_unit'])) : null;
+        $subUnitQty = isset($data['sub_unit_qty']) && $data['sub_unit_qty'] !== '' && (float)$data['sub_unit_qty'] > 0 
+            ? Security::parseCleanFloat($data['sub_unit_qty']) 
+            : null;
 
         $stmt = self::db()->prepare("
             INSERT INTO items (
-                firm_id, name, item_code, hsn_code, unit, sale_price, purchase_price,
-                tax_rate, tax_inclusive, opening_stock, current_stock, low_stock_threshold, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                firm_id, name, category, item_code, hsn_code, unit, sub_unit, sub_unit_qty,
+                sale_price, purchase_price, tax_rate, tax_inclusive,
+                opening_stock, current_stock, low_stock_threshold, description
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
             $firmId,
             trim($data['name']),
+            $category,
             !empty($data['item_code']) ? trim($data['item_code']) : null,
             !empty($data['hsn_code']) ? trim($data['hsn_code']) : null,
             !empty($data['unit']) ? strtoupper(trim($data['unit'])) : 'PCS',
+            $subUnit,
+            $subUnitQty,
             max(0.0, Security::parseCleanFloat($data['sale_price'] ?? 0)),
             max(0.0, Security::parseCleanFloat($data['purchase_price'] ?? 0)),
             min(100.0, max(0.0, Security::parseCleanFloat($data['tax_rate'] ?? 0))),
@@ -69,9 +103,16 @@ class Item extends Model {
     }
 
     public static function update(int $id, int $firmId, array $data): ?array {
+        $category = !empty($data['category']) ? trim($data['category']) : null;
+        $subUnit = !empty($data['sub_unit']) ? strtoupper(trim($data['sub_unit'])) : null;
+        $subUnitQty = isset($data['sub_unit_qty']) && $data['sub_unit_qty'] !== '' && (float)$data['sub_unit_qty'] > 0 
+            ? Security::parseCleanFloat($data['sub_unit_qty']) 
+            : null;
+
         $stmt = self::db()->prepare("
             UPDATE items SET
-                name = ?, item_code = ?, hsn_code = ?, unit = ?, sale_price = ?,
+                name = ?, category = ?, item_code = ?, hsn_code = ?, unit = ?,
+                sub_unit = ?, sub_unit_qty = ?, sale_price = ?,
                 purchase_price = ?, tax_rate = ?, tax_inclusive = ?,
                 low_stock_threshold = ?, description = ?
             WHERE id = ? AND firm_id = ?
@@ -79,9 +120,12 @@ class Item extends Model {
 
         $stmt->execute([
             trim($data['name']),
+            $category,
             !empty($data['item_code']) ? trim($data['item_code']) : null,
             !empty($data['hsn_code']) ? trim($data['hsn_code']) : null,
             !empty($data['unit']) ? strtoupper(trim($data['unit'])) : 'PCS',
+            $subUnit,
+            $subUnitQty,
             max(0.0, Security::parseCleanFloat($data['sale_price'] ?? 0)),
             max(0.0, Security::parseCleanFloat($data['purchase_price'] ?? 0)),
             min(100.0, max(0.0, Security::parseCleanFloat($data['tax_rate'] ?? 0))),
