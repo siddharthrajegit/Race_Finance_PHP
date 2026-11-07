@@ -543,12 +543,45 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
           <div id="quickItemAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
 
           <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-7">
               <label class="form-label small fw-bold">Item / Product Name <span class="text-danger">*</span></label>
               <input type="text" class="form-control form-control-sm" name="name" id="quickItemName" placeholder="e.g. Cotton Shirt Blue - XL" required>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-5">
+              <label class="form-label small fw-bold">Item Code / Barcode</label>
+              <input type="text" class="form-control form-control-sm font-monospace" name="item_code" id="quickItemCode" placeholder="e.g. SKU-101">
+            </div>
+
+            <div class="col-md-6">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-bold mb-0">Category <span class="text-muted small fw-normal">(Optional)</span></label>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" id="btnToggleNewCategory" style="font-size: 0.75rem;">
+                  <i class="bi bi-plus-circle me-1"></i>+ Add Category
+                </button>
+              </div>
+              <div id="quickItemCategorySelectWrap">
+                <select class="form-select form-select-sm" id="quickItemCategorySelect">
+                  <option value="">-- No Category --</option>
+                  <?php foreach (($categories ?? []) as $cat): ?>
+                    <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?></option>
+                  <?php endforeach; ?>
+                  <option value="__create_new__" class="fw-bold text-primary">+ Create New Category...</option>
+                </select>
+              </div>
+              <div id="quickItemNewCategoryWrap" class="d-none">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white text-primary"><i class="bi bi-tag-fill"></i></span>
+                  <input type="text" class="form-control form-control-sm" id="quickItemNewCategoryInput" placeholder="Enter new category name...">
+                  <button class="btn btn-outline-secondary" type="button" id="btnCancelNewCategory" title="Select from existing categories">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <input type="hidden" name="category" id="quickItemCategory" value="">
+            </div>
+
+            <div class="col-md-6">
               <label class="form-label small fw-bold">HSN / SAC Code</label>
               <input type="text" class="form-control form-control-sm font-monospace" name="hsn_code" id="quickItemHsn" placeholder="e.g. 6205" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
             </div>
@@ -567,6 +600,20 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
                   </option>
                 <?php endforeach; ?>
               </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold mb-1">Sub-Unit <span class="text-muted small fw-normal">(Packaging)</span></label>
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control form-control-sm text-uppercase" name="sub_unit" id="quickItemSubUnit" placeholder="e.g. PCS" maxlength="15">
+                <span class="input-group-text bg-light text-muted small">Qty:</span>
+                <input type="number" step="any" min="0.01" class="form-control form-control-sm text-end" name="sub_unit_qty" id="quickItemSubUnitQty" placeholder="10" style="max-width: 70px;">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label small fw-bold mb-1">Opening Stock Qty</label>
+              <input type="number" class="form-control form-control-sm" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
             </div>
 
             <div class="col-md-3">

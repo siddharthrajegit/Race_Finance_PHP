@@ -1677,6 +1677,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Quick Add Item: Category Selection & Creation Toggle
+  const quickItemCategorySelect = document.getElementById('quickItemCategorySelect');
+  const quickItemCategorySelectWrap = document.getElementById('quickItemCategorySelectWrap');
+  const quickItemNewCategoryWrap = document.getElementById('quickItemNewCategoryWrap');
+  const quickItemNewCategoryInput = document.getElementById('quickItemNewCategoryInput');
+  const btnToggleNewCategory = document.getElementById('btnToggleNewCategory');
+  const btnCancelNewCategory = document.getElementById('btnCancelNewCategory');
+
+  if (btnToggleNewCategory) {
+    btnToggleNewCategory.addEventListener('click', () => {
+      if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.add('d-none');
+      if (quickItemNewCategoryWrap) {
+        quickItemNewCategoryWrap.classList.remove('d-none');
+        if (quickItemNewCategoryInput) {
+          quickItemNewCategoryInput.value = '';
+          quickItemNewCategoryInput.focus();
+        }
+      }
+    });
+  }
+
+  if (quickItemCategorySelect) {
+    quickItemCategorySelect.addEventListener('change', () => {
+      if (quickItemCategorySelect.value === '__create_new__') {
+        if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.add('d-none');
+        if (quickItemNewCategoryWrap) {
+          quickItemNewCategoryWrap.classList.remove('d-none');
+          if (quickItemNewCategoryInput) {
+            quickItemNewCategoryInput.value = '';
+            quickItemNewCategoryInput.focus();
+          }
+        }
+      }
+    });
+  }
+
+  if (btnCancelNewCategory) {
+    btnCancelNewCategory.addEventListener('click', () => {
+      if (quickItemNewCategoryWrap) quickItemNewCategoryWrap.classList.add('d-none');
+      if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.remove('d-none');
+      if (quickItemCategorySelect) quickItemCategorySelect.value = '';
+      if (quickItemNewCategoryInput) quickItemNewCategoryInput.value = '';
+    });
+  }
+
   if (quickItemForm) {
     quickItemForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1691,6 +1736,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const formData = new FormData(quickItemForm);
       const data = Object.fromEntries(formData.entries());
+
+      // Resolve category
+      let finalCat = '';
+      if (quickItemNewCategoryWrap && !quickItemNewCategoryWrap.classList.contains('d-none')) {
+        finalCat = quickItemNewCategoryInput ? quickItemNewCategoryInput.value.trim() : '';
+      } else if (quickItemCategorySelect && quickItemCategorySelect.value !== '__create_new__') {
+        finalCat = quickItemCategorySelect.value.trim();
+      }
+      data.category = finalCat;
 
       if (quickItemTaxRate && quickItemTaxRate.value === 'custom') {
         const customTax = parseFloat(quickItemCustomTax ? quickItemCustomTax.value : '');
@@ -1781,6 +1835,27 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           quickItemForm.reset();
           if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('d-none');
+
+          // Dynamically register newly created category in the dropdown
+          if (item.category && quickItemCategorySelect) {
+            const catVal = item.category.trim();
+            const exists = Array.from(quickItemCategorySelect.options).some(o => o.value.toLowerCase() === catVal.toLowerCase());
+            if (!exists) {
+              const newOpt = document.createElement('option');
+              newOpt.value = catVal;
+              newOpt.textContent = catVal;
+              const createNewOpt = quickItemCategorySelect.querySelector('option[value="__create_new__"]');
+              if (createNewOpt) {
+                quickItemCategorySelect.insertBefore(newOpt, createNewOpt);
+              } else {
+                quickItemCategorySelect.appendChild(newOpt);
+              }
+            }
+          }
+          if (quickItemNewCategoryWrap) quickItemNewCategoryWrap.classList.add('d-none');
+          if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.remove('d-none');
+          if (quickItemCategorySelect) quickItemCategorySelect.value = '';
+          if (quickItemNewCategoryInput) quickItemNewCategoryInput.value = '';
 
           showToastNotification(`✓ Item "${item.name}" created and added to record!`, 'success');
         } else {

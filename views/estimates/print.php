@@ -101,23 +101,27 @@ $estimateDate = $estimate['estimate_date'] ?? date('Y-m-d');
       margin-bottom: 14px;
     }
     .print-table th, .print-table td {
-      border: 1px solid #94a3b8 !important;
+      border: 1px solid #1e293b !important;
       padding: 5px 7px;
       font-size: 11px;
     }
     .print-table th {
-      background-color: #f1f5f9;
+      background-color: #f1f5f9 !important;
       font-weight: 700;
       text-transform: uppercase;
       font-size: 10px;
       letter-spacing: 0.5px;
-      color: #1e293b;
+      color: #0f172a;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .summary-box {
-      border: 1px solid #94a3b8;
-      background-color: #f8fafc;
+      border: 1px solid #1e293b;
+      background-color: #f8fafc !important;
       padding: 8px 12px;
       font-size: 11.5px;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     @media print {
       body {

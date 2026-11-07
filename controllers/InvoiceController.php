@@ -317,6 +317,7 @@ class InvoiceController {
             'today' => $invoice ? $invoice['invoice_date'] : date('Y-m-d'),
             'parties' => Party::getByFirmId($firmId, ($invType === 'sale') ? 'customer' : 'supplier'),
             'items' => Item::getByFirmId($firmId),
+            'categories' => Item::getCategories($firmId),
             'settings' => Setting::get($firmId),
             'gstStates' => Model::GST_STATES,
             'activeMenu' => ($invType === 'sale') ? 'sales' : 'purchases'

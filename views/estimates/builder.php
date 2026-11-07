@@ -55,18 +55,18 @@ if (!empty($preloadedEstimate)) {
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
       <!-- Toggle Segmented Control -->
       <div class="d-flex align-items-center gap-2">
-        <span class="fw-semibold text-dark small me-1">Current Mode:</span>
-        <div class="btn-group shadow-sm" role="group" aria-label="Builder Mode">
+        <span class="fw-bold text-secondary text-uppercase small" style="font-size: 0.75rem; letter-spacing: 0.5px;">Mode:</span>
+        <div class="builder-mode-toggle shadow-sm" role="group" aria-label="Builder Mode">
           <input type="radio" class="btn-check" name="builder_mode" id="modeRateList" value="ratelist" checked autocomplete="off">
-          <label class="btn btn-outline-primary px-3 py-2 fw-bold d-flex align-items-center gap-2" for="modeRateList">
-            <i class="bi bi-list-check fs-6"></i>
-            <span>Rate List Mode</span>
+          <label class="btn btn-ratelist d-flex align-items-center gap-2" for="modeRateList">
+            <i class="bi bi-list-check"></i>
+            <span>Rate List</span>
           </label>
 
           <input type="radio" class="btn-check" name="builder_mode" id="modeEstimate" value="estimate" autocomplete="off">
-          <label class="btn btn-outline-success px-3 py-2 fw-bold d-flex align-items-center gap-2" for="modeEstimate">
-            <i class="bi bi-calculator fs-6"></i>
-            <span>Estimate Mode</span>
+          <label class="btn btn-estimate d-flex align-items-center gap-2" for="modeEstimate">
+            <i class="bi bi-calculator"></i>
+            <span>Estimate (Quotation)</span>
           </label>
         </div>
       </div>
@@ -447,9 +447,11 @@ document.addEventListener('DOMContentLoaded', function() {
     allCheckboxRows.forEach(row => {
       const id = row.dataset.itemId;
       const chk = row.querySelector('.item-check-input');
+      const isChecked = selectedItemsMap.has(String(id));
       if (chk) {
-        chk.checked = selectedItemsMap.has(String(id));
+        chk.checked = isChecked;
       }
+      row.classList.toggle('is-selected', isChecked);
     });
   }
 
@@ -459,6 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const row = e.target.closest('.item-checkbox-row');
       const id = row.dataset.itemId;
       if (e.target.checked) {
+        row.classList.add('is-selected');
         selectedItemsMap.set(String(id), {
           id: parseInt(id),
           name: row.querySelector('.fw-bold').textContent.trim(),
@@ -472,9 +475,23 @@ document.addEventListener('DOMContentLoaded', function() {
           discount_percent: 0
         });
       } else {
+        row.classList.remove('is-selected');
         selectedItemsMap.delete(String(id));
       }
       renderSelectedItemsTable();
+    }
+  });
+
+  // Clicking anywhere on the item row toggles its selection
+  itemsChecklistContainer.addEventListener('click', (e) => {
+    if (e.target.closest('input[type="checkbox"]') || e.target.closest('label')) return;
+    const row = e.target.closest('.item-checkbox-row');
+    if (row) {
+      const chk = row.querySelector('.item-check-input');
+      if (chk) {
+        chk.checked = !chk.checked;
+        chk.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
   });
 
@@ -493,6 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Deselect all visible
         selectedItemsMap.delete(String(id));
         if (chk) chk.checked = false;
+        row.classList.remove('is-selected');
       } else {
         // Select all visible
         selectedItemsMap.set(String(id), {
@@ -508,6 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
           discount_percent: 0
         });
         if (chk) chk.checked = true;
+        row.classList.add('is-selected');
       }
     });
 
@@ -585,14 +604,15 @@ document.addEventListener('DOMContentLoaded', function() {
           <!-- Estimate Mode Inputs -->
           <td class="text-center col-estimate-only ${isEstimate ? '' : 'd-none'}">
             <div class="input-group input-group-sm mx-auto" style="max-width: 90px;">
-              <input type="number" class="form-control form-control-sm text-center fw-bold row-qty-input" 
+              <input type="number" class="form-control form-control-sm text-center fw-bold row-qty-input selected-table-input" 
                      min="0.01" step="any" value="${qty}" data-item-id="${item.id}">
             </div>
           </td>
           <td class="text-end col-estimate-only ${isEstimate ? '' : 'd-none'}">
-            <div class="input-group input-group-sm ms-auto" style="max-width: 70px;">
-              <input type="number" class="form-control form-control-sm text-end row-disc-input" 
+            <div class="input-group input-group-sm ms-auto" style="max-width: 75px;">
+              <input type="number" class="form-control form-control-sm text-end row-disc-input selected-table-input" 
                      min="0" max="100" step="any" value="${disc}" data-item-id="${item.id}">
+              <span class="input-group-text p-1 small text-muted" style="font-size: 0.7rem;">%</span>
             </div>
           </td>
           <td class="text-end fw-bold text-success col-estimate-only ${isEstimate ? '' : 'd-none'}">
@@ -640,6 +660,19 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedItemsMap.delete(id);
       updateVisibleCheckboxStates();
       renderSelectedItemsTable();
+    }
+  });
+
+  // Clicking anywhere on the item row toggles its selection
+  itemsChecklistContainer.addEventListener('click', (e) => {
+    if (e.target.closest('input[type="checkbox"]') || e.target.closest('label')) return;
+    const row = e.target.closest('.item-checkbox-row');
+    if (row) {
+      const chk = row.querySelector('.item-check-input');
+      if (chk) {
+        chk.checked = !chk.checked;
+        chk.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
   });
 

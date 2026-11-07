@@ -20,7 +20,10 @@
             </div>
             <div class="col-md-4">
               <label for="category" class="form-label">Category <span class="text-muted small">(Optional)</span></label>
-              <input type="text" class="form-control" id="category" name="category" list="categoryList" placeholder="e.g. Electronics, Clothing..." value="<?= htmlspecialchars($item['category'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+              <div class="input-group">
+                <span class="input-group-text bg-white text-muted"><i class="bi bi-tag"></i></span>
+                <input type="text" class="form-control" id="category" name="category" list="categoryList" placeholder="e.g. Electronics, Clothing..." value="<?= htmlspecialchars($item['category'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+              </div>
               <datalist id="categoryList">
                 <?php foreach (($categories ?? []) as $cat): ?>
                   <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"></option>

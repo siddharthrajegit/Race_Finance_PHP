@@ -807,3 +807,81 @@ tr.row-selected td {
     print-color-adjust: exact !important;
   }
 }
+
+/* =============================================================
+   Rate List & Estimate Builder Custom Styles
+============================================================= */
+.builder-mode-toggle {
+  display: inline-flex;
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+}
+
+.builder-mode-toggle .btn-check + .btn {
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 18px;
+  border: none;
+  color: #64748b;
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.builder-mode-toggle .btn-check:checked + .btn-ratelist {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.builder-mode-toggle .btn-check:checked + .btn-estimate {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+}
+
+.item-checkbox-row {
+  transition: all 0.15s ease-in-out;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.item-checkbox-row:hover {
+  border-color: #94a3b8;
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+
+.item-checkbox-row.is-selected {
+  background-color: #eff6ff !important;
+  border-color: #93c5fd !important;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
+}
+
+.item-checkbox-row .form-check-input {
+  cursor: pointer;
+  width: 1.15em;
+  height: 1.15em;
+}
+
+.selected-table-input {
+  border-radius: 6px;
+  font-size: 0.82rem;
+  border: 1px solid #cbd5e1;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.selected-table-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.builder-summary-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
