@@ -243,9 +243,7 @@ if (!empty($preloadedEstimate)) {
               <tr>
                 <th style="width: 25px;" class="text-center">#</th>
                 <th>Item Details</th>
-                <th style="width: 80px;" class="text-end">Pre-GST</th>
-                <th style="width: 60px;" class="text-center">GST</th>
-                <th style="width: 85px;" class="text-end">Post-GST</th>
+                <th style="width: 105px;" class="text-end">Rate (₹)</th>
                 <!-- Estimate Only Columns -->
                 <th style="width: 80px;" class="text-center col-estimate-only d-none">Quantity</th>
                 <th style="width: 65px;" class="text-end col-estimate-only d-none">Disc %</th>
@@ -255,7 +253,7 @@ if (!empty($preloadedEstimate)) {
             </thead>
             <tbody id="selectedItemsTbody">
               <tr id="emptyTablePlaceholder">
-                <td colspan="9" class="text-center py-5 text-muted">
+                <td colspan="7" class="text-center py-5 text-muted">
                   <i class="bi bi-hand-index-thumb fs-2 d-block mb-2 text-secondary opacity-50"></i>
                   <span>No items selected yet. Select items from the category list on the left.</span>
                 </td>
@@ -552,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (items.length === 0) {
       selectedItemsTbody.innerHTML = `
         <tr id="emptyTablePlaceholder">
-          <td colspan="9" class="text-center py-5 text-muted">
+          <td colspan="7" class="text-center py-5 text-muted">
             <i class="bi bi-hand-index-thumb fs-2 d-block mb-2 text-secondary opacity-50"></i>
             <span>No items selected yet. Select items from the category list on the left.</span>
           </td>
@@ -593,13 +591,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             ${subUnitDisplay}
           </td>
-          <td class="text-end fw-semibold">₹ ${preGst.toFixed(2)}</td>
-          <td class="text-center">
-            <span class="badge ${taxRate > 0 ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-light text-muted border'}" style="font-size: 0.7rem;">
-              ${taxRate}%
-            </span>
+          <td class="text-end">
+            <div class="fw-bold text-dark">₹ ${postGst.toFixed(2)}</div>
+            <div class="text-muted" style="font-size: 0.72rem;">Pre: ₹ ${preGst.toFixed(2)} (${taxRate}%)</div>
           </td>
-          <td class="text-end fw-bold text-dark">₹ ${postGst.toFixed(2)}</td>
           
           <!-- Estimate Mode Inputs -->
           <td class="text-center col-estimate-only ${isEstimate ? '' : 'd-none'}">
@@ -615,7 +610,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <span class="input-group-text p-1 small text-muted" style="font-size: 0.7rem;">%</span>
             </div>
           </td>
-          <td class="text-end fw-bold text-success col-estimate-only ${isEstimate ? '' : 'd-none'}">
+          <td class="text-end fw-bold text-success col-estimate-only ${isEstimate ? '' : 'd-none'} row-total-display">
             ₹ ${lineTotal.toFixed(2)}
           </td>
 
@@ -633,6 +628,22 @@ document.addEventListener('DOMContentLoaded', function() {
     calcTotals();
   }
 
+  // Live update single row total without re-rendering entire table
+  function updateRowTotal(tr, item) {
+    if (!tr || !item) return;
+    const preGst = item.sale_price;
+    const taxRate = item.tax_rate;
+    const qty = item.quantity || 1;
+    const disc = item.discount_percent || 0;
+    const lineBase = qty * preGst;
+    const lineDisc = lineBase * (disc / 100);
+    const lineTaxable = lineBase - lineDisc;
+    const lineTax = lineTaxable * (taxRate / 100);
+    const lineTotal = lineTaxable + lineTax;
+    const cell = tr.querySelector('.row-total-display');
+    if (cell) cell.textContent = `₹ ${lineTotal.toFixed(2)}`;
+  }
+
   // Handle table row input changes (Qty and Disc)
   selectedItemsTbody.addEventListener('input', (e) => {
     if (e.target.classList.contains('row-qty-input')) {
@@ -640,6 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const val = parseFloat(e.target.value) || 1;
       if (selectedItemsMap.has(id)) {
         selectedItemsMap.get(id).quantity = val;
+        updateRowTotal(e.target.closest('tr'), selectedItemsMap.get(id));
       }
       calcTotals();
     } else if (e.target.classList.contains('row-disc-input')) {
@@ -647,6 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const val = Math.min(100, Math.max(0, parseFloat(e.target.value) || 0));
       if (selectedItemsMap.has(id)) {
         selectedItemsMap.get(id).discount_percent = val;
+        updateRowTotal(e.target.closest('tr'), selectedItemsMap.get(id));
       }
       calcTotals();
     }
