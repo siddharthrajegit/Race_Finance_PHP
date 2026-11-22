@@ -265,7 +265,7 @@ if (!empty($preloadedEstimate)) {
                 <th style="width: 100px;" class="text-end">Rate (₹)</th>
                 <!-- Estimate Only Columns -->
                 <th style="width: 55px;" class="text-center col-estimate-only d-none">Qty</th>
-                <th style="width: 72px;" class="text-end col-estimate-only d-none">Disc %</th>
+                <th style="width: 72px;" class="text-end">Disc %</th>
                 <th style="width: 85px;" class="text-end col-estimate-only d-none">Total (₹)</th>
                 <th style="width: 28px;" class="text-center"></th>
               </tr>
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
       btnConvertToInvoice.classList.add('d-none');
       previewSectionTitle.textContent = 'Rate List Items';
       printBtnLabel.textContent = 'Print Rate List';
-      footerHint.textContent = 'Select items to preview and print a clean product rate list.';
+      footerHint.textContent = 'Select items, set discounts, preview and print a clean product rate list.';
       document.querySelectorAll('.col-estimate-only').forEach(el => el.classList.add('d-none'));
     }
     renderSelectedItemsTable();
@@ -598,9 +598,10 @@ document.addEventListener('DOMContentLoaded', function() {
     items.forEach((item, index) => {
       const preGst = item.sale_price;
       const taxRate = item.tax_rate;
-      const postGst = preGst * (1 + (taxRate / 100));
       const qty = item.quantity || 1;
       const disc = item.discount_percent || 0;
+      const netPreGst = disc > 0 ? (preGst * (1 - (disc / 100))) : preGst;
+      const postGst = netPreGst * (1 + (taxRate / 100));
 
       const lineBase = qty * preGst;
       const lineDisc = lineBase * (disc / 100);
@@ -625,9 +626,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             ${subUnitDisplay}
           </td>
-          <td class="text-end">
-            <div class="fw-bold text-dark">₹ ${postGst.toFixed(2)}</div>
-            <div class="text-muted" style="font-size: 0.72rem;">Pre: ₹ ${preGst.toFixed(2)} (${taxRate}%)</div>
+          <td class="text-end row-rate-cell">
+            ${getRateCellHtml(item)}
           </td>
           
           <!-- Estimate Mode Inputs -->
@@ -636,7 +636,8 @@ document.addEventListener('DOMContentLoaded', function() {
                    min="0.01" step="any" value="${qty}" data-item-id="${item.id}"
                    style="width: 48px; height: 28px; font-size: 0.82rem; margin: 0 auto; padding: 2px 3px;">
           </td>
-          <td class="text-end col-estimate-only ${isEstimate ? '' : 'd-none'} px-1">
+          <!-- Discount Input (Visible for both Estimate and Rate List) -->
+          <td class="text-end px-1">
             <div class="input-group input-group-sm flex-nowrap ms-auto" style="width: 66px;">
               <input type="number" class="form-control form-control-sm text-end row-disc-input selected-table-input" 
                      min="0" max="100" step="any" value="${disc}" data-item-id="${item.id}"
@@ -661,6 +662,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     selectedItemsTbody.innerHTML = html;
     calcTotals();
+  }
+
+  // Generate HTML for the merged rate cell (post-GST rate with pre-GST rate and GST% in brackets)
+  function getRateCellHtml(item) {
+    const preGst = item.sale_price;
+    const taxRate = item.tax_rate;
+    const disc = item.discount_percent || 0;
+    const netPreGst = disc > 0 ? (preGst * (1 - (disc / 100))) : preGst;
+    const postGst = netPreGst * (1 + (taxRate / 100));
+    const origPostGst = preGst * (1 + (taxRate / 100));
+
+    if (disc > 0) {
+      return `
+        <div class="fw-bold text-dark">₹ ${postGst.toFixed(2)}</div>
+        <div class="text-muted" style="font-size: 0.72rem;"><s>₹ ${origPostGst.toFixed(2)}</s> Pre: ₹ ${netPreGst.toFixed(2)} (${taxRate}%)</div>
+      `;
+    } else {
+      return `
+        <div class="fw-bold text-dark">₹ ${postGst.toFixed(2)}</div>
+        <div class="text-muted" style="font-size: 0.72rem;">Pre: ₹ ${preGst.toFixed(2)} (${taxRate}%)</div>
+      `;
+    }
+  }
+
+  // Live update single row rate without re-rendering entire table
+  function updateRowRate(tr, item) {
+    if (!tr || !item) return;
+    const cell = tr.querySelector('.row-rate-cell');
+    if (cell) cell.innerHTML = getRateCellHtml(item);
   }
 
   // Live update single row total without re-rendering entire table
@@ -694,7 +724,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const val = Math.min(100, Math.max(0, parseFloat(e.target.value) || 0));
       if (selectedItemsMap.has(id)) {
         selectedItemsMap.get(id).discount_percent = val;
-        updateRowTotal(e.target.closest('tr'), selectedItemsMap.get(id));
+        const tr = e.target.closest('tr');
+        updateRowTotal(tr, selectedItemsMap.get(id));
+        updateRowRate(tr, selectedItemsMap.get(id));
       }
       calcTotals();
     }
