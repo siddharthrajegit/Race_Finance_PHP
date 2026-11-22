@@ -197,10 +197,10 @@
               <i class="bi bi-buildings fs-5 text-warning me-2"></i>
               <div class="text-truncate">
                 <div class="fw-bold text-white small text-truncate"><?= htmlspecialchars($activeFirm['name'] ?? 'Select Firm', ENT_QUOTES, 'UTF-8') ?></div>
-                <div class="text-muted" style="font-size: 0.72rem;"><?= htmlspecialchars(!empty($activeFirm['gstin']) ? $activeFirm['gstin'] : (!empty($activeFirm['state']) ? $activeFirm['state'] : 'Switch Business'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="firm-sub-text text-truncate" style="font-size: 0.73rem; color: #94a3b8;"><?= htmlspecialchars(!empty($activeFirm['gstin']) ? $activeFirm['gstin'] : (!empty($activeFirm['state']) ? $activeFirm['state'] : 'Switch Business'), ENT_QUOTES, 'UTF-8') ?></div>
               </div>
             </div>
-            <i class="bi bi-chevron-expand text-muted small"></i>
+            <i class="bi bi-chevron-expand small" style="color: #94a3b8;"></i>
           </div>
 
           <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary w-100">

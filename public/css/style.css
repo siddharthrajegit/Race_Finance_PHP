@@ -143,10 +143,35 @@ main {
 
 /* Firm switcher inside sidebar */
 .sidebar-firm-card {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid #1e293b;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.sidebar-firm-card:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.sidebar-firm-card .firm-sub-text {
+  color: #94a3b8 !important;
+  transition: color 0.15s ease-in-out;
+}
+
+.sidebar-firm-card:hover .firm-sub-text {
+  color: #cbd5e1 !important;
+}
+
+.sidebar-firm-card .bi-chevron-expand {
+  color: #94a3b8 !important;
+  transition: color 0.15s ease-in-out;
+}
+
+.sidebar-firm-card:hover .bi-chevron-expand {
+  color: #ffffff !important;
 }
 
 /* Mobile Sidebar Behavior */
