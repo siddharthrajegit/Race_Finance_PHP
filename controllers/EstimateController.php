@@ -11,6 +11,7 @@ require_once __DIR__ . '/../core/View.php';
 require_once __DIR__ . '/../models/Estimate.php';
 require_once __DIR__ . '/../models/Item.php';
 require_once __DIR__ . '/../models/Firm.php';
+require_once __DIR__ . '/../models/Party.php';
 
 class EstimateController {
     public function listEstimates(): void {
@@ -35,6 +36,7 @@ class EstimateController {
         $categories = Item::getCategories($firmId);
         $allItems = Item::getByFirmId($firmId);
         $nextEstimateNumber = Estimate::getNextEstimateNumber($firmId);
+        $parties = Party::getByFirmId($firmId);
 
         // Preload items if cloning from an existing estimate
         $preloadedEstimate = null;
@@ -47,6 +49,7 @@ class EstimateController {
             'firm' => $firm,
             'categories' => $categories,
             'allItems' => $allItems,
+            'parties' => $parties,
             'nextEstimateNumber' => $nextEstimateNumber,
             'preloadedEstimate' => $preloadedEstimate,
             'activeMenu' => 'estimates'
@@ -63,6 +66,15 @@ class EstimateController {
 
         try {
             $input = $_POST;
+            if (empty($input)) {
+                $rawInput = file_get_contents('php://input');
+                if (!empty($rawInput)) {
+                    $jsonInput = json_decode($rawInput, true);
+                    if (is_array($jsonInput)) {
+                        $input = $jsonInput;
+                    }
+                }
+            }
             $items = [];
             if (!empty($input['items_json'])) {
                 $decoded = json_decode($input['items_json'], true);

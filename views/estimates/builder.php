@@ -5,10 +5,14 @@
  */
 
 $firmName = $firm['name'] ?? 'RACE FINANCE';
+$firmSettings = !empty($firm['settings']) ? (is_array($firm['settings']) ? $firm['settings'] : json_decode($firm['settings'], true)) : [];
+$activeDateFormat = $firmSettings['general']['date_format'] ?? 'DD/MM/YYYY';
 $categories = $categories ?? [];
 $allItems = $allItems ?? [];
+$parties = $parties ?? [];
 $nextEstimateNumber = $nextEstimateNumber ?? '001';
-$todayDate = date('d/m/Y');
+$rawEstimateDate = !empty($preloadedEstimate['estimate_date']) ? $preloadedEstimate['estimate_date'] : date('Y-m-d');
+$formattedEstimateDate = formatDate($rawEstimateDate, $activeDateFormat);
 $preloadedItemsJson = '[]';
 $preloadedCustomer = '';
 $preloadedNumber = $nextEstimateNumber;
@@ -95,17 +99,32 @@ if (!empty($preloadedEstimate)) {
         </div>
         <div class="col-md-3">
           <label class="form-label small fw-bold mb-1" for="metaEstimateDate">Estimate Date</label>
-          <input type="text" class="form-control form-control-sm" id="metaEstimateDate" value="<?= htmlspecialchars($todayDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="DD/MM/YYYY">
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control form-control-sm date-picker" id="metaEstimateDate" value="<?= htmlspecialchars($formattedEstimateDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" autocomplete="off">
+            <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('metaEstimateDate'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }" title="Open calendar">
+              <i class="bi bi-calendar3"></i>
+            </span>
+          </div>
+          <div class="form-text small text-muted" style="font-size: 0.72rem;">Click icon to open calendar</div>
         </div>
         <div class="col-md-6">
-          <label class="form-label small fw-bold mb-1" for="metaCustomerName">
-            Customer Firm Name <span class="badge bg-light text-muted border fw-normal">Optional - 1 Line Only</span>
+          <label class="form-label small fw-bold mb-1 d-flex justify-content-between align-items-center" for="metaCustomerName">
+            <span>Customer / Party Name</span>
+            <span class="badge bg-light text-muted border fw-normal" style="font-size: 0.7rem;">Search or Type</span>
           </label>
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-white"><i class="bi bi-building text-muted"></i></span>
-            <input type="text" class="form-control" id="metaCustomerName" value="<?= htmlspecialchars($preloadedCustomer, ENT_QUOTES, 'UTF-8') ?>" placeholder="Leave blank to omit, or enter customer firm name...">
+          <div class="position-relative">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control form-control-sm" id="metaCustomerName" value="<?= htmlspecialchars($preloadedCustomer, ENT_QUOTES, 'UTF-8') ?>" placeholder="Type name, phone or GSTIN to search party..." autocomplete="off">
+              <button class="btn btn-outline-secondary" type="button" id="btnClearCustomerName" title="Clear customer name" style="<?= !empty($preloadedCustomer) ? 'display: block;' : 'display: none;' ?>">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <!-- Live Party Search Results Dropdown -->
+            <div id="customerSearchResults" class="list-group shadow position-absolute w-100 mt-1 d-none" style="max-height: 250px; overflow-y: auto; z-index: 1060; border-radius: 6px; font-size: 0.85rem;">
+            </div>
           </div>
-          <div class="form-text small text-muted" style="font-size: 0.72rem;">If omitted, completely excluded from the printed document.</div>
+          <div class="form-text small text-muted" style="font-size: 0.72rem;">Select an existing party or type custom customer name. Optional.</div>
         </div>
       </div>
     </div>
@@ -331,6 +350,20 @@ if (!empty($preloadedEstimate)) {
   <input type="hidden" name="items_json" id="saveEstimateItemsJson" value="">
 </form>
 
+<!-- Preloaded Parties Data for Live Autocomplete -->
+<script id="partiesData" type="application/json">
+  <?= json_encode(array_map(function($p) {
+      return [
+          'id' => (int)$p['id'],
+          'name' => $p['name'],
+          'phone' => $p['phone'] ?? '',
+          'gstin' => $p['gstin'] ?? '',
+          'state' => $p['state'] ?? '',
+          'address' => $p['billing_address'] ?? ''
+      ];
+  }, $parties), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const modeRateListRadio = document.getElementById('modeRateList');
@@ -379,6 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
       printBtnLabel.textContent = 'Print Estimate';
       footerHint.textContent = 'Adjust quantities and discount, then save or print estimate.';
       document.querySelectorAll('.col-estimate-only').forEach(el => el.classList.remove('d-none'));
+      initDatePickerIfNeeded();
     } else {
       estimateMetaBox.classList.add('d-none');
       estimateSummaryBox.classList.add('d-none');
@@ -845,7 +879,161 @@ document.addEventListener('DOMContentLoaded', function() {
     return div.innerHTML;
   }
 
+  // Flatpickr initialization helper
+  function initDatePickerIfNeeded() {
+    const dateInput = document.getElementById('metaEstimateDate');
+    if (dateInput && typeof flatpickr !== 'undefined' && !dateInput._flatpickr) {
+      const formatSetting = (dateInput.dataset.dateFormat || 'DD/MM/YYYY').toUpperCase();
+      let fpFormat = 'd/m/Y';
+      if (formatSetting === 'YYYY-MM-DD') fpFormat = 'Y-m-d';
+      else if (formatSetting === 'DD-MM-YYYY') fpFormat = 'd-m-Y';
+      else if (formatSetting === 'DD/MM/YYYY') fpFormat = 'd/m/Y';
+
+      dateInput.setAttribute('maxlength', '10');
+      dateInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);
+      });
+
+      flatpickr(dateInput, {
+        dateFormat: fpFormat,
+        allowInput: true,
+        monthSelectorType: 'static',
+        disableMobile: true,
+        onClose: function(selectedDates, dateStr, instance) {
+          instance.element.dispatchEvent(new Event('change', { bubbles: true }));
+          instance.element.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    }
+  }
+
+  // Party Live Search & Autocomplete
+  const partiesDataEl = document.getElementById('partiesData');
+  let partiesList = [];
+  try {
+    partiesList = JSON.parse(partiesDataEl?.textContent || '[]');
+  } catch (err) {
+    partiesList = [];
+  }
+
+  const metaCustomerNameInput = document.getElementById('metaCustomerName');
+  const customerSearchResults = document.getElementById('customerSearchResults');
+  const btnClearCustomerName = document.getElementById('btnClearCustomerName');
+
+  function getPartyMatches(rawQuery) {
+    const q = (rawQuery || '').trim().toLowerCase();
+    if (!q) return partiesList;
+    return partiesList.filter(p => {
+      const name = (p.name || '').toLowerCase();
+      const phone = (p.phone || '').toLowerCase();
+      const gstin = (p.gstin || '').toLowerCase();
+      return name.includes(q) || phone.includes(q) || gstin.includes(q);
+    });
+  }
+
+  function renderCustomerResults(matches) {
+    if (!customerSearchResults) return;
+    customerSearchResults.innerHTML = '';
+    const query = metaCustomerNameInput ? metaCustomerNameInput.value.trim() : '';
+
+    if (matches.length === 0) {
+      const emptyItem = document.createElement('div');
+      emptyItem.className = 'list-group-item text-muted small p-2 text-center';
+      emptyItem.textContent = query ? `No existing party found matching "${query}".` : 'No registered parties found.';
+      customerSearchResults.appendChild(emptyItem);
+
+      if (query) {
+        const useBtn = document.createElement('button');
+        useBtn.type = 'button';
+        useBtn.className = 'list-group-item list-group-item-action p-2 text-primary small fw-semibold bg-light border-top';
+        useBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i> Use "<strong>${escapeHtml(query)}</strong>" as customer name`;
+        useBtn.addEventListener('click', () => {
+          customerSearchResults.classList.add('d-none');
+          if (btnClearCustomerName) btnClearCustomerName.style.display = 'block';
+        });
+        customerSearchResults.appendChild(useBtn);
+      }
+      customerSearchResults.classList.remove('d-none');
+      return;
+    }
+
+    matches.slice(0, 15).forEach(p => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'list-group-item list-group-item-action p-2 text-start';
+      btn.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+          <strong class="text-dark">${escapeHtml(p.name)}</strong>
+          ${p.phone ? `<span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="bi bi-telephone me-1"></i>${escapeHtml(p.phone)}</span>` : ''}
+        </div>
+        ${(p.gstin || p.state || p.address) ? `
+          <div class="small text-muted d-flex justify-content-between mt-1" style="font-size: 0.72rem;">
+            <span>${p.gstin ? `<span class="text-primary font-monospace">GSTIN: ${escapeHtml(p.gstin)}</span>` : escapeHtml(p.address || '')}</span>
+            ${p.state ? `<span class="text-secondary">${escapeHtml(p.state)}</span>` : ''}
+          </div>
+        ` : ''}
+      `;
+
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        metaCustomerNameInput.value = p.name;
+        customerSearchResults.classList.add('d-none');
+        if (btnClearCustomerName) btnClearCustomerName.style.display = 'block';
+      });
+
+      customerSearchResults.appendChild(btn);
+    });
+
+    customerSearchResults.classList.remove('d-none');
+  }
+
+  if (metaCustomerNameInput) {
+    metaCustomerNameInput.addEventListener('focus', () => {
+      const matches = getPartyMatches(metaCustomerNameInput.value);
+      renderCustomerResults(matches);
+    });
+
+    metaCustomerNameInput.addEventListener('input', () => {
+      const val = metaCustomerNameInput.value;
+      if (btnClearCustomerName) {
+        btnClearCustomerName.style.display = val.trim() ? 'block' : 'none';
+      }
+      const matches = getPartyMatches(val);
+      renderCustomerResults(matches);
+    });
+
+    metaCustomerNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && customerSearchResults) {
+        customerSearchResults.classList.add('d-none');
+      }
+    });
+  }
+
+  if (btnClearCustomerName) {
+    btnClearCustomerName.addEventListener('click', () => {
+      if (metaCustomerNameInput) {
+        metaCustomerNameInput.value = '';
+        metaCustomerNameInput.focus();
+      }
+      btnClearCustomerName.style.display = 'none';
+      if (customerSearchResults) {
+        customerSearchResults.classList.add('d-none');
+      }
+    });
+  }
+
+  // Close search results on outside click
+  document.addEventListener('click', (e) => {
+    if (customerSearchResults && !customerSearchResults.contains(e.target) &&
+        metaCustomerNameInput && !metaCustomerNameInput.contains(e.target) &&
+        btnClearCustomerName && !btnClearCustomerName.contains(e.target)) {
+      customerSearchResults.classList.add('d-none');
+    }
+  });
+
   // Initial trigger
+  initDatePickerIfNeeded();
   syncModeUI();
   filterItemsList();
 });
