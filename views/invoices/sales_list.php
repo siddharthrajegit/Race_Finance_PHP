@@ -15,14 +15,14 @@ $invList = !empty($invoices) ? $invoices : [];
   <div class="card-body p-2 p-md-3">
     <div class="row g-2 align-items-center">
       <!-- Search Input -->
-      <div class="col-lg-4 col-md-5">
+      <div class="col-lg-4 col-md-12">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
           <input type="text" class="form-control border-start-0" placeholder="Search sales by record no, customer, phone..." data-table-search="salesTable">
         </div>
       </div>
       <!-- Custom Date Filter -->
-      <div class="col-lg-5 col-md-7">
+      <div class="col-lg-4 col-md-6">
         <div class="input-group filter-date-group">
           <span class="input-group-text bg-white text-dark"><i class="bi bi-calendar-range text-primary me-1"></i> Date</span>
           <input type="date" class="form-control px-2" placeholder="From" data-date-filter-from="salesTable" title="Filter From Date">
@@ -34,10 +34,10 @@ $invList = !empty($invoices) ? $invoices : [];
         </div>
       </div>
       <!-- Sort Dropdown & Record Count -->
-      <div class="col-lg-3 col-md-12">
+      <div class="col-lg-4 col-md-6">
         <div class="d-flex gap-2 align-items-center justify-content-lg-end">
-          <div class="input-group flex-grow-1" style="min-width: 170px;">
-            <span class="input-group-text bg-white text-dark"><i class="bi bi-arrow-down-up text-primary me-1"></i></span>
+          <div class="input-group sort-input-group flex-grow-1">
+            <span class="input-group-text bg-white text-dark"><i class="bi bi-arrow-down-up text-primary"></i></span>
             <select class="form-select border-start-0" data-table-sort="salesTable">
               <option value="">Sort: Default (Newest)</option>
               <option value="invoice-date-desc">Date (Newest First)</option>

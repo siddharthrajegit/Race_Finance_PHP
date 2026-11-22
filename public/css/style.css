@@ -25,7 +25,8 @@
   font-size: 0.72rem;
   background: rgba(0, 0, 0, 0.04);
   color: #64748b;
-  margin-left: 6px;
+  margin-left: 8px;
+  flex-shrink: 0;
   transition: all 0.18s ease;
   vertical-align: middle;
 }
@@ -301,10 +302,17 @@ main {
 }
 
 /* Form Controls */
-.form-control, .form-select {
+.form-control {
   border-radius: 8px;
   border-color: #cbd5e1;
   padding: 0.55rem 0.85rem;
+  font-size: 0.95rem;
+}
+
+.form-select {
+  border-radius: 8px;
+  border-color: #cbd5e1;
+  padding: 0.55rem 2.25rem 0.55rem 0.85rem;
   font-size: 0.95rem;
 }
 
@@ -632,10 +640,41 @@ tr.row-selected td {
   border-color: #e2e8f0;
 }
 
-.invoice-filter-card .form-control,
+.invoice-filter-card .form-control {
+  border-color: #e2e8f0;
+  font-size: 0.84rem;
+}
+
 .invoice-filter-card .form-select {
   border-color: #e2e8f0;
   font-size: 0.84rem;
+  padding-right: 2.25rem !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
+}
+
+/* Sort Dropdown in Invoice Filter Cards (Purchase & Sales) */
+.invoice-filter-card .sort-input-group {
+  min-width: 190px;
+}
+
+.invoice-filter-card .sort-input-group .input-group-text {
+  padding-left: 0.65rem !important;
+  padding-right: 0.35rem !important;
+  background-color: #ffffff;
+  border-right: none;
+}
+
+.invoice-filter-card .sort-input-group .input-group-text i {
+  margin-right: 0 !important;
+  font-size: 0.85rem;
+}
+
+.invoice-filter-card .sort-input-group .form-select {
+  padding-left: 0.45rem !important;
+  padding-right: 2.25rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .invoice-filter-card .form-control:focus,
