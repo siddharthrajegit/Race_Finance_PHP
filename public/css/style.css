@@ -879,6 +879,19 @@ tr.row-selected td {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
+/* Compact number inputs in table: remove steppers and ensure seamless inline styling */
+.row-qty-input::-webkit-inner-spin-button,
+.row-qty-input::-webkit-outer-spin-button,
+.row-disc-input::-webkit-inner-spin-button,
+.row-disc-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.row-qty-input,
+.row-disc-input {
+  -moz-appearance: textfield;
+}
+
 .builder-summary-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;

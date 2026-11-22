@@ -242,13 +242,13 @@ if (!empty($preloadedEstimate)) {
             <thead class="table-light sticky-top">
               <tr>
                 <th style="width: 25px;" class="text-center">#</th>
-                <th>Item Details</th>
-                <th style="width: 105px;" class="text-end">Rate (₹)</th>
+                <th style="min-width: 170px;">Item Details</th>
+                <th style="width: 100px;" class="text-end">Rate (₹)</th>
                 <!-- Estimate Only Columns -->
-                <th style="width: 80px;" class="text-center col-estimate-only d-none">Quantity</th>
-                <th style="width: 65px;" class="text-end col-estimate-only d-none">Disc %</th>
-                <th style="width: 95px;" class="text-end col-estimate-only d-none">Total (₹)</th>
-                <th style="width: 30px;" class="text-center"></th>
+                <th style="width: 55px;" class="text-center col-estimate-only d-none">Qty</th>
+                <th style="width: 72px;" class="text-end col-estimate-only d-none">Disc %</th>
+                <th style="width: 85px;" class="text-end col-estimate-only d-none">Total (₹)</th>
+                <th style="width: 28px;" class="text-center"></th>
               </tr>
             </thead>
             <tbody id="selectedItemsTbody">
@@ -597,17 +597,18 @@ document.addEventListener('DOMContentLoaded', function() {
           </td>
           
           <!-- Estimate Mode Inputs -->
-          <td class="text-center col-estimate-only ${isEstimate ? '' : 'd-none'}">
-            <div class="input-group input-group-sm mx-auto" style="max-width: 90px;">
-              <input type="number" class="form-control form-control-sm text-center fw-bold row-qty-input selected-table-input" 
-                     min="0.01" step="any" value="${qty}" data-item-id="${item.id}">
-            </div>
+          <td class="text-center col-estimate-only ${isEstimate ? '' : 'd-none'} px-1">
+            <input type="number" class="form-control form-control-sm text-center fw-bold row-qty-input selected-table-input" 
+                   min="0.01" step="any" value="${qty}" data-item-id="${item.id}"
+                   style="width: 48px; height: 28px; font-size: 0.82rem; margin: 0 auto; padding: 2px 3px;">
           </td>
-          <td class="text-end col-estimate-only ${isEstimate ? '' : 'd-none'}">
-            <div class="input-group input-group-sm ms-auto" style="max-width: 75px;">
+          <td class="text-end col-estimate-only ${isEstimate ? '' : 'd-none'} px-1">
+            <div class="input-group input-group-sm flex-nowrap ms-auto" style="width: 66px;">
               <input type="number" class="form-control form-control-sm text-end row-disc-input selected-table-input" 
-                     min="0" max="100" step="any" value="${disc}" data-item-id="${item.id}">
-              <span class="input-group-text p-1 small text-muted" style="font-size: 0.7rem;">%</span>
+                     min="0" max="100" step="any" value="${disc}" data-item-id="${item.id}"
+                     style="height: 28px; font-size: 0.78rem; border-top-right-radius: 0; border-bottom-right-radius: 0; padding: 2px 3px;">
+              <span class="input-group-text px-1 text-muted bg-light border-start-0" 
+                    style="font-size: 0.72rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 2px 4px; height: 28px;">%</span>
             </div>
           </td>
           <td class="text-end fw-bold text-success col-estimate-only ${isEstimate ? '' : 'd-none'} row-total-display">
