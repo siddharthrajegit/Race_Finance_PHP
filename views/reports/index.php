@@ -57,4 +57,42 @@
       </div>
     </div>
   </div>
+
+  <?php if (defined('ENABLE_COMPLIANCE_EXPORTS') && ENABLE_COMPLIANCE_EXPORTS): ?>
+    <!-- GSTR-1 / 2B / 3B Summary Exports -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 card-hover">
+        <div class="card-body p-4">
+          <div class="rounded-3 bg-warning-subtle text-warning-emphasis p-3 d-inline-block mb-3" style="font-size: 1.6rem;">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">GSTR-1 / 2B / 3B CSV Exports</h5>
+          <p class="text-muted small mb-4">
+            Download software-compiled outward sales, purchase ITC, and liability working CSV sheets for CA review.
+          </p>
+          <a href="/reports/gst-exports" class="btn btn-outline-warning text-dark btn-sm w-100 fw-semibold">
+            Open GST Exports &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tally XML Export -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 card-hover">
+        <div class="card-body p-4">
+          <div class="rounded-3 bg-secondary-subtle text-dark p-3 d-inline-block mb-3" style="font-size: 1.6rem;">
+            <i class="bi bi-filetype-xml"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Tally-Compatible XML Export</h5>
+          <p class="text-muted small mb-4">
+            Export Sundry Debtor/Creditor masters and Sales/Purchase vouchers in standard Tally XML schema.
+          </p>
+          <a href="/reports/tally-export" class="btn btn-outline-dark btn-sm w-100 fw-semibold">
+            Export Tally XML &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
 </div>

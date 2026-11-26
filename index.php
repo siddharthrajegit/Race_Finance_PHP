@@ -163,6 +163,10 @@ Router::get('/reports', [ReportController::class, 'getReportsIndex']);
 Router::get('/reports/parties', [ReportController::class, 'getPartyReport']);
 Router::get('/reports/tax', [ReportController::class, 'getTaxReport']);
 Router::get('/reports/items', [ReportController::class, 'getItemReport']);
+Router::get('/reports/gst-exports', [ExportController::class, 'gstrIndex']);
+Router::get('/reports/gst-exports/download', [ExportController::class, 'downloadGstrCsv']);
+Router::get('/reports/tally-export', [ExportController::class, 'tallyIndex']);
+Router::get('/reports/tally-export/download', [ExportController::class, 'downloadTallyXml']);
 
 // -----------------------------------------------------------------------------
 // Backup Routes
@@ -285,6 +289,7 @@ Router::get('/admin/invoices/:id', [AdminController::class, 'getInspectInvoice']
 Router::get('/admin/system', [AdminController::class, 'getSystemHealth']);
 Router::post('/admin/system/vacuum', [AdminController::class, 'postVacuumDb']);
 Router::post('/admin/system/clean-orphans', [AdminController::class, 'postCleanOrphans']);
+Router::post('/admin/system/run-migrations', [AdminController::class, 'postRunMigrations']);
 Router::get('/admin/system/download-db', [AdminController::class, 'getDownloadDb']);
 Router::post('/admin/system/download-db', [AdminController::class, 'postDownloadDb']);
 Router::get('/admin/settings', [AdminController::class, 'getSettings']);

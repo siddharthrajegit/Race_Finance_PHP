@@ -90,6 +90,18 @@
             <span><i class="bi bi-download me-2"></i> Download Full Database Snapshot (.db / .sql)</span>
             <span class="badge bg-success-subtle text-success">Requires Password</span>
           </button>
+
+          <!-- 4. Apply Pending Database Schema Migrations (cPanel Safe, Zero SSH) -->
+          <?php $pendingCount = count(array_diff($availableMigrations ?? [], array_keys($appliedMigrations ?? []))); ?>
+          <form action="/admin/system/run-migrations" method="POST" class="m-0">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <button type="submit" class="btn btn-outline-dark btn-sm w-100 rounded-pill text-start d-flex align-items-center justify-content-between py-2 px-3">
+              <span><i class="bi bi-database-check me-2"></i> Database Schema Migrations (<?= count($appliedMigrations ?? []) ?>/<?= count($availableMigrations ?? []) ?> applied)</span>
+              <span class="badge <?= $pendingCount > 0 ? 'bg-warning text-dark' : 'bg-success-subtle text-success' ?>">
+                <?= $pendingCount > 0 ? ($pendingCount . ' Pending — Run Now') : 'Up to Date' ?>
+              </span>
+            </button>
+          </form>
         </div>
       </div>
     </div>
