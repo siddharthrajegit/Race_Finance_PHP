@@ -227,6 +227,23 @@ class DB {
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 ");
             }
+
+            // Apply pending versioned migrations (SQLite & MySQL compatible) with recursion guard
+            static $runningMigrations = false;
+            if (!$runningMigrations) {
+                $migrationRunnerPath = __DIR__ . '/../database/MigrationRunner.php';
+                if (file_exists($migrationRunnerPath)) {
+                    $runningMigrations = true;
+                    try {
+                        require_once $migrationRunnerPath;
+                        if (class_exists('MigrationRunner')) {
+                            MigrationRunner::runPending($pdo, $driver);
+                        }
+                    } finally {
+                        $runningMigrations = false;
+                    }
+                }
+            }
         } catch (Throwable $e) {
             // Table might not exist yet during fresh setup, safe to ignore
             error_log("Schema update notice: " . $e->getMessage());

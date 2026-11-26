@@ -99,6 +99,28 @@ class Item extends Model {
         ]);
 
         $id = (int)self::db()->lastInsertId();
+
+        if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) {
+            require_once __DIR__ . '/Warehouse.php';
+            $prefWhId = !empty($data['warehouse_id']) ? (int)$data['warehouse_id'] : 0;
+            if ($prefWhId > 0) {
+                $wh = Warehouse::getById($prefWhId, $firmId);
+                if ($wh) {
+                    $db = self::db();
+                    $db->prepare("INSERT INTO warehouse_stock (firm_id, warehouse_id, item_id, quantity) VALUES (?, ?, ?, ?)")
+                       ->execute([$firmId, $prefWhId, $id, $initialStock]);
+                    if ($initialStock > 0) {
+                        $cost = max(0.0, Security::parseCleanFloat($data['purchase_price'] ?? 0));
+                        $db->prepare("
+                            INSERT INTO stock_movements (firm_id, warehouse_id, item_id, movement_type, quantity_delta, unit_cost, total_cost, remaining_qty, source_type, source_id, notes)
+                            VALUES (?, ?, ?, 'opening', ?, ?, ?, ?, 'item_opening', ?, 'Opening stock')
+                        ")->execute([$firmId, $prefWhId, $id, $initialStock, $cost, round($initialStock * $cost, 2), $initialStock, $id]);
+                    }
+                }
+            }
+            Warehouse::ensureDefaultWarehouse($firmId);
+        }
+
         return self::getById($id, $firmId);
     }
 
@@ -139,8 +161,24 @@ class Item extends Model {
         return self::getById($id, $firmId);
     }
 
-    public static function adjustStock(int $id, int $firmId, float $adjustment): ?array {
+    public static function adjustStock(int $id, int $firmId, float $adjustment, ?int $warehouseId = null, ?string $notes = null, ?int $createdBy = null): ?array {
         if ($adjustment == 0) {
+            return self::getById($id, $firmId);
+        }
+        if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) {
+            require_once __DIR__ . '/Warehouse.php';
+            Warehouse::adjustWarehouseStock(
+                $firmId,
+                $warehouseId,
+                $id,
+                $adjustment,
+                'adjustment',
+                null,
+                'manual_adjustment',
+                $id,
+                $notes ?: 'Manual stock adjustment',
+                $createdBy
+            );
             return self::getById($id, $firmId);
         }
         $stmt = self::db()->prepare("
@@ -152,13 +190,42 @@ class Item extends Model {
         return self::getById($id, $firmId);
     }
 
-    public static function adjustInvoiceItemStock(?int $itemId, int $firmId, string $invoiceType, float $quantity, int $direction = 1): void {
+    public static function adjustInvoiceItemStock(
+        ?int $itemId,
+        int $firmId,
+        string $invoiceType,
+        float $quantity,
+        int $direction = 1,
+        ?int $warehouseId = null,
+        ?float $unitCost = null,
+        ?int $invoiceId = null,
+        ?int $createdBy = null
+    ): void {
         if (!$itemId || $quantity <= 0) return;
 
         $typeMultiplier = ($invoiceType === 'sale') ? -1 : (($invoiceType === 'purchase') ? 1 : 0);
         if ($typeMultiplier === 0) return;
 
         $delta = $typeMultiplier * $direction * $quantity;
+
+        if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) {
+            require_once __DIR__ . '/Warehouse.php';
+            $mvType = $invoiceType . ($direction < 0 ? '_revert' : '');
+            Warehouse::adjustWarehouseStock(
+                $firmId,
+                $warehouseId,
+                $itemId,
+                $delta,
+                $mvType,
+                $unitCost,
+                'invoice',
+                $invoiceId,
+                null,
+                $createdBy
+            );
+            return;
+        }
+
         $stmt = self::db()->prepare("UPDATE items SET current_stock = current_stock + ? WHERE id = ? AND firm_id = ?");
         $stmt->execute([$delta, $itemId, $firmId]);
     }

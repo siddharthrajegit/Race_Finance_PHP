@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
@@ -13,7 +14,7 @@ require_once __DIR__ . '/../models/Model.php';
 
 class PartyController {
     public function listParties(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_parties');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $filterType = $_GET['type'] ?? 'all';
@@ -40,7 +41,7 @@ class PartyController {
     }
 
     public function getCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_parties');
         Auth::requireActiveFirm();
         $defaultType = $_GET['type'] ?? 'customer';
 
@@ -54,7 +55,7 @@ class PartyController {
     }
 
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_parties');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -134,7 +135,7 @@ class PartyController {
     }
 
     public function getEdit(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_parties');
         $firm = Auth::requireActiveFirm();
         $partyId = (int)($params['id'] ?? 0);
         $party = Party::getById($partyId, (int)$firm['id']);
@@ -155,7 +156,7 @@ class PartyController {
     }
 
     public function postEdit(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_parties');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $partyId = (int)($params['id'] ?? 0);
@@ -235,7 +236,7 @@ class PartyController {
     }
 
     public function getLedger(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_parties');
         $firm = Auth::requireActiveFirm();
         $partyId = (int)($params['id'] ?? 0);
 
@@ -276,7 +277,7 @@ class PartyController {
     }
 
     public function postDelete(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_parties');
         $firm = Auth::requireActiveFirm();
         $partyId = (int)($params['id'] ?? 0);
 
@@ -293,7 +294,7 @@ class PartyController {
     }
 
     public function apiGetParties(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_parties', true);
         $firm = Auth::requireActiveFirm();
         $type = $_GET['type'] ?? null;
         $parties = Party::getByFirmId((int)$firm['id'], $type);
@@ -304,7 +305,7 @@ class PartyController {
     }
 
     public function postQuickCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_parties', true);
         $firm = Auth::requireActiveFirm();
         header('Content-Type: application/json');
 

@@ -6,15 +6,17 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
 require_once __DIR__ . '/../core/Upload.php';
 require_once __DIR__ . '/../models/Backup.php';
+require_once __DIR__ . '/../models/AuditLog.php';
 
 class BackupController {
     public function getIndex(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $googleToken = Backup::getGoogleToken((int)$user['id']);
 
@@ -30,11 +32,15 @@ class BackupController {
     }
 
     public function exportJson(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
 
         try {
             $backupData = Backup::exportFullBackup((int)$user['id']);
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                $firm = Auth::getActiveFirm();
+                AuditLog::log($firm ? (int)$firm['id'] : null, 'EXPORT', 'backup', null, 'Exported JSON backup');
+            }
             $dateStr = date('Y-m-d');
             $filename = "RaceFinance_Backup_{$dateStr}_" . time() . ".json";
 
@@ -50,7 +56,7 @@ class BackupController {
     }
 
     public function restoreJson(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
 
         try {
@@ -83,7 +89,7 @@ class BackupController {
     }
 
     public function uploadGoogleDrive(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $userId = (int)$user['id'];
 

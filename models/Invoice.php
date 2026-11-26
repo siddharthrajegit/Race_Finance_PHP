@@ -208,15 +208,23 @@ class Invoice extends Model {
             $cleanDiscVal = ($cleanDiscType === 'percentage') ? min(100.0, $rawDiscVal) : min($cleanSubtotal, $rawDiscVal);
             $cleanDiscAmt = min($cleanSubtotal, max(0.0, (float)($invoiceData['discount_amount'] ?? 0)));
 
+            $warehouseId = !empty($invoiceData['warehouse_id']) ? (int)$invoiceData['warehouse_id'] : null;
+            if ($warehouseId !== null && defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) {
+                require_once __DIR__ . '/Warehouse.php';
+                if (!Warehouse::getById($warehouseId, $firmId)) {
+                    $warehouseId = null;
+                }
+            }
+
             $invStmt = $db->prepare("
                 INSERT INTO invoices (
                     firm_id, type, invoice_number, invoice_date, due_date, party_id,
                     party_name, party_phone, party_gstin, party_address, party_state, party_state_code,
                     is_gst_bill, is_interstate, subtotal, discount_type, discount_value, discount_amount,
                     taxable_amount, cgst_amount, sgst_amount, igst_amount, tax_amount, round_off,
-                    grand_total, paid_amount, balance_due, payment_status, payment_mode, notes, terms
+                    grand_total, paid_amount, balance_due, payment_status, payment_mode, notes, terms, warehouse_id
                 ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
             ");
 
@@ -229,7 +237,8 @@ class Invoice extends Model {
                 max(0.0, (float)($invoiceData['taxable_amount'] ?? 0)), max(0.0, (float)($invoiceData['cgst_amount'] ?? 0)), max(0.0, (float)($invoiceData['sgst_amount'] ?? 0)),
                 max(0.0, (float)($invoiceData['igst_amount'] ?? 0)), max(0.0, (float)($invoiceData['tax_amount'] ?? 0)), (float)($invoiceData['round_off'] ?? 0),
                 max(0.0, (float)($invoiceData['grand_total'] ?? 0)), max(0.0, (float)($invoiceData['paid_amount'] ?? 0)), max(0.0, (float)($invoiceData['balance_due'] ?? 0)),
-                $invoiceData['payment_status'] ?? 'unpaid', $invoiceData['payment_mode'] ?? 'cash', $invoiceData['notes'] ?? null, $invoiceData['terms'] ?? null
+                $invoiceData['payment_status'] ?? 'unpaid', $invoiceData['payment_mode'] ?? 'cash', $invoiceData['notes'] ?? null, $invoiceData['terms'] ?? null,
+                $warehouseId
             ]);
 
             $invoiceId = (int)$db->lastInsertId();
@@ -272,7 +281,8 @@ class Invoice extends Model {
                     $totAmt
                 ]);
 
-                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $docType, $rawQty);
+                $unitCost = ($docType === 'purchase') ? $rawRate : null;
+                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $docType, $rawQty, 1, $warehouseId, $unitCost, $invoiceId);
             }
 
             // Auto payment voucher / receipt
@@ -297,7 +307,20 @@ class Invoice extends Model {
                 Party::syncFIFOSettlement($partyId, $firmId);
             }
 
-            return self::getById($invoiceId, $firmId);
+            $created = self::getById($invoiceId, $firmId);
+
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                require_once __DIR__ . '/AuditLog.php';
+                AuditLog::log($firmId, 'CREATE', 'invoice', $invoiceId, "Created {$docType} #{$finalInvoiceNumber} total {$created['grand_total']}");
+            }
+            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                Accounting::postInvoiceJournal($created);
+            }
+            if (class_exists('Loyalty') && defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $docType === 'sale') {
+                Loyalty::processInvoicePoints($created, $invoiceData);
+            }
+
+            return $created;
         });
     }
 
@@ -306,9 +329,11 @@ class Invoice extends Model {
             $existing = self::getById($id, $firmId);
             if (!$existing) return null;
 
+            $oldWarehouseId = !empty($existing['warehouse_id']) ? (int)$existing['warehouse_id'] : null;
+
             // 1. Revert previous inventory
             foreach ($existing['items'] as $oldItem) {
-                Item::adjustInvoiceItemStock($oldItem['item_id'] ?? null, $firmId, $existing['type'], (float)$oldItem['quantity'], -1);
+                Item::adjustInvoiceItemStock($oldItem['item_id'] ?? null, $firmId, $existing['type'], (float)$oldItem['quantity'], -1, $oldWarehouseId, null, $id);
             }
 
             // 2. Delete existing items
@@ -354,13 +379,23 @@ class Invoice extends Model {
             $cleanDiscVal = ($cleanDiscType === 'percentage') ? min(100.0, $rawDiscVal) : min($cleanSubtotal, $rawDiscVal);
             $cleanDiscAmt = min($cleanSubtotal, max(0.0, (float)($invoiceData['discount_amount'] ?? 0)));
 
+            $newWarehouseId = array_key_exists('warehouse_id', $invoiceData)
+                ? (!empty($invoiceData['warehouse_id']) ? (int)$invoiceData['warehouse_id'] : null)
+                : $oldWarehouseId;
+            if ($newWarehouseId !== null && defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) {
+                require_once __DIR__ . '/Warehouse.php';
+                if (!Warehouse::getById($newWarehouseId, $firmId)) {
+                    $newWarehouseId = null;
+                }
+            }
+
             $db->prepare("
                 UPDATE invoices SET
                     type = ?, invoice_number = ?, invoice_date = ?, due_date = ?, party_id = ?,
                     party_name = ?, party_phone = ?, party_gstin = ?, party_address = ?, party_state = ?, party_state_code = ?,
                     is_gst_bill = ?, is_interstate = ?, subtotal = ?, discount_type = ?, discount_value = ?, discount_amount = ?,
                     taxable_amount = ?, cgst_amount = ?, sgst_amount = ?, igst_amount = ?, tax_amount = ?, round_off = ?,
-                    grand_total = ?, paid_amount = ?, balance_due = ?, payment_status = ?, payment_mode = ?, notes = ?, terms = ?
+                    grand_total = ?, paid_amount = ?, balance_due = ?, payment_status = ?, payment_mode = ?, notes = ?, terms = ?, warehouse_id = ?
                 WHERE id = ? AND firm_id = ?
             ")->execute([
                 $docType, $finalInvoiceNumber, $invoiceData['invoice_date'], $invoiceData['due_date'] ?? null,
@@ -372,6 +407,7 @@ class Invoice extends Model {
                 max(0.0, (float)($invoiceData['igst_amount'] ?? 0)), max(0.0, (float)($invoiceData['tax_amount'] ?? 0)), (float)($invoiceData['round_off'] ?? 0),
                 max(0.0, (float)($invoiceData['grand_total'] ?? 0)), max(0.0, (float)($invoiceData['paid_amount'] ?? 0)), max(0.0, (float)($invoiceData['balance_due'] ?? 0)),
                 $invoiceData['payment_status'] ?? 'unpaid', $invoiceData['payment_mode'] ?? 'cash', $invoiceData['notes'] ?? null, $invoiceData['terms'] ?? null,
+                $newWarehouseId,
                 $id, $firmId
             ]);
 
@@ -414,7 +450,8 @@ class Invoice extends Model {
                     $totAmt
                 ]);
 
-                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $docType, $rawQty);
+                $unitCost = ($docType === 'purchase') ? $rawRate : null;
+                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $docType, $rawQty, 1, $newWarehouseId, $unitCost, $id);
             }
 
             // 5. Update or recreate payment
@@ -462,7 +499,18 @@ class Invoice extends Model {
                 Party::syncFIFOSettlement((int)$existing['party_id'], $firmId);
             }
 
-            return self::getById($id, $firmId);
+            $updated = self::getById($id, $firmId);
+
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                require_once __DIR__ . '/AuditLog.php';
+                AuditLog::log($firmId, 'UPDATE', 'invoice', $id, "Updated {$docType} #{$finalInvoiceNumber} total {$updated['grand_total']}");
+            }
+            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                Accounting::reverseSourceJournal($firmId, 'invoice', $id, "Updated {$docType} #{$finalInvoiceNumber}");
+                Accounting::postInvoiceJournal($updated);
+            }
+
+            return $updated;
         });
     }
 
@@ -471,10 +519,18 @@ class Invoice extends Model {
             $invoice = self::getById($id, $firmId);
             if (!$invoice) return false;
 
+            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                Accounting::reverseSourceJournal($firmId, 'invoice', $id, "Deleted {$invoice['type']} #{$invoice['invoice_number']}");
+            }
+            if (class_exists('Loyalty') && defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $invoice['type'] === 'sale') {
+                Loyalty::reverseInvoicePoints($firmId, $id);
+            }
+
             $partyId = $invoice['party_id'];
+            $oldWarehouseId = !empty($invoice['warehouse_id']) ? (int)$invoice['warehouse_id'] : null;
 
             foreach ($invoice['items'] as $item) {
-                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $invoice['type'], (float)$item['quantity'], -1);
+                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $invoice['type'], (float)$item['quantity'], -1, $oldWarehouseId, null, $id);
             }
 
             $db->prepare("DELETE FROM payments WHERE invoice_id = ? AND firm_id = ?")->execute([$id, $firmId]);
@@ -482,6 +538,11 @@ class Invoice extends Model {
 
             if ($partyId) {
                 Party::syncFIFOSettlement((int)$partyId, $firmId);
+            }
+
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                require_once __DIR__ . '/AuditLog.php';
+                AuditLog::log($firmId, 'DELETE', 'invoice', $id, "Deleted {$invoice['type']} #{$invoice['invoice_number']} total {$invoice['grand_total']}");
             }
 
             return true;

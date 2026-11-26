@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
@@ -12,6 +13,7 @@ require_once __DIR__ . '/../models/Invoice.php';
 require_once __DIR__ . '/../models/Party.php';
 require_once __DIR__ . '/../models/Item.php';
 require_once __DIR__ . '/../models/Setting.php';
+require_once __DIR__ . '/../models/Warehouse.php';
 require_once __DIR__ . '/../models/Model.php';
 
 class InvoiceController {
@@ -295,6 +297,7 @@ class InvoiceController {
             'balance_due' => $balanceDue,
             'payment_status' => $paymentStatus,
             'payment_mode' => $body['payment_mode'] ?? 'cash',
+            'warehouse_id' => !empty($body['warehouse_id']) ? (int)$body['warehouse_id'] : ($existingInvoice['warehouse_id'] ?? null),
             'notes' => $body['notes'] ?? null,
             'terms' => isset($body['terms']) && trim((string)$body['terms']) !== '' ? trim((string)$body['terms']) : ($activeFirm['terms'] ?? null)
         ];
@@ -308,6 +311,8 @@ class InvoiceController {
         $firmId = (int)$firm['id'];
         $invType = $invoice ? ($invoice['type'] ?? 'sale') : $type;
 
+        $warehouses = (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) ? Warehouse::getByFirmId($firmId, true) : [];
+
         view('invoices/form', [
             'title' => $title,
             'isEdit' => ($invoice !== null),
@@ -318,6 +323,7 @@ class InvoiceController {
             'parties' => Party::getByFirmId($firmId, ($invType === 'sale') ? 'customer' : 'supplier'),
             'items' => Item::getByFirmId($firmId),
             'categories' => Item::getCategories($firmId),
+            'warehouses' => $warehouses,
             'settings' => Setting::get($firmId),
             'gstStates' => Model::GST_STATES,
             'activeMenu' => ($invType === 'sale') ? 'sales' : 'purchases'
@@ -325,7 +331,7 @@ class InvoiceController {
     }
 
     public function listSales(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_sales');
         $firm = Auth::requireActiveFirm();
 
         view('invoices/sales_list', [
@@ -336,7 +342,7 @@ class InvoiceController {
     }
 
     public function listPurchases(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_purchases');
         $firm = Auth::requireActiveFirm();
 
         view('invoices/purchase_list', [
@@ -347,6 +353,7 @@ class InvoiceController {
     }
 
     public function getCreateSale(): void {
+        RBAC::requirePermission('create_sales');
         $firm = Auth::requireActiveFirm();
         $prefilled = null;
         if (!empty($_GET['estimate_id'])) {
@@ -380,13 +387,14 @@ class InvoiceController {
     }
 
     public function getCreatePurchase(): void {
+        RBAC::requirePermission('create_purchases');
         self::renderForm('purchase', 'Create Purchase Record');
     }
 
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        $type = ($_POST['type'] ?? 'sale') === 'purchase' ? 'purchase' : 'sale';
+        RBAC::requirePermission($type === 'purchase' ? 'create_purchases' : 'create_sales');
         $firm = Auth::requireActiveFirm();
-        $type = $_POST['type'] ?? 'sale';
         $redirectUrl = ($type === 'purchase') ? '/purchases/create' : '/sales/create';
 
         try {
@@ -416,6 +424,7 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'edit_purchases' : 'edit_sales');
         $label = ($invoice['type'] === 'purchase') ? 'Purchase Bill' : 'Sales Invoice';
         self::renderForm($invoice['type'], "Edit {$label}: {$invoice['invoice_number']}", $invoice);
     }
@@ -431,6 +440,8 @@ class InvoiceController {
             header('Location: /sales');
             exit;
         }
+
+        RBAC::requirePermission(($existing['type'] ?? 'sale') === 'purchase' ? 'edit_purchases' : 'edit_sales');
 
         try {
             $data = self::buildInvoiceSubmission($_POST, (int)$firm['id'], $firm, $existing);
@@ -459,6 +470,8 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
+
         view('invoices/view', [
             'title' => ($invoice['type'] === 'purchase' ? 'Purchase Record' : 'Sales Record') . " - {$invoice['invoice_number']}",
             'invoice' => $invoice,
@@ -478,6 +491,8 @@ class InvoiceController {
             header('Location: /sales');
             exit;
         }
+
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
 
         view('invoices/download', [
             'title' => "Download Record - {$invoice['invoice_number']}",
@@ -499,6 +514,8 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
+
         view('invoices/print_a4', [
             'title' => "Print Record - {$invoice['invoice_number']}",
             'invoice' => $invoice,
@@ -507,7 +524,8 @@ class InvoiceController {
     }
 
     public function getBulkPrint(): void {
-        Auth::requireUserOnly();
+        $type = $_GET['type'] ?? 'sale';
+        RBAC::requirePermission($type === 'purchase' ? 'view_purchases' : 'view_sales');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -517,7 +535,6 @@ class InvoiceController {
             $ids = array_filter(array_map('trim', explode(',', $idsParam)));
         }
 
-        $type = $_GET['type'] ?? 'sale';
         $from = !empty($_GET['from']) ? trim($_GET['from']) : null;
         $to = !empty($_GET['to']) ? trim($_GET['to']) : null;
 
@@ -558,6 +575,8 @@ class InvoiceController {
             header('Location: /sales');
             exit;
         }
+
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'delete_purchases' : 'delete_sales');
 
         Invoice::delete($id, (int)$firm['id']);
         Flash::set('success_msg', "Record \"{$invoice['invoice_number']}\" deleted and item inventory restored.");

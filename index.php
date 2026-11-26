@@ -50,6 +50,9 @@ require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/LegalController.php';
 require_once __DIR__ . '/controllers/UnitController.php';
 require_once __DIR__ . '/controllers/EstimateController.php';
+require_once __DIR__ . '/controllers/WarehouseController.php';
+require_once __DIR__ . '/controllers/ExpenseController.php';
+require_once __DIR__ . '/controllers/StaffController.php';
 
 // -----------------------------------------------------------------------------
 // Root & Dashboard
@@ -174,6 +177,42 @@ Router::post('/backup/google-drive', [BackupController::class, 'uploadGoogleDriv
 // -----------------------------------------------------------------------------
 Router::get('/settings', [SettingController::class, 'getSettings']);
 Router::post('/settings', [SettingController::class, 'postSettings']);
+
+// -----------------------------------------------------------------------------
+// Warehouses, Transfers & Stock Valuation Routes
+// -----------------------------------------------------------------------------
+Router::get('/warehouses', [WarehouseController::class, 'listWarehouses']);
+Router::get('/warehouses/create', [WarehouseController::class, 'getCreate']);
+Router::post('/warehouses/create', [WarehouseController::class, 'postCreate']);
+Router::get('/warehouses/edit/:id', [WarehouseController::class, 'getEdit']);
+Router::post('/warehouses/edit/:id', [WarehouseController::class, 'postEdit']);
+Router::post('/warehouses/delete/:id', [WarehouseController::class, 'postDelete']);
+Router::get('/warehouses/transfers', [WarehouseController::class, 'listTransfers']);
+Router::get('/warehouses/transfers/create', [WarehouseController::class, 'getCreateTransfer']);
+Router::post('/warehouses/transfers/create', [WarehouseController::class, 'postCreateTransfer']);
+Router::get('/warehouses/valuation', [WarehouseController::class, 'getValuation']);
+Router::get('/api/warehouses/item/:id', [WarehouseController::class, 'apiItemBreakdown']);
+
+// -----------------------------------------------------------------------------
+// Business Expense Routes
+// -----------------------------------------------------------------------------
+Router::get('/expenses', [ExpenseController::class, 'listExpenses']);
+Router::get('/expenses/create', [ExpenseController::class, 'getCreate']);
+Router::post('/expenses/create', [ExpenseController::class, 'postCreate']);
+Router::get('/expenses/edit/:id', [ExpenseController::class, 'getEdit']);
+Router::post('/expenses/edit/:id', [ExpenseController::class, 'postEdit']);
+Router::post('/expenses/delete/:id', [ExpenseController::class, 'postDelete']);
+
+// -----------------------------------------------------------------------------
+// Staff, RBAC & Audit Log Routes
+// -----------------------------------------------------------------------------
+Router::get('/staff', [StaffController::class, 'listStaff']);
+Router::get('/staff/create', [StaffController::class, 'getCreate']);
+Router::post('/staff/create', [StaffController::class, 'postCreate']);
+Router::get('/staff/edit/:id', [StaffController::class, 'getEdit']);
+Router::post('/staff/edit/:id', [StaffController::class, 'postEdit']);
+Router::post('/staff/delete/:id', [StaffController::class, 'postDelete']);
+Router::get('/audit-logs', [StaffController::class, 'listAuditLogs']);
 
 // -----------------------------------------------------------------------------
 // Admin Platform Management Routes

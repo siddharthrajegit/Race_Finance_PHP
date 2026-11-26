@@ -5,13 +5,14 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/View.php';
 require_once __DIR__ . '/../models/Report.php';
 require_once __DIR__ . '/../models/Party.php';
 
 class ReportController {
     public function getDashboard(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_dashboard');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $summary = Report::getDashboardSummary($firmId);
@@ -25,7 +26,7 @@ class ReportController {
     }
 
     public function getReportsIndex(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_reports');
         Auth::requireActiveFirm();
 
         view('reports/index', [
@@ -35,7 +36,7 @@ class ReportController {
     }
 
     public function getPartyReport(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_reports');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -65,7 +66,7 @@ class ReportController {
     }
 
     public function getTaxReport(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_reports');
         $firm = Auth::requireActiveFirm();
         $fromDate = normalizeDate($_GET['from_date'] ?? null);
         $toDate = normalizeDate($_GET['to_date'] ?? null);
@@ -83,7 +84,7 @@ class ReportController {
     }
 
     public function getItemReport(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_reports');
         $firm = Auth::requireActiveFirm();
         $items = Report::getItemWiseReport((int)$firm['id']);
 

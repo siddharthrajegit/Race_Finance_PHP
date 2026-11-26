@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../models/CustomUnit.php';
 
@@ -16,10 +17,12 @@ class UnitController {
     public function apiGetUnits(): void {
         Auth::requireUserOnly();
         $user = Auth::user();
+        $firm = Auth::getActiveFirm();
+        $ownerId = ($firm && !empty($firm['user_id'])) ? (int)$firm['user_id'] : (int)$user['id'];
         header('Content-Type: application/json; charset=utf-8');
 
         try {
-            $units = CustomUnit::getAllForUser((int)$user['id']);
+            $units = CustomUnit::getAllForUser($ownerId);
             echo json_encode([
                 'success' => true,
                 'units' => $units
@@ -39,8 +42,10 @@ class UnitController {
      * JSON API: Create a new custom unit for current user
      */
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items', true);
         $user = Auth::user();
+        $firm = Auth::getActiveFirm();
+        $ownerId = ($firm && !empty($firm['user_id'])) ? (int)$firm['user_id'] : (int)$user['id'];
         header('Content-Type: application/json; charset=utf-8');
 
         try {
@@ -67,7 +72,7 @@ class UnitController {
                 exit;
             }
 
-            $unit = CustomUnit::create((int)$user['id'], $code, $label);
+            $unit = CustomUnit::create($ownerId, $code, $label);
 
             echo json_encode([
                 'success' => true,
@@ -89,8 +94,10 @@ class UnitController {
      * JSON API: Delete a custom unit owned by current user
      */
     public function postDelete(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items', true);
         $user = Auth::user();
+        $firm = Auth::getActiveFirm();
+        $ownerId = ($firm && !empty($firm['user_id'])) ? (int)$firm['user_id'] : (int)$user['id'];
         header('Content-Type: application/json; charset=utf-8');
 
         try {
@@ -101,7 +108,7 @@ class UnitController {
                 exit;
             }
 
-            $deleted = CustomUnit::delete($id, (int)$user['id']);
+            $deleted = CustomUnit::delete($id, $ownerId);
             echo json_encode([
                 'success' => $deleted,
                 'message' => $deleted ? 'Custom unit deleted successfully.' : 'Unit not found or unauthorized.'

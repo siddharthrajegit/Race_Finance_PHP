@@ -189,7 +189,14 @@
         </ul>
       </div>
     <?php else: ?>
-      <!-- Active Firm Switcher Card for Regular Users -->
+      <?php
+        $canPerm = function(string $perm) use ($userPermissions): bool {
+            $list = $userPermissions ?? [];
+            return in_array('*', $list, true) || in_array($perm, $list, true);
+        };
+        $isOwnerAccount = (($user['role'] ?? 'user') !== 'staff');
+      ?>
+      <!-- Active Firm Switcher Card for Regular & Staff Users -->
       <?php if (!empty($userFirms)): ?>
         <div class="dropdown mb-3">
           <div class="sidebar-firm-card dropdown-toggle d-flex align-items-center justify-content-between" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -218,79 +225,131 @@
                 </form>
               </li>
             <?php endforeach; ?>
-            <li><hr class="dropdown-divider border-secondary"></li>
-            <li>
-              <a class="dropdown-item text-primary-light d-flex align-items-center py-2" href="/firms/create">
-                <i class="bi bi-plus-circle me-2"></i> Register New Firm
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item d-flex align-items-center py-2" href="/firms">
-                <i class="bi bi-gear me-2"></i> Manage All Firms
-              </a>
-            </li>
+            <?php if ($isOwnerAccount): ?>
+              <li><hr class="dropdown-divider border-secondary"></li>
+              <li>
+                <a class="dropdown-item text-primary-light d-flex align-items-center py-2" href="/firms/create">
+                  <i class="bi bi-plus-circle me-2"></i> Register New Firm
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center py-2" href="/firms">
+                  <i class="bi bi-gear me-2"></i> Manage All Firms
+                </a>
+              </li>
+            <?php endif; ?>
           </ul>
         </div>
       <?php endif; ?>
 
       <!-- Quick CTA Button -->
-      <a href="/sales/create" class="btn btn-success btn-sm w-100 mb-3 shadow-sm d-flex align-items-center justify-content-center py-2 fw-semibold">
-        <i class="bi bi-plus-circle-fill me-1"></i> New Sales Record
-      </a>
+      <?php if ($canPerm('create_sales')): ?>
+        <a href="/sales/create" class="btn btn-success btn-sm w-100 mb-3 shadow-sm d-flex align-items-center justify-content-center py-2 fw-semibold">
+          <i class="bi bi-plus-circle-fill me-1"></i> New Sales Record
+        </a>
+      <?php endif; ?>
 
-      <!-- Navigation Menu Items for Users -->
+      <!-- Navigation Menu Items filtered by RBAC -->
       <div class="sidebar-nav flex-grow-1">
         <ul class="nav flex-column mb-auto">
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'dashboard') ? 'active' : '' ?>" href="/dashboard">
-              <i class="bi bi-grid"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'sales') ? 'active' : '' ?>" href="/sales">
-              <i class="bi bi-cart-check"></i> Sales Records
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'purchases') ? 'active' : '' ?>" href="/purchases">
-              <i class="bi bi-bag-plus"></i> Purchase Records
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'items') ? 'active' : '' ?>" href="/items">
-              <i class="bi bi-box-seam"></i> Items & Inventory
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
-              <i class="bi bi-file-earmark-spreadsheet"></i> Rate List &amp; Estimate
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
-              <i class="bi bi-people"></i> Parties & Customers
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
-              <i class="bi bi-cash-stack"></i> Payments
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
-              <i class="bi bi-bar-chart-line"></i> Reports & GST
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
-              <i class="bi bi-cloud-arrow-up"></i> Backup & Cloud
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
-              <i class="bi bi-gear"></i> Settings
-            </a>
-          </li>
+          <?php if ($canPerm('view_dashboard')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'dashboard') ? 'active' : '' ?>" href="/dashboard">
+                <i class="bi bi-grid"></i> Dashboard
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_sales')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'sales') ? 'active' : '' ?>" href="/sales">
+                <i class="bi bi-cart-check"></i> Sales Records
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_purchases')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'purchases') ? 'active' : '' ?>" href="/purchases">
+                <i class="bi bi-bag-plus"></i> Purchase Records
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_items')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'items') ? 'active' : '' ?>" href="/items">
+                <i class="bi bi-box-seam"></i> Items &amp; Inventory
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE && $canPerm('view_warehouses')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'warehouses') ? 'active' : '' ?>" href="/warehouses">
+                <i class="bi bi-buildings"></i> Warehouses
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_estimates') || $canPerm('manage_estimates')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Rate List &amp; Estimate
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_parties')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
+                <i class="bi bi-people"></i> Parties &amp; Customers
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_payments')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
+                <i class="bi bi-cash-stack"></i> Payments
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_EXPENSES') && ENABLE_EXPENSES && $canPerm('view_expenses')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'expenses') ? 'active' : '' ?>" href="/expenses">
+                <i class="bi bi-wallet2"></i> Expenses
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('view_reports')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
+                <i class="bi bi-bar-chart-line"></i> Reports &amp; GST
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($isOwnerAccount): ?>
+            <?php if (defined('ENABLE_RBAC') && ENABLE_RBAC): ?>
+              <li class="nav-item">
+                <a class="nav-link <?= ($activeMenu === 'staff') ? 'active' : '' ?>" href="/staff">
+                  <i class="bi bi-person-badge"></i> Staff &amp; CA Team
+                </a>
+              </li>
+            <?php endif; ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
+                <i class="bi bi-cloud-arrow-up"></i> Backup &amp; Cloud
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS && $canPerm('view_audit_logs')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'audit_logs') ? 'active' : '' ?>" href="/audit-logs">
+                <i class="bi bi-journal-text"></i> Audit Logs
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($canPerm('manage_settings')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
+                <i class="bi bi-gear"></i> Settings
+              </a>
+            </li>
+          <?php endif; ?>
         </ul>
       </div>
     <?php endif; ?>
@@ -310,6 +369,8 @@
                 <span><?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                 <?php if (!empty($isAdmin)): ?>
                   <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">ADMIN</span>
+                <?php elseif (($user['role'] ?? 'user') === 'staff'): ?>
+                  <span class="badge bg-info text-dark" style="font-size: 0.6rem;"><?= htmlspecialchars(strtoupper($staffRole ?? 'STAFF'), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php endif; ?>
               </div>
               <div class="text-muted" style="font-size: 0.7rem;"><?= htmlspecialchars($user['email'] ?? ($user['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
@@ -321,9 +382,13 @@
           <?php if (!empty($isAdmin)): ?>
             <li><a class="dropdown-item py-2 text-warning fw-bold" href="/admin"><i class="bi bi-shield-lock-fill me-2"></i> Admin Command Center</a></li>
           <?php else: ?>
-            <li><a class="dropdown-item py-2" href="/settings"><i class="bi bi-gear me-2"></i> Settings</a></li>
-            <li><a class="dropdown-item py-2" href="/firms"><i class="bi bi-buildings me-2"></i> Business Firms</a></li>
-            <li><a class="dropdown-item py-2" href="/backup"><i class="bi bi-cloud-arrow-up me-2"></i> Data Backup</a></li>
+            <?php if (in_array('*', $userPermissions ?? [], true) || in_array('manage_settings', $userPermissions ?? [], true)): ?>
+              <li><a class="dropdown-item py-2" href="/settings"><i class="bi bi-gear me-2"></i> Settings</a></li>
+            <?php endif; ?>
+            <?php if (($user['role'] ?? 'user') !== 'staff'): ?>
+              <li><a class="dropdown-item py-2" href="/firms"><i class="bi bi-buildings me-2"></i> Business Firms</a></li>
+              <li><a class="dropdown-item py-2" href="/backup"><i class="bi bi-cloud-arrow-up me-2"></i> Data Backup</a></li>
+            <?php endif; ?>
           <?php endif; ?>
           <li>
             <form action="/auth/logout" method="POST" class="m-0 p-0">

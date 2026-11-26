@@ -5,14 +5,16 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
 require_once __DIR__ . '/../models/Setting.php';
+require_once __DIR__ . '/../models/AuditLog.php';
 
 class SettingController {
     public function getSettings(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_settings');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $settings = Setting::get($firmId);
@@ -27,7 +29,7 @@ class SettingController {
     }
 
     public function postSettings(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_settings');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $section = in_array($_POST['section'] ?? '', ['sales', 'purchases', 'print', 'general'], true)
@@ -58,8 +60,13 @@ class SettingController {
             } elseif ($section === 'general') {
                 Setting::update($firmId, 'general', [
                     'currency_symbol' => mb_substr(trim($_POST['currency_symbol'] ?? '₹'), 0, 5) ?: '₹',
-                    'date_format' => in_array($_POST['date_format'] ?? '', ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'], true) ? $_POST['date_format'] : 'DD/MM/YYYY'
+                    'date_format' => in_array($_POST['date_format'] ?? '', ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'], true) ? $_POST['date_format'] : 'DD/MM/YYYY',
+                    'stock_valuation_method' => in_array($_POST['stock_valuation_method'] ?? '', ['fifo', 'weighted_avg'], true) ? $_POST['stock_valuation_method'] : 'fifo'
                 ]);
+            }
+
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                AuditLog::log($firmId, 'UPDATE', 'setting', $section, "Updated {$section} settings");
             }
 
             Flash::set('success_msg', "Settings updated successfully for {$firm['name']}!");

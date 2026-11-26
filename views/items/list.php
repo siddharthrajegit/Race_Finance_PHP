@@ -7,7 +7,12 @@ $lowStock = $lowStockCount ?? 0;
     <h3 class="fw-bold mb-1">Items & Inventory</h3>
     <p class="text-muted small mb-0">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap gap-2">
+    <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE): ?>
+      <a href="/warehouses" class="btn btn-outline-secondary shadow-sm">
+        <i class="bi bi-buildings me-1"></i> Warehouses
+      </a>
+    <?php endif; ?>
     <a href="/estimates/builder" class="btn btn-outline-primary shadow-sm">
       <i class="bi bi-file-earmark-spreadsheet me-1"></i> Rate List &amp; Estimate
     </a>
@@ -147,6 +152,16 @@ $lowStock = $lowStockCount ?? 0;
                           </div>
                           <div class="modal-body py-3">
                             <p class="small text-muted mb-2">Current Stock: <strong><?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></p>
+                            <?php if (!empty($warehouses) && count($warehouses) > 1): ?>
+                              <div class="mb-2">
+                                <label class="form-label small">Warehouse</label>
+                                <select name="warehouse_id" class="form-select form-select-sm">
+                                  <?php foreach ($warehouses as $wh): ?>
+                                    <option value="<?= (int)$wh['id'] ?>" <?= !empty($wh['is_default']) ? 'selected' : '' ?>><?= htmlspecialchars($wh['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                                  <?php endforeach; ?>
+                                </select>
+                              </div>
+                            <?php endif; ?>
                             <div class="mb-3">
                               <label class="form-label small">Action</label>
                               <select name="action" class="form-select form-select-sm">

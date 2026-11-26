@@ -117,6 +117,20 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
             </div>
           </div>
         </div>
+
+        <?php if (!empty($warehouses) && count($warehouses) > 1): ?>
+          <?php $selectedWh = $isEditMode ? (int)($invoice['warehouse_id'] ?? 0) : (int)($warehouses[0]['id'] ?? 0); ?>
+          <div class="col-sm-6 col-md-4">
+            <label class="form-label small mb-1" for="warehouseSelect"><i class="bi bi-building me-1 text-primary"></i>Warehouse / Godown</label>
+            <select name="warehouse_id" id="warehouseSelect" class="form-select form-select-sm">
+              <?php foreach ($warehouses as $wh): ?>
+                <option value="<?= (int)$wh['id'] ?>" <?= ($selectedWh === (int)$wh['id']) ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($wh['name'], ENT_QUOTES, 'UTF-8') ?><?= !empty($wh['is_default']) ? ' (Default)' : '' ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </div>

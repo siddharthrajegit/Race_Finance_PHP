@@ -29,11 +29,13 @@ class View {
             throw new Exception("View template not found: $fullPath");
         }
 
+        require_once __DIR__ . '/RBAC.php';
+
         // Global variables for all views
         $currentUser = Auth::user();
         $isAdmin = Auth::isAdmin();
         $activeFirm = Auth::getActiveFirm();
-        $userFirms = ($currentUser && !$isAdmin) ? Firm::getByUserId($currentUser['id']) : [];
+        $userFirms = ($currentUser && !$isAdmin) ? Firm::getAccessibleByUserId((int)$currentUser['id']) : [];
         $firmSettings = ($activeFirm && !empty($activeFirm['id'])) ? Setting::get((int)$activeFirm['id']) : Setting::DEFAULT_SETTINGS;
 
         $platformSettings = [];
@@ -46,11 +48,15 @@ class View {
         $allUnits = CustomUnit::SYSTEM_UNITS;
         if ($currentUser) {
             try {
-                $allUnits = CustomUnit::getAllForUser((int)$currentUser['id']);
+                $unitOwnerId = ($activeFirm && !empty($activeFirm['user_id'])) ? (int)$activeFirm['user_id'] : (int)$currentUser['id'];
+                $allUnits = CustomUnit::getAllForUser($unitOwnerId);
             } catch (Throwable $e) {
                 $allUnits = CustomUnit::SYSTEM_UNITS;
             }
         }
+
+        $staffRole = ($currentUser && !$isAdmin) ? RBAC::getStaffRole($currentUser, $activeFirm) : ($isAdmin ? 'admin' : 'guest');
+        $userPermissions = ($currentUser && !$isAdmin) ? RBAC::getPermissionsForContext($currentUser, $activeFirm) : ($isAdmin ? ['*'] : []);
 
         $globals = [
             'appUrl' => APP_URL,
@@ -59,6 +65,8 @@ class View {
             'supportPhoneRaw' => SUPPORT_PHONE_RAW,
             'user' => $currentUser,
             'isAdmin' => $isAdmin,
+            'staffRole' => $staffRole,
+            'userPermissions' => $userPermissions,
             'activeFirm' => $activeFirm,
             'userFirms' => $userFirms,
             'firmSettings' => $firmSettings,
