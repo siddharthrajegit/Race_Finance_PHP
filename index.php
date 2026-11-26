@@ -249,6 +249,19 @@ Router::post('/loyalty/program', [LoyaltyController::class, 'postSaveProgram']);
 Router::post('/loyalty/adjust', [LoyaltyController::class, 'postAdjustPoints']);
 
 // -----------------------------------------------------------------------------
+// Batches & Expiry (FEFO), Serial / IMEI, and Manufacturing BOM Routes
+// -----------------------------------------------------------------------------
+Router::get('/batches', [InventoryAdvancedController::class, 'listBatches']);
+Router::post('/batches/create', [InventoryAdvancedController::class, 'postCreateBatch']);
+Router::get('/serials', [InventoryAdvancedController::class, 'listSerials']);
+Router::post('/serials/register', [InventoryAdvancedController::class, 'postRegisterSerials']);
+Router::post('/serials/status', [InventoryAdvancedController::class, 'postUpdateSerialStatus']);
+Router::get('/bom', [InventoryAdvancedController::class, 'listBoms']);
+Router::post('/bom/save', [InventoryAdvancedController::class, 'postSaveBom']);
+Router::post('/bom/delete/:id', [InventoryAdvancedController::class, 'postDeleteBom']);
+Router::post('/bom/produce', [InventoryAdvancedController::class, 'postExecuteProduction']);
+
+// -----------------------------------------------------------------------------
 // Admin Platform Management Routes
 // -----------------------------------------------------------------------------
 Router::get('/admin', [AdminController::class, 'getDashboard']);

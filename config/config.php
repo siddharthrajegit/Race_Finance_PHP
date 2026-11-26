@@ -81,8 +81,13 @@ if (!defined('ENABLE_CATALOGUE'))          define('ENABLE_CATALOGUE',          $
 if (!defined('ENABLE_PWA'))                define('ENABLE_PWA',                $featureFlag('ENABLE_PWA', true));
 if (!defined('ENABLE_OFFLINE'))            define('ENABLE_OFFLINE',            $featureFlag('ENABLE_OFFLINE', true));
 if (!defined('ENABLE_BATCH_TRACKING'))     define('ENABLE_BATCH_TRACKING',     $featureFlag('ENABLE_BATCH_TRACKING', true));
+if (!defined('ENABLE_BATCH_EXPIRY'))       define('ENABLE_BATCH_EXPIRY',       $featureFlag('ENABLE_BATCH_EXPIRY', ENABLE_BATCH_TRACKING));
+if (!defined('ENABLE_SERIAL_TRACKING'))    define('ENABLE_SERIAL_TRACKING',    $featureFlag('ENABLE_SERIAL_TRACKING', ENABLE_BATCH_TRACKING));
 if (!defined('ENABLE_BOM'))                define('ENABLE_BOM',                $featureFlag('ENABLE_BOM', true));
 if (!defined('ENABLE_EXPENSES'))           define('ENABLE_EXPENSES',           $featureFlag('ENABLE_EXPENSES', true));
+if (!defined('ENABLE_AUDIT_LOGS'))         define('ENABLE_AUDIT_LOGS',         $featureFlag('ENABLE_AUDIT_LOGS', ENABLE_RBAC));
+if (!defined('ENABLE_THERMAL_RECEIPT'))    define('ENABLE_THERMAL_RECEIPT',    $featureFlag('ENABLE_THERMAL_RECEIPT', true));
+if (!defined('ENABLE_WHATSAPP_REMINDER'))  define('ENABLE_WHATSAPP_REMINDER',  $featureFlag('ENABLE_WHATSAPP_REMINDER', true));
 if (!defined('ENABLE_COMPLIANCE_EXPORTS')) define('ENABLE_COMPLIANCE_EXPORTS', $featureFlag('ENABLE_COMPLIANCE_EXPORTS', true));
 unset($featureFlag);
 

@@ -287,6 +287,27 @@
               </a>
             </li>
           <?php endif; ?>
+          <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && $canPerm('view_items')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'batches') ? 'active' : '' ?>" href="/batches">
+                <i class="bi bi-calendar2-week"></i> Batches &amp; Expiry
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && $canPerm('view_items')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'serials') ? 'active' : '' ?>" href="/serials">
+                <i class="bi bi-hash"></i> Serial / IMEI
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_BOM') && ENABLE_BOM && $canPerm('manage_bom')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'bom') ? 'active' : '' ?>" href="/bom">
+                <i class="bi bi-boxes"></i> Manufacturing BOM
+              </a>
+            </li>
+          <?php endif; ?>
           <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')): ?>
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'barcodes') ? 'active' : '' ?>" href="/barcodes">

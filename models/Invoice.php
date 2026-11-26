@@ -282,7 +282,45 @@ class Invoice extends Model {
                 ]);
 
                 $unitCost = ($docType === 'purchase') ? $rawRate : null;
-                Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $docType, $rawQty, 1, $warehouseId, $unitCost, $invoiceId);
+                $lineItemId = !empty($item['item_id']) ? (int)$item['item_id'] : null;
+                Item::adjustInvoiceItemStock($lineItemId, $firmId, $docType, $rawQty, 1, $warehouseId, $unitCost, $invoiceId);
+
+                if ($lineItemId) {
+                    $itemRec = Item::getById($lineItemId, $firmId);
+                    $trackType = $itemRec['tracking_type'] ?? 'none';
+
+                    if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && ($trackType === 'batch' || !empty($item['batch_number']))) {
+                        require_once __DIR__ . '/Batch.php';
+                        if ($docType === 'purchase' && !empty($item['batch_number'])) {
+                            Batch::upsertBatch(
+                                $firmId,
+                                $lineItemId,
+                                $warehouseId,
+                                (string)$item['batch_number'],
+                                $rawQty,
+                                $item['mfg_date'] ?? null,
+                                $item['expiry_date'] ?? null,
+                                $rawRate
+                            );
+                        } elseif ($docType === 'sale') {
+                            Batch::deductFefo($firmId, $lineItemId, $rawQty, !empty($item['batch_id']) ? (int)$item['batch_id'] : null);
+                        }
+                    }
+
+                    if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && !empty($item['serial_numbers'])) {
+                        require_once __DIR__ . '/SerialNumber.php';
+                        $sns = is_array($item['serial_numbers'])
+                            ? $item['serial_numbers']
+                            : SerialNumber::parseSerialInput((string)$item['serial_numbers']);
+                        if (!empty($sns)) {
+                            if ($docType === 'purchase') {
+                                SerialNumber::registerSerials($firmId, $lineItemId, $warehouseId, $sns, $invoiceId);
+                            } elseif ($docType === 'sale') {
+                                SerialNumber::sellSerials($firmId, $lineItemId, $sns, $invoiceId);
+                            }
+                        }
+                    }
+                }
             }
 
             // Auto payment voucher / receipt
@@ -536,6 +574,11 @@ class Invoice extends Model {
 
             foreach ($invoice['items'] as $item) {
                 Item::adjustInvoiceItemStock($item['item_id'] ?? null, $firmId, $invoice['type'], (float)$item['quantity'], -1, $oldWarehouseId, null, $id);
+            }
+
+            if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && ($invoice['type'] ?? 'sale') === 'sale') {
+                require_once __DIR__ . '/SerialNumber.php';
+                SerialNumber::releaseSoldSerialsForInvoice($firmId, $id);
             }
 
             $db->prepare("DELETE FROM payments WHERE invoice_id = ? AND firm_id = ?")->execute([$id, $firmId]);

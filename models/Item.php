@@ -71,12 +71,15 @@ class Item extends Model {
             ? Security::parseCleanFloat($data['sub_unit_qty']) 
             : null;
 
+        $trackingType = in_array($data['tracking_type'] ?? '', ['none', 'batch', 'serial'], true)
+            ? $data['tracking_type'] : 'none';
+
         $stmt = self::db()->prepare("
             INSERT INTO items (
                 firm_id, name, category, item_code, hsn_code, unit, sub_unit, sub_unit_qty,
                 sale_price, purchase_price, tax_rate, tax_inclusive,
-                opening_stock, current_stock, low_stock_threshold, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                opening_stock, current_stock, low_stock_threshold, description, tracking_type
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
@@ -95,7 +98,8 @@ class Item extends Model {
             $initialStock,
             $initialStock,
             max(0.0, Security::parseCleanFloat($data['low_stock_threshold'] ?? 5)),
-            !empty($data['description']) ? trim($data['description']) : null
+            !empty($data['description']) ? trim($data['description']) : null,
+            $trackingType
         ]);
 
         $id = (int)self::db()->lastInsertId();
@@ -130,13 +134,15 @@ class Item extends Model {
         $subUnitQty = isset($data['sub_unit_qty']) && $data['sub_unit_qty'] !== '' && (float)$data['sub_unit_qty'] > 0 
             ? Security::parseCleanFloat($data['sub_unit_qty']) 
             : null;
+        $trackingType = in_array($data['tracking_type'] ?? '', ['none', 'batch', 'serial'], true)
+            ? $data['tracking_type'] : 'none';
 
         $stmt = self::db()->prepare("
             UPDATE items SET
                 name = ?, category = ?, item_code = ?, hsn_code = ?, unit = ?,
                 sub_unit = ?, sub_unit_qty = ?, sale_price = ?,
                 purchase_price = ?, tax_rate = ?, tax_inclusive = ?,
-                low_stock_threshold = ?, description = ?
+                low_stock_threshold = ?, description = ?, tracking_type = ?
             WHERE id = ? AND firm_id = ?
         ");
 
@@ -154,6 +160,7 @@ class Item extends Model {
             !empty($data['tax_inclusive']) ? 1 : 0,
             max(0.0, Security::parseCleanFloat($data['low_stock_threshold'] ?? 5)),
             !empty($data['description']) ? trim($data['description']) : null,
+            $trackingType,
             $id,
             $firmId
         ]);

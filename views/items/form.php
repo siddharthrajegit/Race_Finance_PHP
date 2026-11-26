@@ -82,6 +82,23 @@
             </div>
           </div>
 
+          <?php if ((defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY) || (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING)): ?>
+            <div class="row g-3 mb-3">
+              <div class="col-md-5">
+                <label for="tracking_type" class="form-label small fw-semibold">Advanced Stock Tracking Mode</label>
+                <select name="tracking_type" id="tracking_type" class="form-select form-select-sm">
+                  <option value="none" <?= (($item['tracking_type'] ?? 'none') === 'none') ? 'selected' : '' ?>>Standard (Quantity Only)</option>
+                  <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY): ?>
+                    <option value="batch" <?= (($item['tracking_type'] ?? '') === 'batch') ? 'selected' : '' ?>>Batch &amp; Expiry Tracking (FEFO)</option>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING): ?>
+                    <option value="serial" <?= (($item['tracking_type'] ?? '') === 'serial') ? 'selected' : '' ?>>Serial / IMEI Tracking</option>
+                  <?php endif; ?>
+                </select>
+              </div>
+            </div>
+          <?php endif; ?>
+
           <!-- Pricing & GST Tax Rate Studio -->
           <?php
             $currentTaxRate = !empty($item) ? (float)($item['tax_rate'] ?? 0) : 0.0;

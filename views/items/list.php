@@ -18,6 +18,21 @@ $lowStock = $lowStockCount ?? 0;
         <i class="bi bi-buildings me-1"></i> Warehouses
       </a>
     <?php endif; ?>
+    <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY): ?>
+      <a href="/batches" class="btn btn-outline-secondary shadow-sm">
+        <i class="bi bi-calendar2-week me-1"></i> Batches
+      </a>
+    <?php endif; ?>
+    <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING): ?>
+      <a href="/serials" class="btn btn-outline-secondary shadow-sm">
+        <i class="bi bi-hash me-1"></i> Serials
+      </a>
+    <?php endif; ?>
+    <?php if (defined('ENABLE_BOM') && ENABLE_BOM): ?>
+      <a href="/bom" class="btn btn-outline-secondary shadow-sm">
+        <i class="bi bi-boxes me-1"></i> BOM
+      </a>
+    <?php endif; ?>
     <a href="/estimates/builder" class="btn btn-outline-primary shadow-sm">
       <i class="bi bi-file-earmark-spreadsheet me-1"></i> Rate List &amp; Estimate
     </a>

@@ -113,7 +113,8 @@ class ItemController {
                 'tax_inclusive' => !empty($_POST['tax_inclusive']) ? 1 : 0,
                 'opening_stock' => Security::parseCleanFloat($_POST['opening_stock'] ?? 0),
                 'low_stock_threshold' => Security::parseCleanFloat($_POST['low_stock_threshold'] ?? 5),
-                'description' => $_POST['description'] ?? null
+                'description' => $_POST['description'] ?? null,
+                'tracking_type' => $_POST['tracking_type'] ?? 'none'
             ]);
 
             Flash::set('success_msg', "Item \"{$name}\" added successfully!");
@@ -206,7 +207,8 @@ class ItemController {
                 'tax_rate' => $taxRate,
                 'tax_inclusive' => !empty($_POST['tax_inclusive']) ? 1 : 0,
                 'low_stock_threshold' => Security::parseCleanFloat($_POST['low_stock_threshold'] ?? 5),
-                'description' => $_POST['description'] ?? null
+                'description' => $_POST['description'] ?? null,
+                'tracking_type' => $_POST['tracking_type'] ?? 'none'
             ]);
 
             Flash::set('success_msg', 'Item details updated.');

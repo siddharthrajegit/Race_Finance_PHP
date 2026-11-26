@@ -221,7 +221,12 @@ class InvoiceController {
                 'sgst_amount' => $tax['sgst_amount'],
                 'igst_rate' => $tax['igst_rate'],
                 'igst_amount' => $tax['igst_amount'],
-                'total_amount' => $totalAmount
+                'total_amount' => $totalAmount,
+                'batch_number' => self::formArrayValue($body['batch_number'] ?? null, $i, null),
+                'mfg_date' => self::formArrayValue($body['mfg_date'] ?? null, $i, null),
+                'expiry_date' => self::formArrayValue($body['expiry_date'] ?? null, $i, null),
+                'batch_id' => self::formArrayValue($body['batch_id'] ?? null, $i, null),
+                'serial_numbers' => self::formArrayValue($body['serial_numbers'] ?? null, $i, null)
             ];
         }
 
