@@ -262,6 +262,11 @@ Router::post('/bom/delete/:id', [InventoryAdvancedController::class, 'postDelete
 Router::post('/bom/produce', [InventoryAdvancedController::class, 'postExecuteProduction']);
 
 // -----------------------------------------------------------------------------
+// Offline PWA Sync API
+// -----------------------------------------------------------------------------
+Router::post('/api/invoices/sync', [InvoiceController::class, 'apiSyncOfflineInvoice']);
+
+// -----------------------------------------------------------------------------
 // Admin Platform Management Routes
 // -----------------------------------------------------------------------------
 Router::get('/admin', [AdminController::class, 'getDashboard']);

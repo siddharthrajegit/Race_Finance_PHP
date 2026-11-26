@@ -614,4 +614,92 @@ class InvoiceController {
         header('Location: ' . (($invoice['type'] === 'purchase') ? '/purchases' : '/sales'));
         exit;
     }
+
+    /**
+     * JSON API: Idempotent & Conflict-Safe Offline PWA Invoice Sync
+     */
+    public function apiSyncOfflineInvoice(): void {
+        header('Content-Type: application/json; charset=utf-8');
+        if (!defined('ENABLE_OFFLINE') || !ENABLE_OFFLINE) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Offline sync feature is disabled.']);
+            exit;
+        }
+
+        $body = $_POST;
+        $payload = is_array($body['payload'] ?? null) ? $body['payload'] : $body;
+        $type = ($payload['type'] ?? 'sale') === 'purchase' ? 'purchase' : 'sale';
+
+        RBAC::requirePermission($type === 'purchase' ? 'create_purchases' : 'create_sales', true);
+        $firm = Auth::requireActiveFirm();
+        $firmId = (int)$firm['id'];
+
+        $queuedFirmId = (int)($body['firm_id'] ?? 0);
+        if ($queuedFirmId > 0 && $queuedFirmId !== $firmId) {
+            http_response_code(409);
+            echo json_encode([
+                'success' => false,
+                'conflict' => true,
+                'error' => 'Active business firm changed since this bill was queued offline. Switch back to the original firm and retry.'
+            ]);
+            exit;
+        }
+
+        $clientUuid = substr(trim((string)($body['client_uuid'] ?? '')), 0, 64);
+        if ($clientUuid === '') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Missing client_uuid idempotency key.']);
+            exit;
+        }
+
+        $existingUuid = Invoice::findByClientUuid($firmId, $clientUuid);
+        if ($existingUuid) {
+            echo json_encode([
+                'success' => true,
+                'already_synced' => true,
+                'invoice_id' => (int)$existingUuid['id'],
+                'invoice_number' => $existingUuid['invoice_number']
+            ]);
+            exit;
+        }
+
+        try {
+            $renumbered = false;
+            $reqNum = !empty($payload['invoice_number']) ? trim((string)$payload['invoice_number']) : '';
+            if ($reqNum !== '') {
+                $chk = DB::getConnection()->prepare("SELECT id FROM invoices WHERE firm_id = ? AND type = ? AND invoice_number = ? LIMIT 1");
+                $chk->execute([$firmId, $type, $reqNum]);
+                if ($chk->fetch()) {
+                    if (!empty($body['strict_number'])) {
+                        http_response_code(409);
+                        echo json_encode(['success' => false, 'conflict' => true, 'error' => "Invoice number #{$reqNum} was taken while offline."]);
+                        exit;
+                    }
+                    unset($payload['invoice_number']);
+                    $renumbered = true;
+                }
+            }
+
+            $data = self::buildInvoiceSubmission($payload, $firmId, $firm);
+            $data['invoiceData']['client_uuid'] = $clientUuid;
+            $created = Invoice::create($data['invoiceData'], $data['items']);
+
+            echo json_encode([
+                'success' => true,
+                'already_synced' => false,
+                'renumbered' => $renumbered,
+                'invoice_id' => (int)$created['id'],
+                'invoice_number' => $created['invoice_number']
+            ]);
+            exit;
+        } catch (Throwable $e) {
+            http_response_code(409);
+            echo json_encode([
+                'success' => false,
+                'conflict' => true,
+                'error' => Security::getSafeErrorMessage($e, 'Offline invoice conflict during sync.')
+            ]);
+            exit;
+        }
+    }
 }

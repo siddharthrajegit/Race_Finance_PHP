@@ -59,7 +59,28 @@
 <!-- Main App JS -->
 <script src="/js/vendor/qrcode.min.js"></script>
 <script src="/js/barcode.js"></script>
+<?php if (defined('ENABLE_OFFLINE') && ENABLE_OFFLINE): ?>
+<div class="modal fade" id="offlineQueueModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white py-2">
+        <h6 class="modal-title fw-bold"><i class="bi bi-cloud-upload me-2"></i>Offline Billing Queue &amp; Sync</h6>
+        <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="offlineQueueList">
+        <div class="text-muted text-center py-3 small">Checking local offline queue...</div>
+      </div>
+      <div class="modal-footer bg-light py-2">
+        <button type="button" id="btnSyncOfflineNow" class="btn btn-primary btn-sm">Sync Pending Now</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/offline.js"></script>
+<?php endif; ?>
 <script src="/js/app.js"></script>
+<?php if (!defined('ENABLE_PWA') || ENABLE_PWA): ?>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -67,5 +88,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<?php endif; ?>
 </body>
 </html>

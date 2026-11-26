@@ -196,10 +196,32 @@ class Invoice extends Model {
         }
     }
 
+    public static function findByClientUuid(int $firmId, string $clientUuid): ?array {
+        $clean = trim($clientUuid);
+        if ($clean === '') return null;
+        try {
+            $stmt = self::db()->prepare("SELECT id FROM invoices WHERE firm_id = ? AND client_uuid = ? LIMIT 1");
+            $stmt->execute([$firmId, $clean]);
+            $id = $stmt->fetchColumn();
+            return $id ? self::getById((int)$id, $firmId) : null;
+        } catch (Throwable $e) {
+            return null;
+        }
+    }
+
     public static function create(array $invoiceData, array $itemsData): array {
         return self::transaction(function($db) use ($invoiceData, $itemsData) {
             $firmId = (int)$invoiceData['firm_id'];
             $docType = $invoiceData['type'] ?? 'sale';
+            $clientUuid = !empty($invoiceData['client_uuid']) ? substr(trim((string)$invoiceData['client_uuid']), 0, 64) : null;
+
+            if ($clientUuid !== null) {
+                $existingByUuid = self::findByClientUuid($firmId, $clientUuid);
+                if ($existingByUuid) {
+                    return $existingByUuid;
+                }
+            }
+
             $finalInvoiceNumber = self::allocateDocumentNumber($firmId, $docType, $invoiceData['invoice_number'] ?? null, 'invoices', 'invoice_number');
 
             $cleanSubtotal = max(0.0, (float)($invoiceData['subtotal'] ?? 0));
@@ -222,9 +244,9 @@ class Invoice extends Model {
                     party_name, party_phone, party_gstin, party_address, party_state, party_state_code,
                     is_gst_bill, is_interstate, subtotal, discount_type, discount_value, discount_amount,
                     taxable_amount, cgst_amount, sgst_amount, igst_amount, tax_amount, round_off,
-                    grand_total, paid_amount, balance_due, payment_status, payment_mode, notes, terms, warehouse_id
+                    grand_total, paid_amount, balance_due, payment_status, payment_mode, notes, terms, warehouse_id, client_uuid
                 ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
             ");
 
@@ -238,7 +260,7 @@ class Invoice extends Model {
                 max(0.0, (float)($invoiceData['igst_amount'] ?? 0)), max(0.0, (float)($invoiceData['tax_amount'] ?? 0)), (float)($invoiceData['round_off'] ?? 0),
                 max(0.0, (float)($invoiceData['grand_total'] ?? 0)), max(0.0, (float)($invoiceData['paid_amount'] ?? 0)), max(0.0, (float)($invoiceData['balance_due'] ?? 0)),
                 $invoiceData['payment_status'] ?? 'unpaid', $invoiceData['payment_mode'] ?? 'cash', $invoiceData['notes'] ?? null, $invoiceData['terms'] ?? null,
-                $warehouseId
+                $warehouseId, $clientUuid
             ]);
 
             $invoiceId = (int)$db->lastInsertId();

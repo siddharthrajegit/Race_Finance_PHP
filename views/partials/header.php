@@ -244,9 +244,14 @@
 
       <!-- Quick CTA Button -->
       <?php if ($canPerm('create_sales')): ?>
-        <a href="/sales/create" class="btn btn-success btn-sm w-100 mb-3 shadow-sm d-flex align-items-center justify-content-center py-2 fw-semibold">
+        <a href="/sales/create" class="btn btn-success btn-sm w-100 mb-2 shadow-sm d-flex align-items-center justify-content-center py-2 fw-semibold">
           <i class="bi bi-plus-circle-fill me-1"></i> New Sales Record
         </a>
+      <?php endif; ?>
+      <?php if (defined('ENABLE_OFFLINE') && ENABLE_OFFLINE): ?>
+        <button type="button" id="offlineStatusBadge" class="btn btn-outline-success btn-sm w-100 mb-3" data-bs-toggle="modal" data-bs-target="#offlineQueueModal">
+          <i class="bi bi-wifi me-1"></i> Online
+        </button>
       <?php endif; ?>
 
       <!-- Navigation Menu Items filtered by RBAC -->
