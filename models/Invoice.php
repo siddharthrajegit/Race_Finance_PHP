@@ -313,7 +313,8 @@ class Invoice extends Model {
                 require_once __DIR__ . '/AuditLog.php';
                 AuditLog::log($firmId, 'CREATE', 'invoice', $invoiceId, "Created {$docType} #{$finalInvoiceNumber} total {$created['grand_total']}");
             }
-            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
                 Accounting::postInvoiceJournal($created);
             }
             if (class_exists('Loyalty') && defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $docType === 'sale') {
@@ -505,7 +506,8 @@ class Invoice extends Model {
                 require_once __DIR__ . '/AuditLog.php';
                 AuditLog::log($firmId, 'UPDATE', 'invoice', $id, "Updated {$docType} #{$finalInvoiceNumber} total {$updated['grand_total']}");
             }
-            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
                 Accounting::reverseSourceJournal($firmId, 'invoice', $id, "Updated {$docType} #{$finalInvoiceNumber}");
                 Accounting::postInvoiceJournal($updated);
             }
@@ -519,7 +521,8 @@ class Invoice extends Model {
             $invoice = self::getById($id, $firmId);
             if (!$invoice) return false;
 
-            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
                 Accounting::reverseSourceJournal($firmId, 'invoice', $id, "Deleted {$invoice['type']} #{$invoice['invoice_number']}");
             }
             if (class_exists('Loyalty') && defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $invoice['type'] === 'sale') {

@@ -182,7 +182,8 @@ class Expense extends Model {
             $id = (int)$db->lastInsertId();
             $expense = self::getById($id, $firmId);
 
-            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
                 Accounting::postExpenseJournal($expense);
             }
 
@@ -243,7 +244,8 @@ class Expense extends Model {
 
             $updated = self::getById($id, $firmId);
 
-            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
                 Accounting::reverseSourceJournal($firmId, 'expense', $id, "Edited Expense #{$expenseNumber}");
                 Accounting::postExpenseJournal($updated);
             }
@@ -257,7 +259,8 @@ class Expense extends Model {
             $existing = self::getById($id, $firmId);
             if (!$existing) return false;
 
-            if (class_exists('Accounting') && defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
                 Accounting::reverseSourceJournal($firmId, 'expense', $id, "Deleted Expense #{$existing['expense_number']}");
             }
 

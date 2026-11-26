@@ -215,6 +215,27 @@ Router::post('/staff/delete/:id', [StaffController::class, 'postDelete']);
 Router::get('/audit-logs', [StaffController::class, 'listAuditLogs']);
 
 // -----------------------------------------------------------------------------
+// Double-Entry Accounting & Bank Reconciliation Routes
+// -----------------------------------------------------------------------------
+Router::get('/accounting', [AccountingController::class, 'index']);
+Router::post('/accounting/accounts/create', [AccountingController::class, 'postCreateAccount']);
+Router::post('/accounting/backfill', [AccountingController::class, 'postBackfill']);
+Router::get('/accounting/journals', [AccountingController::class, 'listJournals']);
+Router::get('/accounting/journals/create', [AccountingController::class, 'getCreateJournal']);
+Router::post('/accounting/journals/create', [AccountingController::class, 'postCreateJournal']);
+Router::post('/accounting/journals/reverse/:id', [AccountingController::class, 'postReverseJournal']);
+Router::get('/accounting/trial-balance', [AccountingController::class, 'getTrialBalance']);
+Router::get('/accounting/profit-loss', [AccountingController::class, 'getProfitAndLoss']);
+Router::get('/accounting/balance-sheet', [AccountingController::class, 'getBalanceSheet']);
+Router::get('/accounting/cash-flow', [AccountingController::class, 'getCashFlow']);
+Router::get('/accounting/reconciliation', [AccountingController::class, 'listBankReconciliation']);
+Router::post('/accounting/reconciliation/import', [AccountingController::class, 'postImportCsv']);
+Router::post('/accounting/reconciliation/manual-line', [AccountingController::class, 'postAddManualLine']);
+Router::post('/accounting/reconciliation/match', [AccountingController::class, 'postMatchLine']);
+Router::post('/accounting/reconciliation/status', [AccountingController::class, 'postSetLineStatus']);
+Router::get('/api/accounting/reconcile-candidates/:id', [AccountingController::class, 'apiCandidates']);
+
+// -----------------------------------------------------------------------------
 // Admin Platform Management Routes
 // -----------------------------------------------------------------------------
 Router::get('/admin', [AdminController::class, 'getDashboard']);

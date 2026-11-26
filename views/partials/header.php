@@ -315,6 +315,13 @@
               </a>
             </li>
           <?php endif; ?>
+          <?php if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING && $canPerm('view_accounting')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'accounting') ? 'active' : '' ?>" href="/accounting">
+                <i class="bi bi-diagram-3"></i> Accounting &amp; P&amp;L
+              </a>
+            </li>
+          <?php endif; ?>
           <?php if ($canPerm('view_reports')): ?>
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
