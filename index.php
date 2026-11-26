@@ -236,6 +236,19 @@ Router::post('/accounting/reconciliation/status', [AccountingController::class, 
 Router::get('/api/accounting/reconcile-candidates/:id', [AccountingController::class, 'apiCandidates']);
 
 // -----------------------------------------------------------------------------
+// Thermal Receipt, Dynamic UPI, Barcode, Catalogue & Loyalty Routes
+// -----------------------------------------------------------------------------
+Router::get('/invoices/receipt/:id', [InvoiceController::class, 'getPrintReceipt']);
+Router::get('/barcodes', [BarcodeController::class, 'studio']);
+Router::get('/api/barcodes/lookup', [BarcodeController::class, 'apiLookup']);
+Router::get('/catalogue', [CatalogueController::class, 'manage']);
+Router::post('/catalogue', [CatalogueController::class, 'postUpdate']);
+Router::get('/c/:slug', [CatalogueController::class, 'publicView']);
+Router::get('/loyalty', [LoyaltyController::class, 'index']);
+Router::post('/loyalty/program', [LoyaltyController::class, 'postSaveProgram']);
+Router::post('/loyalty/adjust', [LoyaltyController::class, 'postAdjustPoints']);
+
+// -----------------------------------------------------------------------------
 // Admin Platform Management Routes
 // -----------------------------------------------------------------------------
 Router::get('/admin', [AdminController::class, 'getDashboard']);

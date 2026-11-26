@@ -287,6 +287,13 @@
               </a>
             </li>
           <?php endif; ?>
+          <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'barcodes') ? 'active' : '' ?>" href="/barcodes">
+                <i class="bi bi-upc-scan"></i> Barcode Labels
+              </a>
+            </li>
+          <?php endif; ?>
           <?php if ($canPerm('view_estimates') || $canPerm('manage_estimates')): ?>
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
@@ -298,6 +305,20 @@
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
                 <i class="bi bi-people"></i> Parties &amp; Customers
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $canPerm('manage_loyalty')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'loyalty') ? 'active' : '' ?>" href="/loyalty">
+                <i class="bi bi-stars"></i> Loyalty Rewards
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_CATALOGUE') && ENABLE_CATALOGUE && $canPerm('manage_catalogue')): ?>
+            <li class="nav-item">
+              <a class="nav-link <?= ($activeMenu === 'catalogue') ? 'active' : '' ?>" href="/catalogue">
+                <i class="bi bi-shop"></i> Online Catalogue
               </a>
             </li>
           <?php endif; ?>

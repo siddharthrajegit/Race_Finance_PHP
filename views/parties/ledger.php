@@ -111,13 +111,34 @@ foreach ($txList as $tx) {
     <h3 class="fw-bold mb-1 mt-1">Party Statement & Ledger</h3>
     <div class="text-muted"><?= htmlspecialchars($party['name'] ?? '', ENT_QUOTES, 'UTF-8') ?> (<?= strtoupper(htmlspecialchars($partyType, ENT_QUOTES, 'UTF-8')) ?>)</div>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap gap-2">
     <a href="/payments/create?party_id=<?= $party['id'] ?>&type=<?= ($partyType === 'supplier') ? 'payment_out' : 'payment_in' ?>" class="btn btn-success shadow-sm fw-semibold">
       <i class="bi bi-cash-stack me-1"></i> Record Payment
     </a>
     <a href="/<?= ($partyType === 'supplier') ? 'purchases' : 'sales' ?>/create" class="btn btn-primary shadow-sm fw-semibold">
       <i class="bi bi-plus-circle me-1"></i> New <?= ($partyType === 'supplier') ? 'Purchase Bill' : 'Sale Bill' ?>
     </a>
+    <?php
+      $waLedgerPhone = preg_replace('/[^0-9]/', '', (string)($party['phone'] ?? ''));
+      if (strlen($waLedgerPhone) === 10) $waLedgerPhone = '91' . $waLedgerPhone;
+      if (defined('ENABLE_WHATSAPP_REMINDER') && ENABLE_WHATSAPP_REMINDER && $partyType !== 'supplier' && ($closing_balance ?? 0) > 0.01):
+        $billList = [];
+        foreach (($pending_bills ?? []) as $pb) {
+          $billList[] = '#' . $pb['invoice_number'] . ' (Due ₹' . number_format((float)$pb['balance_due'], 2) . ')';
+        }
+        $msg = "Hello {$party['name']}, friendly reminder from {$firm['name']}: total pending balance is ₹" . number_format((float)$closing_balance, 2) . ".";
+        if (!empty($billList)) {
+          $msg .= " Pending bills: " . implode(', ', array_slice($billList, 0, 5)) . ".";
+        }
+        if (!empty($firm['upi_id'])) {
+          $msg .= " UPI ID: {$firm['upi_id']}.";
+        }
+        $waLedgerUrl = 'https://wa.me/' . $waLedgerPhone . '?text=' . rawurlencode($msg);
+    ?>
+      <a href="<?= htmlspecialchars($waLedgerUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success shadow-sm">
+        <i class="bi bi-whatsapp me-1"></i> WhatsApp Reminder
+      </a>
+    <?php endif; ?>
     <button type="button" class="btn btn-outline-secondary btn-trigger-print shadow-sm">
       <i class="bi bi-printer me-1"></i> Print Statement
     </button>

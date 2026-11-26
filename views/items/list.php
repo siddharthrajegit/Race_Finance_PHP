@@ -8,6 +8,11 @@ $lowStock = $lowStockCount ?? 0;
     <p class="text-muted small mb-0">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
+    <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE): ?>
+      <a href="/barcodes" class="btn btn-outline-dark shadow-sm">
+        <i class="bi bi-upc-scan me-1"></i> Barcodes
+      </a>
+    <?php endif; ?>
     <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE): ?>
       <a href="/warehouses" class="btn btn-outline-secondary shadow-sm">
         <i class="bi bi-buildings me-1"></i> Warehouses

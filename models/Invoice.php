@@ -317,7 +317,8 @@ class Invoice extends Model {
                 require_once __DIR__ . '/Accounting.php';
                 Accounting::postInvoiceJournal($created);
             }
-            if (class_exists('Loyalty') && defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $docType === 'sale') {
+            if (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $docType === 'sale') {
+                require_once __DIR__ . '/Loyalty.php';
                 Loyalty::processInvoicePoints($created, $invoiceData);
             }
 
@@ -525,7 +526,8 @@ class Invoice extends Model {
                 require_once __DIR__ . '/Accounting.php';
                 Accounting::reverseSourceJournal($firmId, 'invoice', $id, "Deleted {$invoice['type']} #{$invoice['invoice_number']}");
             }
-            if (class_exists('Loyalty') && defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $invoice['type'] === 'sale') {
+            if (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $invoice['type'] === 'sale') {
+                require_once __DIR__ . '/Loyalty.php';
                 Loyalty::reverseInvoicePoints($firmId, $id);
             }
 

@@ -26,9 +26,28 @@ $due = (float)($invoice['balance_due'] ?? 0);
     <a href="/invoices/edit/<?= $invoice['id'] ?>" class="btn btn-outline-warning shadow-sm">
       <i class="bi bi-pencil-square me-1"></i> Edit Record
     </a>
+    <?php if (defined('ENABLE_THERMAL_RECEIPT') && ENABLE_THERMAL_RECEIPT): ?>
+      <a href="/invoices/receipt/<?= $invoice['id'] ?>" target="_blank" class="btn btn-outline-dark shadow-sm">
+        <i class="bi bi-receipt me-1"></i> Thermal Receipt
+      </a>
+    <?php endif; ?>
     <a href="/invoices/print/<?= $invoice['id'] ?>" target="_blank" class="btn btn-outline-secondary shadow-sm">
       <i class="bi bi-printer me-1"></i> Print Record
     </a>
+    <?php
+      $waPhone = preg_replace('/[^0-9]/', '', (string)($invoice['party_phone'] ?? ''));
+      if (strlen($waPhone) === 10) $waPhone = '91' . $waPhone;
+      if (defined('ENABLE_WHATSAPP_REMINDER') && ENABLE_WHATSAPP_REMINDER && !$isPurchase && $due > 0.01):
+        $waText = "Hello {$invoice['party_name']}, payment reminder from {$firm['name']} for Bill #{$invoice['invoice_number']} (Total: ₹" . number_format((float)$invoice['grand_total'], 2) . ", Balance Due: ₹" . number_format($due, 2) . ").";
+        if (!empty($firm['upi_id'])) {
+          $waText .= " UPI ID: {$firm['upi_id']}.";
+        }
+        $waLink = 'https://wa.me/' . $waPhone . '?text=' . rawurlencode($waText);
+    ?>
+      <a href="<?= htmlspecialchars($waLink, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success shadow-sm" title="Send payment reminder via WhatsApp Web/App">
+        <i class="bi bi-whatsapp me-1"></i> Remind on WhatsApp
+      </a>
+    <?php endif; ?>
     <form action="/invoices/delete/<?= $invoice['id'] ?>" method="POST" class="d-inline form-delete-confirm" data-confirm-message="Are you sure you want to delete this record? Item inventory stock will be restored automatically.">
       <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
       <button type="submit" class="btn btn-outline-danger" title="Delete Record">
@@ -230,6 +249,27 @@ $due = (float)($invoice['balance_due'] ?? 0);
             <span class="text-danger small fw-semibold">Balance Due:</span>
             <span class="fw-bold text-danger">₹ <?= number_format($due, 2) ?></span>
           </div>
+
+          <?php
+            if (defined('ENABLE_UPI_QR') && ENABLE_UPI_QR && !$isPurchase && !empty($firm['upi_id'])):
+              require_once __DIR__ . '/../../core/SvgQrCode.php';
+              $upiPayAmt = $due > 0.01 ? $due : (float)($invoice['grand_total'] ?? 0);
+              $upiDeepLink = SvgQrCode::buildUpiUri((string)$firm['upi_id'], (string)($firm['name'] ?? 'Merchant'), $upiPayAmt, "Bill #{$invoice['invoice_number']}");
+              $upiWidgetHtml = SvgQrCode::renderUpiWidget($firm, $upiPayAmt, (string)$invoice['invoice_number'], 96);
+          ?>
+            <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center gap-2 no-print">
+              <div>
+                <div class="small fw-bold text-dark">Scan or Pay via UPI</div>
+                <div class="text-muted" style="font-size:0.72rem;">Amount: ₹<?= number_format($upiPayAmt, 2) ?> (not auto-verified)</div>
+                <a href="<?= htmlspecialchars($upiDeepLink, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-primary btn-sm mt-1">
+                  <i class="bi bi-qr-code-scan me-1"></i> Open UPI App
+                </a>
+              </div>
+              <div class="bg-white p-1 border rounded">
+                <?= $upiWidgetHtml ?>
+              </div>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
     </div>

@@ -235,11 +235,17 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
   <!-- Row 3: Dynamic Line Items Table -->
   <div class="card shadow-sm border-0 mb-3">
-    <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+    <div class="card-header bg-white py-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
       <span class="fw-bold small text-uppercase text-secondary">
         <i class="bi bi-box-seam me-1"></i> Bill Line Items
       </span>
-      <div class="d-flex gap-2">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE): ?>
+          <div class="input-group input-group-sm" style="width: 220px;">
+            <span class="input-group-text bg-light"><i class="bi bi-upc-scan text-dark"></i></span>
+            <input type="text" id="barcodeScanInput" class="form-control form-control-sm" placeholder="Scan barcode + Enter..." autocomplete="off">
+          </div>
+        <?php endif; ?>
         <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalQuickAddItem" id="btnOpenAddItemModal">
           <i class="bi bi-plus-circle me-1"></i> + New Item
         </button>

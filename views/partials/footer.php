@@ -57,6 +57,8 @@
 <script src="/vendor/flatpickr/flatpickr.min.js"></script>
 <script>if(typeof flatpickr==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/flatpickr"><\/script>');}</script>
 <!-- Main App JS -->
+<script src="/js/vendor/qrcode.min.js"></script>
+<script src="/js/barcode.js"></script>
 <script src="/js/app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {

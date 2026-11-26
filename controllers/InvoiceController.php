@@ -523,6 +523,32 @@ class InvoiceController {
         ], false);
     }
 
+    public function getPrintReceipt(array $params): void {
+        if (!defined('ENABLE_THERMAL_RECEIPT') || !ENABLE_THERMAL_RECEIPT) {
+            Flash::set('info_msg', 'Thermal receipt printing is disabled.');
+            header('Location: /sales');
+            exit;
+        }
+        Auth::requireUserOnly();
+        $firm = Auth::requireActiveFirm();
+        $id = (int)($params['id'] ?? 0);
+        $invoice = Invoice::getById($id, (int)$firm['id']);
+
+        if (!$invoice) {
+            Flash::set('error_msg', 'Record not found.');
+            header('Location: /sales');
+            exit;
+        }
+
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
+
+        view('invoices/print_receipt', [
+            'title' => "Thermal Receipt - {$invoice['invoice_number']}",
+            'invoice' => $invoice,
+            'firm' => $firm
+        ], false);
+    }
+
     public function getBulkPrint(): void {
         $type = $_GET['type'] ?? 'sale';
         RBAC::requirePermission($type === 'purchase' ? 'view_purchases' : 'view_sales');

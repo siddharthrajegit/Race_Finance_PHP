@@ -383,7 +383,17 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                     <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC Code: <strong class="text-dark font-monospace"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
                     <?php if (!empty($firm["upi_id"])): ?><div>UPI ID: <strong class="text-primary font-monospace"><?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
                   </div>
-                  <?php if (!empty($firm["qr_code_path"])): ?>
+                  <?php
+                    $showDynQr = defined('ENABLE_UPI_QR') && ENABLE_UPI_QR && !empty($firm['upi_id']) && !empty($settings['print']['show_upi_qr'] ?? true);
+                    if ($showDynQr):
+                      require_once __DIR__ . '/../../core/SvgQrCode.php';
+                      $dynAmt = $cleanDue > 0.01 ? $cleanDue : $cleanGrandTotal;
+                  ?>
+                    <div class="text-center ps-3 border-start d-flex flex-column align-items-center">
+                      <?= SvgQrCode::renderUpiWidget($firm, $dynAmt, (string)($invoice['invoice_number'] ?? ''), 78) ?>
+                      <span class="text-uppercase fw-semibold text-muted mt-1" style="font-size: 0.62rem; letter-spacing: 0.5px;">Dynamic UPI QR</span>
+                    </div>
+                  <?php elseif (!empty($firm["qr_code_path"])): ?>
                     <div class="text-center ps-3 border-start d-flex flex-column align-items-center">
                       <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="Scan & Pay QR" class="rounded border p-1 bg-white" style="width: 78px; height: 78px; object-fit: contain;">
                       <span class="text-uppercase fw-semibold text-muted mt-1" style="font-size: 0.62rem; letter-spacing: 0.5px;">Scan to Pay</span>
@@ -580,7 +590,12 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                   <?php if (!empty($firm["bank_account_no"])): ?><div>A/C: <span class="font-monospace fw-bold"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
                   <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC: <span class="font-monospace"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
                 </div>
-                <?php if (!empty($firm["qr_code_path"])): ?>
+                <?php if ($showDynQr ?? false): ?>
+                  <div class="text-center ps-2 border-start d-flex flex-column align-items-center">
+                    <?= SvgQrCode::renderUpiWidget($firm, $cleanDue > 0.01 ? $cleanDue : $cleanGrandTotal, (string)($invoice['invoice_number'] ?? ''), 68) ?>
+                    <span style="font-size: 0.6rem; color: #555;" class="mt-1">Dynamic UPI QR</span>
+                  </div>
+                <?php elseif (!empty($firm["qr_code_path"])): ?>
                   <div class="text-center ps-2 border-start d-flex flex-column align-items-center">
                     <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="QR Code" class="border p-1 bg-white rounded" style="width: 68px; height: 68px; object-fit: contain;">
                     <span style="font-size: 0.6rem; color: #555;" class="mt-1">Scan to Pay</span>
@@ -1031,6 +1046,8 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
       whatsAppMessage: <?= json_encode($waDefaultMessage) ?>
     };
   </script>
+  <script src="/js/vendor/qrcode.min.js"></script>
+  <script src="/js/barcode.js"></script>
   <script src="/js/invoice-download.js"></script>
 </body>
 </html>
