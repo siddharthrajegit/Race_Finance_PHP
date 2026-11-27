@@ -6,33 +6,33 @@ $items = !empty($invoice['items']) ? $invoice['items'] : [];
 $due = (float)($invoice['balance_due'] ?? 0);
 ?>
 <!-- Top Action Toolbar -->
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 no-print">
+<div class="rf-page-header no-print">
   <div>
     <a href="<?= $isPurchase ? '/purchases' : '/sales' ?>" class="text-decoration-none text-muted small">&larr; Back to <?= $isPurchase ? 'Purchases' : 'Sales' ?></a>
-    <h3 class="fw-bold mb-0 mt-1">
+    <h1 class="rf-page-title mt-1 mb-0">
       <?= $isPurchase ? 'Purchase Record' : 'Sales Record' ?>: <span class="font-monospace text-primary"><?= htmlspecialchars($invoice['invoice_number'], ENT_QUOTES, 'UTF-8') ?></span>
-    </h3>
+    </h1>
   </div>
 
   <div class="d-flex flex-wrap gap-2">
     <?php if ($due > 0.001): ?>
-      <a href="/payments/create?party_id=<?= $invoice['party_id'] ?>&invoice_id=<?= $invoice['id'] ?>&type=<?= $isPurchase ? 'payment_out' : 'payment_in' ?>" class="btn btn-success shadow-sm">
+      <a href="/payments/create?party_id=<?= $invoice['party_id'] ?>&invoice_id=<?= $invoice['id'] ?>&type=<?= $isPurchase ? 'payment_out' : 'payment_in' ?>" class="btn btn-success">
         <i class="bi bi-cash-stack me-1"></i> Record Payment
       </a>
     <?php endif; ?>
-    <a href="/invoices/download/<?= $invoice['id'] ?>" class="btn btn-primary shadow-sm">
+    <a href="/invoices/download/<?= $invoice['id'] ?>" class="btn btn-primary">
       <i class="bi bi-download me-1"></i> Download Record
     </a>
-    <a href="/invoices/edit/<?= $invoice['id'] ?>" class="btn btn-outline-warning shadow-sm">
-      <i class="bi bi-pencil-square me-1"></i> Edit Record
+    <a href="/invoices/edit/<?= $invoice['id'] ?>" class="btn btn-outline-warning">
+      <i class="bi bi-pencil-square me-1"></i> Edit
     </a>
     <?php if (defined('ENABLE_THERMAL_RECEIPT') && ENABLE_THERMAL_RECEIPT): ?>
-      <a href="/invoices/receipt/<?= $invoice['id'] ?>" target="_blank" class="btn btn-outline-dark shadow-sm">
+      <a href="/invoices/receipt/<?= $invoice['id'] ?>" target="_blank" class="btn btn-outline-secondary">
         <i class="bi bi-receipt me-1"></i> Thermal Receipt
       </a>
     <?php endif; ?>
-    <a href="/invoices/print/<?= $invoice['id'] ?>" target="_blank" class="btn btn-outline-secondary shadow-sm">
-      <i class="bi bi-printer me-1"></i> Print Record
+    <a href="/invoices/print/<?= $invoice['id'] ?>" target="_blank" class="btn btn-outline-secondary">
+      <i class="bi bi-printer me-1"></i> Print
     </a>
     <?php
       $waPhone = preg_replace('/[^0-9]/', '', (string)($invoice['party_phone'] ?? ''));
@@ -44,8 +44,8 @@ $due = (float)($invoice['balance_due'] ?? 0);
         }
         $waLink = 'https://wa.me/' . $waPhone . '?text=' . rawurlencode($waText);
     ?>
-      <a href="<?= htmlspecialchars($waLink, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success shadow-sm" title="Send payment reminder via WhatsApp Web/App">
-        <i class="bi bi-whatsapp me-1"></i> Remind on WhatsApp
+      <a href="<?= htmlspecialchars($waLink, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success" title="Send payment reminder via WhatsApp Web/App">
+        <i class="bi bi-whatsapp me-1"></i> WhatsApp
       </a>
     <?php endif; ?>
     <form action="/invoices/delete/<?= $invoice['id'] ?>" method="POST" class="d-inline form-delete-confirm" data-confirm-message="Are you sure you want to delete this record? Item inventory stock will be restored automatically.">
@@ -58,7 +58,7 @@ $due = (float)($invoice['balance_due'] ?? 0);
 </div>
 
 <!-- Record Card Preview -->
-<div class="card shadow-sm border-0 mb-4">
+<div class="card mb-4">
   <div class="card-body p-4 p-md-5">
     <!-- Header: Business Info & Record Info -->
     <div class="row border-bottom pb-4 mb-4">
@@ -80,7 +80,7 @@ $due = (float)($invoice['balance_due'] ?? 0);
             $loc = array_filter([$firm['city'] ?? '', $firm['state'] ?? '']);
             if (!empty($loc)):
           ?>
-            <div><?= htmlspecialchars(implode(', ', $loc), ENT_QUOTES, 'UTF-8') ?> - <?= htmlspecialchars($firm['pincode'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+            <div><?= htmlspecialchars(implode(', ', $loc), ENT_QUOTES, 'UTF-8') ?><?= !empty($firm['pincode']) ? ' - ' . htmlspecialchars($firm['pincode'], ENT_QUOTES, 'UTF-8') : '' ?></div>
           <?php endif; ?>
           <?php if (!empty($firm['phone'])): ?><div>Phone: <?= htmlspecialchars($firm['phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
           <?php if (!empty($firm['email'])): ?><div>Email: <?= htmlspecialchars($firm['email'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>

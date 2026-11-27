@@ -108,7 +108,7 @@
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/uploads/logo-1787158589640-807857696.png">
   <link rel="apple-touch-icon" href="/uploads/logo-1787158589640-807857696.png">
   
@@ -119,7 +119,7 @@
   <!-- Flatpickr CSS (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/flatpickr/flatpickr.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="/css/style.css?v=2">
+  <link rel="stylesheet" href="/css/style.css?v=4">
 </head>
 <body>
 
@@ -244,15 +244,17 @@
 
       <!-- Quick CTA Button -->
       <?php if ($canPerm('create_sales')): ?>
-        <a href="/sales/create" class="btn btn-success btn-sm w-100 mb-2 shadow-sm d-flex align-items-center justify-content-center py-2 fw-semibold">
-          <i class="bi bi-plus-circle-fill me-1"></i> New Sales Record
+        <a href="/sales/create" class="btn sidebar-quick-cta w-100 mb-2 d-flex align-items-center justify-content-center">
+          <i class="bi bi-plus-circle-fill me-2"></i> New Sales Record
         </a>
       <?php endif; ?>
       <?php if (defined('ENABLE_OFFLINE') && ENABLE_OFFLINE): ?>
-        <button type="button" id="offlineStatusBadge" class="btn btn-outline-success btn-sm w-100 mb-3" data-bs-toggle="modal" data-bs-target="#offlineQueueModal">
+        <button type="button" id="offlineStatusBadge" class="btn btn-outline-success btn-sm w-100 mb-2" data-bs-toggle="modal" data-bs-target="#offlineQueueModal">
           <i class="bi bi-wifi me-1"></i> Online
         </button>
       <?php endif; ?>
+
+      <div class="sidebar-section-label">Workspace</div>
 
       <?php
         $advanceMenuKeys = [
@@ -499,7 +501,7 @@
   <!-- Main Content Layout Area -->
   <div class="app-main-wrapper">
     <!-- Top Mobile Navbar Header -->
-    <header class="d-lg-none bg-dark text-white p-2 px-3 d-flex align-items-center justify-content-between sticky-top shadow-sm">
+    <header class="d-lg-none text-white p-2 px-3 d-flex align-items-center justify-content-between sticky-top shadow-sm" style="background-color: #0f172a; border-bottom: 1px solid rgba(148, 163, 184, 0.16);">
       <button class="btn btn-outline-light btn-sm btn-sidebar-toggle me-2" type="button" aria-label="Toggle navigation">
         <i class="bi bi-list fs-5"></i>
       </button>
@@ -517,7 +519,7 @@
     </header>
 
     <main class="py-4 flex-grow-1">
-      <div class="container-fluid px-lg-4">
+      <div class="container-fluid px-3 px-lg-4 app-main-container">
         <?php if (!empty($platformSettings['enable_announcement']) && $platformSettings['enable_announcement'] === '1' && !empty($platformSettings['platform_announcement'])): ?>
           <div class="alert alert-<?= htmlspecialchars($platformSettings['platform_announcement_type'] ?? 'info', ENT_QUOTES, 'UTF-8') ?> alert-dismissible fade show shadow-sm mb-4 border-0 d-flex align-items-center" role="alert">
             <i class="bi bi-megaphone-fill me-2 fs-5"></i>

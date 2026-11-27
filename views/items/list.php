@@ -1,49 +1,53 @@
 <?php
 $itemCount = !empty($items) ? count($items) : 0;
 $lowStock = $lowStockCount ?? 0;
+$hasAdvanceItemTools = (defined('ENABLE_BARCODE') && ENABLE_BARCODE)
+    || (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE)
+    || (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY)
+    || (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING)
+    || (defined('ENABLE_BOM') && ENABLE_BOM);
 ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+<div class="rf-page-header">
   <div>
-    <h3 class="fw-bold mb-1">Items & Inventory</h3>
-    <p class="text-muted small mb-0">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
+    <h1 class="rf-page-title">Items &amp; Inventory</h1>
+    <p class="rf-page-subtitle">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
   </div>
-  <div class="d-flex flex-wrap gap-2">
-    <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE): ?>
-      <a href="/barcodes" class="btn btn-outline-dark shadow-sm">
-        <i class="bi bi-upc-scan me-1"></i> Barcodes
-      </a>
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <?php if ($hasAdvanceItemTools): ?>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-sliders2 me-1"></i> Inventory Tools
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE): ?>
+            <li><a class="dropdown-item small d-flex align-items-center" href="/barcodes"><i class="bi bi-upc-scan text-dark me-2"></i> Barcode Labels</a></li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE): ?>
+            <li><a class="dropdown-item small d-flex align-items-center" href="/warehouses"><i class="bi bi-buildings text-primary me-2"></i> Warehouses</a></li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY): ?>
+            <li><a class="dropdown-item small d-flex align-items-center" href="/batches"><i class="bi bi-calendar2-week text-info me-2"></i> Batches &amp; Expiry</a></li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING): ?>
+            <li><a class="dropdown-item small d-flex align-items-center" href="/serials"><i class="bi bi-hash text-secondary me-2"></i> Serials / IMEI</a></li>
+          <?php endif; ?>
+          <?php if (defined('ENABLE_BOM') && ENABLE_BOM): ?>
+            <li><a class="dropdown-item small d-flex align-items-center" href="/bom"><i class="bi bi-boxes text-success me-2"></i> BOM Manufacturing</a></li>
+          <?php endif; ?>
+        </ul>
+      </div>
     <?php endif; ?>
-    <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE): ?>
-      <a href="/warehouses" class="btn btn-outline-secondary shadow-sm">
-        <i class="bi bi-buildings me-1"></i> Warehouses
-      </a>
-    <?php endif; ?>
-    <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY): ?>
-      <a href="/batches" class="btn btn-outline-secondary shadow-sm">
-        <i class="bi bi-calendar2-week me-1"></i> Batches
-      </a>
-    <?php endif; ?>
-    <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING): ?>
-      <a href="/serials" class="btn btn-outline-secondary shadow-sm">
-        <i class="bi bi-hash me-1"></i> Serials
-      </a>
-    <?php endif; ?>
-    <?php if (defined('ENABLE_BOM') && ENABLE_BOM): ?>
-      <a href="/bom" class="btn btn-outline-secondary shadow-sm">
-        <i class="bi bi-boxes me-1"></i> BOM
-      </a>
-    <?php endif; ?>
-    <a href="/estimates/builder" class="btn btn-outline-primary shadow-sm">
+    <a href="/estimates/builder" class="btn btn-outline-primary">
       <i class="bi bi-file-earmark-spreadsheet me-1"></i> Rate List &amp; Estimate
     </a>
-    <a href="/items/create" class="btn btn-primary shadow-sm">
+    <a href="/items/create" class="btn btn-primary">
       <i class="bi bi-plus-circle me-1"></i> Add New Item
     </a>
   </div>
 </div>
 
 <!-- Search & Summary Bar -->
-<div class="card shadow-sm border-0 mb-3">
+<div class="card mb-3">
   <div class="card-body p-2 p-md-3">
     <div class="row g-2 align-items-center">
       <div class="col-md-5">
@@ -55,7 +59,7 @@ $lowStock = $lowStockCount ?? 0;
       <div class="col-md-3">
         <select class="form-select" id="categoryFilter" onchange="window.location='/items' + (this.value ? '?category=' + encodeURIComponent(this.value) : '')">
           <option value="" <?= empty($selectedCategory) ? 'selected' : '' ?>>All Categories</option>
-          <option value="__none__" <?= ($selectedCategory === '__none__') ? 'selected' : '' ?>>-- Uncategorized (No Category) --</option>
+          <option value="__none__" <?= ($selectedCategory === '__none__') ? 'selected' : '' ?>>Uncategorized</option>
           <?php foreach (($categories ?? []) as $cat): ?>
             <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>" <?= ($selectedCategory === $cat) ? 'selected' : '' ?>>
               <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
@@ -64,11 +68,11 @@ $lowStock = $lowStockCount ?? 0;
         </select>
       </div>
       <div class="col-md-4 text-md-end">
-        <span class="badge bg-light text-dark border p-2 me-2">
+        <span class="badge bg-light text-dark border p-2 px-3 me-2">
           Total Products: <strong id="visibleRecordsCount_itemsTable"><?= $itemCount ?></strong>
         </span>
         <?php if ($lowStock > 0): ?>
-          <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-2">
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-2 px-3">
             <i class="bi bi-exclamation-triangle-fill me-1"></i> <?= (int)$lowStock ?> Low Stock
           </span>
         <?php endif; ?>
@@ -78,20 +82,20 @@ $lowStock = $lowStockCount ?? 0;
 </div>
 
 <!-- Items Table -->
-<div class="card shadow-sm border-0">
+<div class="card">
   <div class="card-body p-0">
-    <div style="overflow-x: hidden;">
-      <table class="table table-hover align-middle mb-0 w-100" id="itemsTable" style="font-size: 0.85rem;">
-        <thead class="table-light">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 w-100" id="itemsTable">
+        <thead>
           <tr>
-            <th style="padding: 0.5rem 0.65rem;">Item Name</th>
-            <th style="padding: 0.5rem 0.65rem;">Item Code</th>
-            <th style="padding: 0.5rem 0.65rem;">HSN/SAC</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Sale Price</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Purchase Price</th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">GST Rate</th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">Stock</th>
-            <th style="width: 36px; padding: 0.5rem 0.35rem;" class="text-center"></th>
+            <th>Item Name</th>
+            <th>Item Code</th>
+            <th>HSN/SAC</th>
+            <th class="text-end">Sale Price</th>
+            <th class="text-end">Purchase Price</th>
+            <th class="text-center">GST Rate</th>
+            <th class="text-center">Stock</th>
+            <th style="width: 44px;" class="text-center"></th>
           </tr>
         </thead>
         <tbody>
@@ -99,45 +103,45 @@ $lowStock = $lowStockCount ?? 0;
             <?php foreach ($items as $it): ?>
               <?php $isLowStock = (float)($it['current_stock'] ?? 0) <= (float)($it['low_stock_threshold'] ?? 0); ?>
               <tr>
-                <td style="padding: 0.45rem 0.65rem;">
+                <td>
                   <div class="fw-bold text-dark d-flex align-items-center gap-1 flex-wrap">
                     <span><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php if (!empty($it['category'])): ?>
-                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><?= htmlspecialchars($it['category'], ENT_QUOTES, 'UTF-8') ?></span>
+                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><?= htmlspecialchars($it['category'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php endif; ?>
                   </div>
                   <?php if (!empty($it['sub_unit']) && !empty($it['sub_unit_qty'])): ?>
-                    <div class="text-primary small" style="font-size: 0.72rem;">
+                    <div class="text-primary small mt-0" style="font-size: 0.75rem;">
                       <i class="bi bi-box me-1"></i>1 <?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?> = <?= (float)$it['sub_unit_qty'] ?> <?= htmlspecialchars($it['sub_unit'], ENT_QUOTES, 'UTF-8') ?>
                     </div>
                   <?php endif; ?>
                   <?php if (!empty($it['description'])): ?>
-                    <div class="small text-muted text-truncate" style="max-width: 220px;"><?= htmlspecialchars($it['description'], ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="small text-muted text-truncate" style="max-width: 240px;"><?= htmlspecialchars($it['description'], ENT_QUOTES, 'UTF-8') ?></div>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="font-monospace text-muted small"><?= htmlspecialchars($it['item_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td style="padding: 0.45rem 0.65rem;" class="font-monospace text-muted small"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end fw-semibold text-nowrap">₹ <?= number_format((float)($it['sale_price'] ?? 0), 2) ?></td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end text-muted text-nowrap">₹ <?= number_format((float)($it['purchase_price'] ?? 0), 2) ?></td>
-                <td style="padding: 0.45rem 0.4rem;" class="text-center">
+                <td class="font-monospace text-muted small"><?= htmlspecialchars($it['item_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-monospace text-muted small"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="text-end fw-semibold text-nowrap">₹ <?= number_format((float)($it['sale_price'] ?? 0), 2) ?></td>
+                <td class="text-end text-muted text-nowrap">₹ <?= number_format((float)($it['purchase_price'] ?? 0), 2) ?></td>
+                <td class="text-center">
                   <?php if ((float)($it['tax_rate'] ?? 0) > 0): ?>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;"><?= htmlspecialchars((string)$it['tax_rate'], ENT_QUOTES, 'UTF-8') ?>%</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><?= htmlspecialchars((string)$it['tax_rate'], ENT_QUOTES, 'UTF-8') ?>%</span>
                   <?php else: ?>
-                    <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">0%</span>
+                    <span class="badge bg-light text-muted border">0%</span>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.4rem;" class="text-center">
-                  <span class="badge <?= $isLowStock ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle' ?> px-2 py-1 fw-bold" style="font-size: 0.75rem;">
+                <td class="text-center">
+                  <span class="badge <?= $isLowStock ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle' ?> px-2.5 py-1.5 fw-bold">
                     <?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                   </span>
                 </td>
                 <!-- 3-Dot Action Menu -->
-                <td style="padding: 0.45rem 0.35rem;" class="text-center">
+                <td class="text-center">
                   <div class="dropdown">
-                    <button class="btn btn-light btn-sm p-1 border-0 rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions" style="width: 28px; height: 28px; line-height: 1;">
+                    <button class="btn btn-light btn-sm p-1 border-0 rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions" style="width: 30px; height: 30px; line-height: 1;">
                       <i class="bi bi-three-dots-vertical text-secondary"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1">
+                    <ul class="dropdown-menu dropdown-menu-end">
                       <li>
                         <button type="button" class="dropdown-item py-1 px-3 small d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#adjustStockModal<?= $it['id'] ?>">
                           <i class="bi bi-sliders text-secondary me-2"></i> Adjust Stock

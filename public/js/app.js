@@ -339,6 +339,12 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebarBackdrop.addEventListener('click', closeSidebar);
   }
 
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 992) {
+      closeSidebar();
+    }
+  });
+
   // 5. Interactive Settings & Form Radio Cards
   const radioCards = document.querySelectorAll('.setting-radio-card');
   radioCards.forEach(card => {

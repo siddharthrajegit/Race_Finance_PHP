@@ -3,11 +3,11 @@
 
     <?php if (!empty($user)): ?>
       <footer class="footer mt-auto py-3 bg-white border-top text-muted small">
-        <div class="container-fluid px-lg-4">
+        <div class="container-fluid px-3 px-lg-4 app-main-container">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
               <span>RACE FINANCE &copy; <?= date('Y') ?> &bull; </span>
-              <span class="d-inline-flex gap-2 text-muted">
+              <span class="d-inline-flex flex-wrap gap-2 text-muted">
                 <a href="/free-trial" class="text-secondary text-decoration-none hover-primary">Free Trial</a> &bull;
                 <a href="/about" class="text-secondary text-decoration-none hover-primary">About</a> &bull;
                 <a href="/pricing" class="text-secondary text-decoration-none hover-primary">Pricing</a> &bull;
@@ -79,7 +79,7 @@
 </div>
 <script src="/js/offline.js"></script>
 <?php endif; ?>
-<script src="/js/app.js?v=2"></script>
+<script src="/js/app.js?v=3"></script>
 <?php if (!defined('ENABLE_PWA') || ENABLE_PWA): ?>
 <script>
 if ('serviceWorker' in navigator) {

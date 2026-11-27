@@ -1,13 +1,13 @@
-﻿const CACHE_NAME = 'race-finance-v3';
+﻿const CACHE_NAME = 'race-finance-v5';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/favicon.ico',
   '/logo.png',
   '/img/icon-192.png',
   '/img/icon-512.png',
-  '/css/style.css?v=2',
+  '/css/style.css?v=4',
   '/css/receipt.css',
-  '/js/app.js?v=2',
+  '/js/app.js?v=3',
   '/js/invoice-calc.js?v=6',
   '/js/barcode.js',
   '/js/offline.js',

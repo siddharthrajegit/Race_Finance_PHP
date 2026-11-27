@@ -1,8 +1,8 @@
 <?php if (!empty($success_msg)): ?>
   <?php foreach ((array)$success_msg as $msg): ?>
-    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center mb-4" role="alert">
-      <i class="bi bi-check-circle-fill fs-5 me-2 text-success"></i>
-      <div><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="alert alert-success alert-rf alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+      <span class="alert-rf-icon bg-success-subtle text-success me-3"><i class="bi bi-check-circle-fill"></i></span>
+      <div class="fw-medium text-dark small"><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
       <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <?php endforeach; ?>
@@ -10,9 +10,9 @@
 
 <?php if (!empty($error_msg)): ?>
   <?php foreach ((array)$error_msg as $msg): ?>
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 d-flex align-items-center mb-4" role="alert">
-      <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
-      <div><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="alert alert-danger alert-rf alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+      <span class="alert-rf-icon bg-danger-subtle text-danger me-3"><i class="bi bi-exclamation-triangle-fill"></i></span>
+      <div class="fw-medium text-dark small"><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
       <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <?php endforeach; ?>
@@ -20,9 +20,9 @@
 
 <?php if (!empty($info_msg)): ?>
   <?php foreach ((array)$info_msg as $msg): ?>
-    <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 d-flex align-items-center mb-4" role="alert">
-      <i class="bi bi-info-circle-fill fs-5 me-2 text-info"></i>
-      <div><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="alert alert-info alert-rf alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+      <span class="alert-rf-icon bg-primary-subtle text-primary me-3"><i class="bi bi-info-circle-fill"></i></span>
+      <div class="fw-medium text-dark small"><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
       <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <?php endforeach; ?>

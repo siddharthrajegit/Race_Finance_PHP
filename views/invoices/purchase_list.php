@@ -1,12 +1,12 @@
 <?php
 $invList = !empty($invoices) ? $invoices : [];
 ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+<div class="rf-page-header">
   <div>
-    <h3 class="fw-bold mb-1">Purchase Records</h3>
-    <p class="text-muted small mb-0">Record inward purchases from suppliers and automatically track inventory additions</p>
+    <h1 class="rf-page-title">Purchase Records</h1>
+    <p class="rf-page-subtitle">Record inward purchases from suppliers and automatically track inventory additions</p>
   </div>
-  <a href="/purchases/create" class="btn btn-primary shadow-sm">
+  <a href="/purchases/create" class="btn btn-primary">
     <i class="bi bi-plus-circle me-1"></i> Record New Purchase
   </a>
 </div>

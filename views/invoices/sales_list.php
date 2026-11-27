@@ -1,12 +1,12 @@
 <?php
 $invList = !empty($invoices) ? $invoices : [];
 ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+<div class="rf-page-header">
   <div>
-    <h3 class="fw-bold mb-1">Sales Records</h3>
-    <p class="text-muted small mb-0">Record GST and Non-GST digital sales references, track customer payments & ledger data</p>
+    <h1 class="rf-page-title">Sales Records</h1>
+    <p class="rf-page-subtitle">Record GST and Non-GST digital sales references, track customer payments &amp; ledger data</p>
   </div>
-  <a href="/sales/create" class="btn btn-success shadow-sm">
+  <a href="/sales/create" class="btn btn-success">
     <i class="bi bi-plus-circle me-1"></i> Create New Sales Record
   </a>
 </div>
