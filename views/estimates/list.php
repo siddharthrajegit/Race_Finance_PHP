@@ -12,149 +12,127 @@ foreach ($estimatesList as $est) {
 }
 ?>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-  <div>
-    <h3 class="fw-bold mb-1">
-      <i class="bi bi-file-earmark-text me-2 text-primary"></i>Estimates &amp; Quotations
-    </h3>
-    <p class="text-muted small mb-0">Manage customer price estimates, quotations, and convert them to sales bills</p>
-  </div>
-  <div class="d-flex gap-2">
-    <a href="/estimates/builder" class="btn btn-primary shadow-sm">
-      <i class="bi bi-plus-circle me-1"></i> New Rate List / Estimate
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight">Estimates &amp; Quotations</h1>
+      <p class="text-sm text-[#5C5A54] mt-1">Manage customer price estimates, quotations, and convert them to sales bills</p>
+    </div>
+    <a href="/estimates/builder" class="rf-btn rf-btn-primary">
+      <i class="bi bi-plus-circle"></i> New Rate List / Estimate
     </a>
   </div>
-</div>
 
-<!-- Search & Summary Bar -->
-<div class="card shadow-sm border-0 mb-3">
-  <div class="card-body p-2 p-md-3">
-    <div class="row g-2 align-items-center">
-      <div class="col-md-6">
-        <div class="input-group">
-          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" class="form-control border-start-0" placeholder="Search estimates by number or customer name..." data-table-search="estimatesTable">
-        </div>
+  <!-- Search & Summary Bar -->
+  <div class="rf-card p-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="relative flex-1 max-w-md">
+        <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-[#87847C] text-xs"></i>
+        <input type="text" class="rf-input pl-9 py-2 text-xs" placeholder="Search estimates by number or customer name..." data-table-search="estimatesTable">
       </div>
-      <div class="col-md-6 text-md-end">
-        <span class="badge bg-light text-dark border p-2 me-2">
-          Total Estimates: <strong id="visibleRecordsCount_estimatesTable"><?= $estimateCount ?></strong>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="rf-badge rf-badge-neutral py-1.5 px-3 tabular-nums">
+          Total Estimates: <strong id="visibleRecordsCount_estimatesTable" class="ml-1"><?= $estimateCount ?></strong>
         </span>
-        <span class="badge bg-primary-subtle text-primary border border-primary-subtle p-2">
-          Total Quoted: <strong>₹ <?= number_format($totalEstimateValue, 2) ?></strong>
+        <span class="rf-badge rf-badge-slate py-1.5 px-3 tabular-nums">
+          Total Quoted: <strong class="ml-1">₹ <?= number_format($totalEstimateValue, 2) ?></strong>
         </span>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Estimates Table -->
-<div class="card shadow-sm border-0">
-  <div class="card-body p-0">
-    <div style="overflow-x: hidden;">
-      <table class="table table-hover align-middle mb-0 w-100" id="estimatesTable" style="font-size: 0.85rem;">
-        <thead class="table-light">
+  <!-- Estimates Table -->
+  <div class="rf-card">
+    <div class="rf-table-wrap">
+      <table class="rf-table" id="estimatesTable">
+        <thead>
           <tr>
-            <th style="padding: 0.5rem 0.65rem;">Estimate #</th>
-            <th style="padding: 0.5rem 0.65rem;">Date</th>
-            <th style="padding: 0.5rem 0.65rem;">Customer Firm Name</th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">Items</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Taxable Amount</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Grand Total</th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">Status</th>
-            <th style="width: 36px; padding: 0.5rem 0.35rem;" class="text-center"></th>
+            <th>Estimate #</th>
+            <th>Date</th>
+            <th>Customer Firm Name</th>
+            <th class="text-center">Items</th>
+            <th class="text-right">Taxable Amount</th>
+            <th class="text-right">Grand Total</th>
+            <th class="text-center">Status</th>
+            <th class="w-12 text-center"></th>
           </tr>
         </thead>
         <tbody>
           <?php if (!empty($estimatesList)): ?>
             <?php foreach ($estimatesList as $est): ?>
               <tr>
-                <td style="padding: 0.45rem 0.65rem;">
-                  <a href="/estimates/view/<?= $est['id'] ?>" class="font-monospace fw-bold text-primary text-decoration-none">
+                <td>
+                  <a href="/estimates/view/<?= $est['id'] ?>" class="font-mono font-semibold text-[#1C1B18] hover:underline no-underline">
                     #<?= htmlspecialchars($est['estimate_number'], ENT_QUOTES, 'UTF-8') ?>
                   </a>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-muted small">
+                <td class="text-xs text-[#5C5A54] whitespace-nowrap">
                   <?= htmlspecialchars(formatDate($est['estimate_date']), ENT_QUOTES, 'UTF-8') ?>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;">
+                <td>
                   <?php if (!empty($est['customer_name'])): ?>
-                    <span class="fw-semibold text-dark"><?= htmlspecialchars($est['customer_name'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="font-medium text-[#1C1B18]"><?= htmlspecialchars($est['customer_name'], ENT_QUOTES, 'UTF-8') ?></span>
                   <?php else: ?>
-                    <span class="text-muted fst-italic">-- Not Specified --</span>
+                    <span class="text-xs text-[#87847C] italic">-- Not Specified --</span>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.4rem;" class="text-center font-monospace">
-                  <span class="badge bg-light text-dark border"><?= (int)($est['item_count'] ?? 0) ?> items</span>
+                <td class="text-center">
+                  <span class="rf-badge rf-badge-neutral font-mono tabular-nums"><?= (int)($est['item_count'] ?? 0) ?> items</span>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end font-monospace text-muted">
+                <td class="text-right font-mono text-[#5C5A54] tabular-nums">
                   ₹ <?= number_format((float)($est['subtotal'] ?? 0), 2) ?>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end font-monospace fw-bold text-dark">
+                <td class="text-right font-mono font-semibold text-[#1C1B18] tabular-nums">
                   ₹ <?= number_format((float)($est['grand_total'] ?? 0), 2) ?>
                 </td>
-                <td style="padding: 0.45rem 0.4rem;" class="text-center">
+                <td class="text-center">
                   <?php if (($est['status'] ?? 'draft') === 'converted'): ?>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;">Converted</span>
+                    <span class="rf-badge rf-badge-sage">Converted</span>
                   <?php else: ?>
-                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.7rem;">Draft Estimate</span>
+                    <span class="rf-badge rf-badge-neutral">Draft Estimate</span>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.35rem;" class="text-center">
-                  <div class="dropdown">
-                    <button class="btn btn-light btn-sm p-1 border-0 rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions" style="width: 28px; height: 28px; line-height: 1;">
-                      <i class="bi bi-three-dots-vertical text-secondary"></i>
+                <td class="text-center">
+                  <div class="rf-dropdown" data-ui-dropdown>
+                    <button class="w-8 h-8 rounded-full hover:bg-[#EFECE6] inline-flex items-center justify-center text-[#5C5A54] bg-transparent border-0 cursor-pointer transition-colors" type="button" data-ui-dropdown-toggle aria-expanded="false" title="Actions">
+                      <i class="bi bi-three-dots-vertical"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1">
-                      <li>
-                        <a class="dropdown-item py-1 px-3 small d-flex align-items-center" href="/estimates/view/<?= $est['id'] ?>">
-                          <i class="bi bi-eye text-primary me-2"></i> View Details
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item py-1 px-3 small d-flex align-items-center" href="/estimates/print/<?= $est['id'] ?>?mode=estimate" target="_blank">
-                          <i class="bi bi-printer text-success me-2"></i> Print Estimate
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item py-1 px-3 small d-flex align-items-center" href="/estimates/print/<?= $est['id'] ?>?mode=ratelist" target="_blank">
-                          <i class="bi bi-file-earmark-spreadsheet text-info me-2"></i> Print Rate List
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item py-1 px-3 small d-flex align-items-center text-success fw-semibold" href="/sales/create?estimate_id=<?= $est['id'] ?>">
-                          <i class="bi bi-receipt me-2"></i> Convert to Invoice
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item py-1 px-3 small d-flex align-items-center" href="/estimates/builder?from_estimate=<?= $est['id'] ?>">
-                          <i class="bi bi-copy text-secondary me-2"></i> Clone in Builder
-                        </a>
-                      </li>
-                      <li><hr class="dropdown-divider my-1"></li>
-                      <li>
-                        <form action="/estimates/delete/<?= $est['id'] ?>" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete Estimate #<?= htmlspecialchars($est['estimate_number'], ENT_QUOTES, 'UTF-8') ?>?">
-                          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                          <button type="submit" class="dropdown-item py-1 px-3 small d-flex align-items-center text-danger border-0 bg-transparent w-100">
-                            <i class="bi bi-trash me-2"></i> Delete Estimate
-                          </button>
-                        </form>
-                      </li>
-                    </ul>
+                    <div class="rf-dropdown-menu" data-ui-dropdown-menu>
+                      <a class="rf-dropdown-item" href="/estimates/view/<?= $est['id'] ?>">
+                        <i class="bi bi-eye text-[#2B526E]"></i> View Details
+                      </a>
+                      <a class="rf-dropdown-item" href="/estimates/print/<?= $est['id'] ?>?mode=estimate" target="_blank">
+                        <i class="bi bi-printer text-[#2E5A36]"></i> Print Estimate
+                      </a>
+                      <a class="rf-dropdown-item" href="/estimates/print/<?= $est['id'] ?>?mode=ratelist" target="_blank">
+                        <i class="bi bi-file-earmark-spreadsheet text-[#5C5A54]"></i> Print Rate List
+                      </a>
+                      <a class="rf-dropdown-item font-semibold text-[#2E5A36]" href="/sales/create?estimate_id=<?= $est['id'] ?>">
+                        <i class="bi bi-receipt"></i> Convert to Invoice
+                      </a>
+                      <a class="rf-dropdown-item" href="/estimates/builder?from_estimate=<?= $est['id'] ?>">
+                        <i class="bi bi-copy text-[#5C5A54]"></i> Clone in Builder
+                      </a>
+                      <div class="rf-dropdown-divider"></div>
+                      <form action="/estimates/delete/<?= $est['id'] ?>" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete Estimate #<?= htmlspecialchars($est['estimate_number'], ENT_QUOTES, 'UTF-8') ?>?">
+                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                        <button type="submit" class="rf-dropdown-item text-[#8F2D2B]">
+                          <i class="bi bi-trash"></i> Delete Estimate
+                        </button>
+                      </form>
+                    </div>
                   </div>
                 </td>
               </tr>
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="8" class="text-center py-5 text-muted">
-                <i class="bi bi-file-earmark-spreadsheet fs-2 d-block mb-2 text-secondary"></i>
-                No estimates created yet.
-                <div class="mt-2">
-                  <a href="/estimates/builder" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i> Create Rate List / Estimate
-                  </a>
-                </div>
+              <td colspan="8" class="text-center py-14 text-[#78746C]">
+                <i class="bi bi-file-earmark-spreadsheet text-3xl block mb-2 text-[#B5B0A6]"></i>
+                <p class="mb-4">No estimates created yet.</p>
+                <a href="/estimates/builder" class="rf-btn rf-btn-primary rf-btn-sm">
+                  <i class="bi bi-plus-circle"></i> Create Rate List / Estimate
+                </a>
               </td>
             </tr>
           <?php endif; ?>

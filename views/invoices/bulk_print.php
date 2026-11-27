@@ -9,39 +9,50 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bulk Print Invoices (<?= $invCount ?>) | <?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Bootstrap 5 CSS -->
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
-  <!-- Bootstrap Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tailwind.css">
   <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
   <style>
     body {
-      background-color: #f1f5f9;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F7F6F3;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       color: #111;
       margin: 0;
-      padding: 20px 0;
+      padding: 16px 0 36px 0;
     }
     .bulk-invoice-page {
       max-width: 210mm;
-      margin: 0 auto 30px auto;
+      margin: 0 auto 28px auto;
       background: #fff;
       padding: 12mm 15mm;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-      border: 1px solid #cbd5e1;
+      box-shadow: 0 8px 24px -8px rgba(28, 27, 24, 0.08);
+      border: 1px solid #E6E4DF;
       border-radius: 8px;
     }
     .tax-invoice-box {
-      border: 1px solid #000;
+      border: 1px solid #1C1B18;
+    }
+    .bordered-table {
+      width: 100%;
+      border-collapse: collapse;
     }
     .bordered-table th, .bordered-table td {
-      border: 1px solid #000 !important;
+      border: 1px solid #1C1B18;
       padding: 4px 6px;
       font-size: 11px;
     }
     .bordered-table th {
-      background-color: #f8fafc;
+      background-color: #FAF9F6;
       font-weight: 600;
+    }
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+    }
+    .meta-table td {
+      padding: 1.5px 0;
+      vertical-align: top;
     }
     @media print {
       @page {
@@ -55,6 +66,7 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
       .bulk-invoice-page {
         border: none !important;
         box-shadow: none !important;
+        border-radius: 0 !important;
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
@@ -74,18 +86,18 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
 <body>
 
   <!-- Floating Sticky Action Bar for Bulk Printing -->
-  <div class="sticky-top py-2 mb-3 no-print" style="background: rgba(241, 245, 249, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
-    <div class="container" style="max-width: 210mm;">
-      <div class="d-flex flex-wrap justify-content-between align-items-center bg-dark text-white p-2 px-3 rounded-pill shadow gap-2" style="border: 1px solid rgba(255, 255, 255, 0.15);">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-primary text-white rounded-pill px-2 py-1"><i class="bi bi-printer-fill"></i></span>
-          <span class="fw-semibold small">Bulk Print Queue: <strong class="text-warning"><?= $invCount ?></strong> invoices ready</span>
+  <div class="sticky top-0 z-30 py-3 mb-4 no-print bg-[#F7F6F3]/90 backdrop-blur-md">
+    <div class="mx-auto px-3" style="max-width: 210mm;">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-[#1C1B18] text-[#F7F6F3] px-4 py-2 rounded-full border border-[#302E29] shadow-md">
+        <div class="flex items-center gap-2.5 text-xs">
+          <span class="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center"><i class="bi bi-printer"></i></span>
+          <span class="font-medium">Bulk Print Queue: <strong class="text-amber-300 font-mono"><?= $invCount ?></strong> invoices ready</span>
         </div>
-        <div class="d-flex gap-2">
-          <button onclick="window.print()" class="btn btn-success btn-sm px-3 rounded-pill fw-bold shadow-sm d-flex align-items-center">
-            <i class="bi bi-printer me-1"></i> Print All Now
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#2E5A36] text-white text-xs font-semibold hover:bg-[#254A2C] transition-colors cursor-pointer">
+            <i class="bi bi-printer"></i> Print All Now
           </button>
-          <button onclick="window.close()" class="btn btn-outline-light btn-sm px-3 rounded-pill">
+          <button onclick="window.close()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/90 text-xs font-medium hover:bg-white/10 transition-colors cursor-pointer">
             Close
           </button>
         </div>
@@ -107,27 +119,25 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
     <div class="bulk-invoice-page">
       <div class="tax-invoice-box">
         <!-- Title Bar -->
-        <div class="text-center py-1 border-bottom border-dark bg-light d-flex justify-content-between align-items-center px-2">
-          <div class="small text-muted font-monospace" style="font-size: 10px;">Doc <?= $idx + 1 ?> of <?= $invCount ?></div>
-          <h5 class="fw-bold mb-0 text-uppercase letter-spacing-1" style="font-size: 13px;">
+        <div class="flex items-center justify-between px-2.5 py-1.5 border-b border-[#1C1B18] bg-[#FAF9F6]">
+          <div class="text-ink-muted font-mono text-[10px]">Doc <?= $idx + 1 ?> of <?= $invCount ?></div>
+          <h5 class="font-bold mb-0 uppercase tracking-wider text-[13px]">
             <?= $isGst ? ($isPurchase ? 'TAX INVOICE / PURCHASE RECORD' : 'TAX INVOICE') : ($isPurchase ? 'PURCHASE BILL' : 'RETAIL INVOICE') ?>
           </h5>
-          <div class="small text-muted" style="font-size: 10px;">Original for Recipient</div>
+          <div class="text-ink-muted text-[10px]">Original for Recipient</div>
         </div>
 
         <!-- Header: Firm Profile & Invoice Metadata -->
-        <div class="row g-0 border-bottom border-dark">
+        <div class="grid grid-cols-12 border-b border-[#1C1B18]">
           <!-- Left: Firm Details -->
-          <div class="col-7 p-2 border-end border-dark">
-            <div class="d-flex align-items-center mb-1">
+          <div class="col-span-7 p-2.5 border-r border-[#1C1B18]">
+            <div class="flex items-center gap-2 mb-1">
               <?php if (!empty($firm['logo_path'])): ?>
-                <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="me-2" style="max-height: 38px; max-width: 75px; object-fit: contain;">
+                <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="max-h-9 max-w-[75px] object-contain">
               <?php endif; ?>
-              <div>
-                <h6 class="fw-bold mb-0 text-uppercase" style="font-size: 13px;"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></h6>
-              </div>
+              <h6 class="font-bold mb-0 uppercase text-[13px]"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></h6>
             </div>
-            <div style="font-size: 10.5px; line-height: 1.35;">
+            <div class="text-[10.5px] leading-snug">
               <?php if (!empty($firm['address'])): ?><div><?= htmlspecialchars($firm['address'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
               <?php 
                 $fLoc = array_filter([$firm['city'] ?? '', $firm['state'] ?? '']);
@@ -141,64 +151,64 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
           </div>
 
           <!-- Right: Invoice Metadata -->
-          <div class="col-5 p-2" style="font-size: 10.5px; line-height: 1.4;">
-            <table class="table table-borderless table-sm mb-0" style="font-size: 10.5px;">
+          <div class="col-span-5 p-2.5 leading-snug">
+            <table class="meta-table">
               <tr>
-                <td class="p-0 fw-bold" style="width: 45%;">Invoice No:</td>
-                <td class="p-0 font-monospace fw-bold"><?= htmlspecialchars($invNum, ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-bold w-[45%]">Invoice No:</td>
+                <td class="font-mono font-bold"><?= htmlspecialchars($invNum, ENT_QUOTES, 'UTF-8') ?></td>
               </tr>
               <tr>
-                <td class="p-0 fw-bold">Invoice Date:</td>
-                <td class="p-0"><?= htmlspecialchars(formatDate($invoice['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-bold">Invoice Date:</td>
+                <td><?= htmlspecialchars(formatDate($invoice['invoice_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
               </tr>
               <?php if (!empty($invoice['due_date'])): ?>
                 <tr>
-                  <td class="p-0 fw-bold">Due Date:</td>
-                  <td class="p-0"><?= htmlspecialchars(formatDate($invoice['due_date']), ENT_QUOTES, 'UTF-8') ?></td>
+                  <td class="font-bold">Due Date:</td>
+                  <td><?= htmlspecialchars(formatDate($invoice['due_date']), ENT_QUOTES, 'UTF-8') ?></td>
                 </tr>
               <?php endif; ?>
               <tr>
-                <td class="p-0 fw-bold">Payment Mode:</td>
-                <td class="p-0 text-uppercase"><?= strtoupper(htmlspecialchars($invoice['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8')) ?></td>
+                <td class="font-bold">Payment Mode:</td>
+                <td class="uppercase"><?= strtoupper(htmlspecialchars($invoice['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8')) ?></td>
               </tr>
               <tr>
-                <td class="p-0 fw-bold">Place of Supply:</td>
-                <td class="p-0"><?= htmlspecialchars($invoice['party_state'] ?? ($firm['state'] ?? '--'), ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-bold">Place of Supply:</td>
+                <td><?= htmlspecialchars($invoice['party_state'] ?? ($firm['state'] ?? '--'), ENT_QUOTES, 'UTF-8') ?></td>
               </tr>
             </table>
           </div>
         </div>
 
         <!-- Billed To Party Details -->
-        <div class="p-2 border-bottom border-dark bg-light" style="font-size: 11px;">
-          <div class="fw-bold text-uppercase" style="font-size: 9.5px; color: #475569;"><?= $isPurchase ? 'Billed From (Supplier):' : 'Billed To (Customer):' ?></div>
-          <div class="fw-bold text-dark fs-6 mb-1"><?= htmlspecialchars($invoice['party_name'] ?? 'Counter Sale', ENT_QUOTES, 'UTF-8') ?></div>
-          <div class="row g-1">
-            <div class="col-6">
+        <div class="p-2.5 border-b border-[#1C1B18] bg-[#FAF9F6] text-[11px]">
+          <div class="font-bold uppercase text-[9.5px] text-ink-muted"><?= $isPurchase ? 'Billed From (Supplier):' : 'Billed To (Customer):' ?></div>
+          <div class="font-bold text-ink text-sm mb-1"><?= htmlspecialchars($invoice['party_name'] ?? 'Counter Sale', ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="grid grid-cols-12 gap-2">
+            <div class="col-span-6">
               <?php if (!empty($invoice['party_address'])): ?><div>Address: <?= htmlspecialchars($invoice['party_address'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
               <?php if (!empty($invoice['party_phone'])): ?><div>Phone: <?= htmlspecialchars($invoice['party_phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
             </div>
-            <div class="col-6">
-              <?php if (!empty($invoice['party_gstin'])): ?><div>GSTIN: <span class="font-monospace fw-bold"><?= htmlspecialchars($invoice['party_gstin'], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+            <div class="col-span-6">
+              <?php if (!empty($invoice['party_gstin'])): ?><div>GSTIN: <span class="font-mono font-bold"><?= htmlspecialchars($invoice['party_gstin'], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
               <div>State: <?= htmlspecialchars($invoice['party_state'] ?? '--', ENT_QUOTES, 'UTF-8') ?></div>
             </div>
           </div>
         </div>
 
         <!-- Items Table -->
-        <table class="table bordered-table mb-0 w-100">
+        <table class="bordered-table">
           <thead>
-            <tr class="text-center align-middle">
-              <th style="width: 28px;">#</th>
-              <th class="text-start">Item Description</th>
-              <th style="width: 70px;">HSN/SAC</th>
-              <th style="width: 50px;">Qty</th>
-              <th style="width: 45px;">Unit</th>
-              <th style="width: 75px;" class="text-end">Rate (₹)</th>
+            <tr class="text-center">
+              <th class="w-7">#</th>
+              <th class="text-left">Item Description</th>
+              <th class="w-[70px]">HSN/SAC</th>
+              <th class="w-[50px]">Qty</th>
+              <th class="w-[45px]">Unit</th>
+              <th class="w-[75px] text-right">Rate (₹)</th>
               <?php if ($isGst): ?>
-                <th style="width: 55px;">GST %</th>
+                <th class="w-[55px]">GST %</th>
               <?php endif; ?>
-              <th style="width: 85px;" class="text-end">Amount (₹)</th>
+              <th class="w-[85px] text-right">Amount (₹)</th>
             </tr>
           </thead>
           <tbody>
@@ -206,15 +216,15 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
               <?php foreach ($items as $iIdx => $it): ?>
                 <tr>
                   <td class="text-center"><?= $iIdx + 1 ?></td>
-                  <td class="fw-semibold"><?= htmlspecialchars($it['item_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
-                  <td class="text-center font-monospace"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                  <td class="text-center fw-bold"><?= htmlspecialchars((string)($it['quantity'] ?? 1), ENT_QUOTES, 'UTF-8') ?></td>
+                  <td class="font-semibold"><?= htmlspecialchars($it['item_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                  <td class="text-center font-mono"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                  <td class="text-center font-bold"><?= htmlspecialchars((string)($it['quantity'] ?? 1), ENT_QUOTES, 'UTF-8') ?></td>
                   <td class="text-center"><?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?></td>
-                  <td class="text-end">₹ <?= number_format((float)($it['rate'] ?? 0), 2) ?></td>
+                  <td class="text-right">₹ <?= number_format((float)($it['rate'] ?? 0), 2) ?></td>
                   <?php if ($isGst): ?>
                     <td class="text-center"><?= (float)($it['tax_rate'] ?? 0) ?>%</td>
                   <?php endif; ?>
-                  <td class="text-end fw-bold">₹ <?= number_format((float)($it['total_amount'] ?? 0), 2) ?></td>
+                  <td class="text-right font-bold">₹ <?= number_format((float)($it['total_amount'] ?? 0), 2) ?></td>
                 </tr>
               <?php endforeach; ?>
             <?php endif; ?>
@@ -222,10 +232,10 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
         </table>
 
         <!-- Summary & Totals -->
-        <div class="row g-0">
-          <div class="col-7 p-2 border-end border-dark" style="font-size: 10px;">
+        <div class="grid grid-cols-12">
+          <div class="col-span-7 p-2.5 border-r border-[#1C1B18] text-[10px]">
             <?php if (!empty($firm['bank_name']) || !empty($firm['bank_account_no']) || !empty($firm['qr_code_path'])): ?>
-              <div class="p-1 border rounded bg-white mb-2 d-flex justify-content-between align-items-center">
+              <div class="p-1.5 border border-border rounded bg-white mb-2 flex items-center justify-between gap-2">
                 <div>
                   <strong>Bank:</strong> <?= htmlspecialchars($firm['bank_name'] ?? '', ENT_QUOTES, 'UTF-8') ?> | 
                   <strong>A/C:</strong> <?= htmlspecialchars($firm['bank_account_no'] ?? '', ENT_QUOTES, 'UTF-8') ?> | 
@@ -233,62 +243,62 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
                   <?php if (!empty($firm['upi_id'])): ?> | <strong>UPI:</strong> <?= htmlspecialchars($firm['upi_id'], ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
                 </div>
                 <?php if (!empty($firm['qr_code_path'])): ?>
-                  <img src="<?= htmlspecialchars($firm['qr_code_path'], ENT_QUOTES, 'UTF-8') ?>" alt="QR" style="height: 36px; width: 36px; object-fit: contain;" class="ms-1 border p-0 bg-white">
+                  <img src="<?= htmlspecialchars($firm['qr_code_path'], ENT_QUOTES, 'UTF-8') ?>" alt="QR" class="h-9 w-9 object-contain border border-border bg-white shrink-0">
                 <?php endif; ?>
               </div>
             <?php endif; ?>
             <div>Terms: <?= htmlspecialchars(!empty($invoice['terms']) ? $invoice['terms'] : 'Thank you for your business!', ENT_QUOTES, 'UTF-8') ?></div>
           </div>
 
-          <div class="col-5 p-2">
-            <table class="table table-borderless table-sm mb-0" style="font-size: 11px;">
+          <div class="col-span-5 p-2.5">
+            <table class="meta-table text-[11px]">
               <tr>
-                <td class="p-0 text-muted">Sub Total:</td>
-                <td class="p-0 text-end fw-semibold">₹ <?= number_format($cleanTaxable, 2) ?></td>
+                <td class="text-ink-muted">Sub Total:</td>
+                <td class="text-right font-semibold">₹ <?= number_format($cleanTaxable, 2) ?></td>
               </tr>
               <?php if ($isGst && (float)($invoice['tax_amount'] ?? 0) > 0): ?>
                 <?php if (!empty($invoice['is_interstate'])): ?>
                   <tr>
-                    <td class="p-0 text-muted">IGST:</td>
-                    <td class="p-0 text-end">₹ <?= number_format((float)($invoice['igst_amount'] ?? 0), 2) ?></td>
+                    <td class="text-ink-muted">IGST:</td>
+                    <td class="text-right">₹ <?= number_format((float)($invoice['igst_amount'] ?? 0), 2) ?></td>
                   </tr>
                 <?php else: ?>
                   <tr>
-                    <td class="p-0 text-muted">CGST + SGST:</td>
-                    <td class="p-0 text-end">₹ <?= number_format((float)($invoice['cgst_amount'] ?? 0) + (float)($invoice['sgst_amount'] ?? 0), 2) ?></td>
+                    <td class="text-ink-muted">CGST + SGST:</td>
+                    <td class="text-right">₹ <?= number_format((float)($invoice['cgst_amount'] ?? 0) + (float)($invoice['sgst_amount'] ?? 0), 2) ?></td>
                   </tr>
                 <?php endif; ?>
               <?php endif; ?>
               <?php if ((float)($invoice['round_off'] ?? 0) != 0): ?>
                 <tr>
-                  <td class="p-0 text-muted">Round Off:</td>
-                  <td class="p-0 text-end">₹ <?= number_format((float)$invoice['round_off'], 2) ?></td>
+                  <td class="text-ink-muted">Round Off:</td>
+                  <td class="text-right">₹ <?= number_format((float)$invoice['round_off'], 2) ?></td>
                 </tr>
               <?php endif; ?>
-              <tr class="border-top border-dark">
-                <td class="p-0 fw-bold fs-6">Grand Total:</td>
-                <td class="p-0 text-end fw-bold fs-6">₹ <?= number_format($cleanGrand, 2) ?></td>
+              <tr class="border-t border-[#1C1B18]">
+                <td class="pt-1 font-bold text-sm">Grand Total:</td>
+                <td class="pt-1 text-right font-bold text-sm">₹ <?= number_format($cleanGrand, 2) ?></td>
               </tr>
               <tr>
-                <td class="p-0 text-success fw-medium">Paid:</td>
-                <td class="p-0 text-end text-success fw-bold">₹ <?= number_format($cleanPaid, 2) ?></td>
+                <td class="text-sage font-medium">Paid:</td>
+                <td class="text-right text-sage font-bold">₹ <?= number_format($cleanPaid, 2) ?></td>
               </tr>
               <tr>
-                <td class="p-0 text-danger fw-bold">Balance Due:</td>
-                <td class="p-0 text-end text-danger fw-bold">₹ <?= number_format($cleanDue, 2) ?></td>
+                <td class="text-rose font-bold">Balance Due:</td>
+                <td class="text-right text-rose font-bold">₹ <?= number_format($cleanDue, 2) ?></td>
               </tr>
             </table>
           </div>
         </div>
 
         <!-- Footer Signatory -->
-        <div class="row g-0 border-top border-dark p-2 align-items-end" style="font-size: 10px;">
-          <div class="col-8">
+        <div class="grid grid-cols-12 border-t border-[#1C1B18] p-2.5 items-end text-[10px]">
+          <div class="col-span-8">
             Digitally generated record &bull; <?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?>
           </div>
-          <div class="col-4 text-end">
-            <div style="height: 25px;"></div>
-            <div class="fw-bold">Authorized Signatory</div>
+          <div class="col-span-4 text-right">
+            <div class="h-6"></div>
+            <div class="font-bold">Authorized Signatory</div>
           </div>
         </div>
 
@@ -297,7 +307,6 @@ $firmName = $firm['name'] ?? 'RACE FINANCE';
   <?php endforeach; ?>
 
   <script>
-    // Auto-open print dialog on load
     window.addEventListener('load', () => {
       setTimeout(() => {
         window.print();

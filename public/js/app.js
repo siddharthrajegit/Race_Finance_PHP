@@ -95,11 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (counterSpan) counterSpan.textContent = count;
         if (count > 0) {
-          bulkBar.classList.remove('d-none');
-          bulkBar.classList.add('d-flex');
+          bulkBar.classList.remove('hidden');
+          bulkBar.classList.add('flex');
         } else {
-          bulkBar.classList.add('d-none');
-          bulkBar.classList.remove('d-flex');
+          bulkBar.classList.add('hidden');
+          bulkBar.classList.remove('flex');
         }
 
         if (selectAllMaster) {
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (key === sortKey) {
           th.dataset.currentDirection = sortDirection;
-          th.classList.add('table-primary', 'active-sort');
+          th.classList.add('active-sort');
           if (sortDirection === 'asc') {
             iconSpan.innerHTML = '<i class="bi bi-arrow-up"></i>';
           } else {
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else {
           th.removeAttribute('data-current-direction');
-          th.classList.remove('table-primary', 'active-sort');
+          th.classList.remove('active-sort');
           iconSpan.innerHTML = '<i class="bi bi-arrow-down-up"></i>';
         }
       });

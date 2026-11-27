@@ -287,9 +287,7 @@
         localStorage.setItem('race_hsv_theme', JSON.stringify({ h: currentH, s: currentS, v: currentV }));
         localStorage.setItem('race_invoice_theme', 'custom_hsv');
 
-        const modalEl = byId('hsvCustomThemeModal');
-        const bsModal = modalEl && window.bootstrap ? bootstrap.Modal.getInstance(modalEl) : null;
-        if (bsModal) bsModal.hide();
+        if (window.RFUI) window.RFUI.closeModal('hsvCustomThemeModal');
       });
     }
   }
@@ -328,7 +326,7 @@
       const element = byId(elementId);
       const originalText = this.innerHTML;
 
-      this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generating PDF...';
+      this.innerHTML = '<i class="bi bi-arrow-repeat animate-spin inline-block mr-1"></i> Generating PDF...';
       this.disabled = true;
 
       const opt = {
@@ -347,10 +345,7 @@
         this.innerHTML = originalText;
         this.disabled = false;
 
-        const modalEl = byId('postDownloadModal');
-        if (modalEl && window.bootstrap) {
-          new bootstrap.Modal(modalEl).show();
-        }
+        if (window.RFUI) window.RFUI.openModal('postDownloadModal');
       }).catch(err => {
         console.error('PDF generation error:', err);
         this.innerHTML = originalText;
@@ -444,14 +439,14 @@
     if (!btn || !icon || !text) return;
 
     if (isHidden) {
-      btn.classList.remove('btn-outline-light');
-      btn.classList.add('btn-secondary');
-      icon.className = 'bi bi-eye text-warning me-1';
+      btn.classList.remove('border-white/25', 'text-white/90', 'hover:bg-white/10');
+      btn.classList.add('bg-white/20', 'text-white', 'border-white/40');
+      icon.className = 'bi bi-eye text-amber-300 mr-1.5';
       text.textContent = 'Show Bank & QR';
     } else {
-      btn.classList.remove('btn-secondary');
-      btn.classList.add('btn-outline-light');
-      icon.className = 'bi bi-qr-code text-info me-1';
+      btn.classList.remove('bg-white/20', 'text-white', 'border-white/40');
+      btn.classList.add('border-white/25', 'text-white/90', 'hover:bg-white/10');
+      icon.className = 'bi bi-qr-code text-stone-300 mr-1.5';
       text.textContent = 'Hide Bank & QR';
     }
   }

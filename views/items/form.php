@@ -1,217 +1,194 @@
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h4 class="fw-bold mb-0 text-dark">
-          <i class="bi bi-box-seam me-2 text-primary"></i>
-          <?= !empty($item) ? 'Edit Item / Product' : 'Add New Item / Product' ?>
-        </h4>
-        <a href="/items" class="btn btn-outline-secondary btn-sm">Cancel</a>
-      </div>
+<div class="max-w-3xl mx-auto">
+  <div class="rf-card">
+    <div class="rf-card-header">
+      <h1 class="text-lg font-semibold text-[#1C1B18] flex items-center gap-2">
+        <i class="bi bi-box-seam text-[#5C5A54]"></i>
+        <?= !empty($item) ? 'Edit Item / Product' : 'Add New Item / Product' ?>
+      </h1>
+      <a href="/items" class="rf-btn rf-btn-secondary rf-btn-sm">Cancel</a>
+    </div>
 
-      <div class="card-body p-4">
-        <form action="<?= !empty($item) ? '/items/edit/' . $item['id'] : '/items/create' ?>" method="POST">
-          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-          <!-- Item Name, Category & Code -->
-          <div class="row g-3 mb-3">
-            <div class="col-md-5">
-              <label for="name" class="form-label">Item / Product Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Cotton T-Shirt / Steel Rod 10mm" value="<?= htmlspecialchars($item['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required autofocus>
+    <div class="rf-card-body">
+      <form action="<?= !empty($item) ? '/items/edit/' . $item['id'] : '/items/create' ?>" method="POST" class="space-y-6">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
+        <!-- Basic Identity -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5">
+            <label for="name" class="rf-label-plain">Item / Product Name <span class="text-[#8F2D2B]">*</span></label>
+            <input type="text" class="rf-input" id="name" name="name" placeholder="e.g. Cotton T-Shirt / Steel Rod 10mm" value="<?= htmlspecialchars($item['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required autofocus>
+          </div>
+          <div class="md:col-span-4">
+            <label for="category" class="rf-label-plain">Category <span class="text-xs text-[#78746C] font-normal">(Optional)</span></label>
+            <div class="relative">
+              <i class="bi bi-tag absolute left-3.5 top-1/2 -translate-y-1/2 text-[#87847C] text-xs"></i>
+              <input type="text" class="rf-input pl-9" id="category" name="category" list="categoryList" placeholder="e.g. Electronics..." value="<?= htmlspecialchars($item['category'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-4">
-              <label for="category" class="form-label">Category <span class="text-muted small">(Optional)</span></label>
-              <div class="input-group">
-                <span class="input-group-text bg-white text-muted"><i class="bi bi-tag"></i></span>
-                <input type="text" class="form-control" id="category" name="category" list="categoryList" placeholder="e.g. Electronics, Clothing..." value="<?= htmlspecialchars($item['category'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-              </div>
-              <datalist id="categoryList">
-                <?php foreach (($categories ?? []) as $cat): ?>
-                  <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"></option>
-                <?php endforeach; ?>
-              </datalist>
-              <div class="form-text small text-muted">Type to select or add new category</div>
-            </div>
-            <div class="col-md-3">
-              <label for="item_code" class="form-label">Item Code / Barcode</label>
-              <input type="text" class="form-control font-monospace" id="item_code" name="item_code" placeholder="e.g. SKU-101" value="<?= htmlspecialchars($item['item_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            </div>
+            <datalist id="categoryList">
+              <?php foreach (($categories ?? []) as $cat): ?>
+                <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"></option>
+              <?php endforeach; ?>
+            </datalist>
+            <p class="rf-help">Type to select or add new category</p>
+          </div>
+          <div class="md:col-span-3">
+            <label for="item_code" class="rf-label-plain">Item Code / SKU</label>
+            <input type="text" class="rf-input font-mono" id="item_code" name="item_code" placeholder="SKU-101" value="<?= htmlspecialchars($item['item_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+        </div>
+
+        <!-- HSN & Units -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-4">
+            <label for="hsn_code" class="rf-label-plain">HSN / SAC Code</label>
+            <input type="text" class="rf-input font-mono" id="hsn_code" name="hsn_code" placeholder="e.g. 61091000" value="<?= htmlspecialchars($item['hsn_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
+            <p class="rf-help">2 to 8 digits HSN or SAC code</p>
           </div>
 
-          <!-- HSN & Measurement Units (Primary & Optional Sub-Unit) -->
-          <div class="row g-3 mb-3">
-            <div class="col-md-4">
-              <label for="hsn_code" class="form-label">HSN / SAC Code</label>
-              <input type="text" class="form-control font-monospace" id="hsn_code" name="hsn_code" placeholder="e.g. 61091000" value="<?= htmlspecialchars($item['hsn_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
-              <div class="form-text small text-muted">2 to 8 digits HSN or SAC code</div>
+          <div class="md:col-span-4">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="unit" class="text-sm font-medium text-[#2C2B27]">Primary Unit</label>
+              <button type="button" class="text-xs font-medium text-[#2B526E] hover:underline bg-transparent border-0 p-0 cursor-pointer" data-ui-modal="#modalAddCustomUnit">
+                <i class="bi bi-plus-circle mr-0.5"></i> Add Unit
+              </button>
             </div>
-            <div class="col-md-4">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label for="unit" class="form-label mb-0">Primary Unit</label>
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddCustomUnit">
-                  <i class="bi bi-plus-circle me-1"></i>+ Add Unit
-                </button>
-              </div>
-              <select class="form-select" id="unit" name="unit">
-                <?php 
-                  $currentUnitUpper = strtoupper($item['unit'] ?? 'PCS');
-                  $unitFound = false;
+            <select class="rf-select" id="unit" name="unit">
+              <?php
+                $currentUnitUpper = strtoupper($item['unit'] ?? 'PCS');
+                $unitFound = false;
+              ?>
+              <?php foreach (($allUnits ?? []) as $u): ?>
+                <?php
+                  $uCode = strtoupper($u['code']);
+                  $isSel = ($uCode === $currentUnitUpper);
+                  if ($isSel) $unitFound = true;
                 ?>
-                <?php foreach (($allUnits ?? []) as $u): ?>
-                  <?php 
-                    $uCode = strtoupper($u['code']);
-                    $isSel = ($uCode === $currentUnitUpper);
-                    if ($isSel) $unitFound = true;
-                  ?>
-                  <option value="<?= htmlspecialchars($uCode, ENT_QUOTES, 'UTF-8') ?>" <?= $isSel ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($u['label'] ?? $uCode, ENT_QUOTES, 'UTF-8') ?><?= !empty($u['is_custom']) ? ' (Custom)' : '' ?>
-                  </option>
-                <?php endforeach; ?>
-                <?php if (!$unitFound && !empty($item['unit'])): ?>
-                  <option value="<?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?></option>
-                <?php endif; ?>
+                <option value="<?= htmlspecialchars($uCode, ENT_QUOTES, 'UTF-8') ?>" <?= $isSel ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($u['label'] ?? $uCode, ENT_QUOTES, 'UTF-8') ?><?= !empty($u['is_custom']) ? ' (Custom)' : '' ?>
+                </option>
+              <?php endforeach; ?>
+              <?php if (!$unitFound && !empty($item['unit'])): ?>
+                <option value="<?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($currentUnitUpper, ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endif; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-4">
+            <label for="sub_unit" class="rf-label-plain">Sub-Unit <span class="text-xs text-[#78746C] font-normal">(Optional Pack)</span></label>
+            <div class="flex items-stretch gap-1.5">
+              <input type="text" class="rf-input uppercase" id="sub_unit" name="sub_unit" placeholder="PCS" value="<?= htmlspecialchars($item['sub_unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="15">
+              <input type="number" step="any" min="0.01" class="rf-input w-24 text-right tabular-nums" id="sub_unit_qty" name="sub_unit_qty" placeholder="Qty" value="<?= !empty($item['sub_unit_qty']) ? (float)$item['sub_unit_qty'] : '' ?>" title="Items per primary unit (e.g. 10)">
+            </div>
+            <p class="rf-help">e.g. 1 BOX = 10 PCS</p>
+          </div>
+        </div>
+
+        <!-- Pricing & GST Studio -->
+        <?php
+          $currentTaxRate = !empty($item) ? (float)($item['tax_rate'] ?? 0) : 0.0;
+          $isStandardTax = in_array($currentTaxRate, [0.0, 5.0, 12.0, 18.0, 28.0], true);
+          $isCustomTax = !empty($item) && !$isStandardTax;
+          $initialSalePrice = !empty($item) && isset($item['sale_price']) && (float)$item['sale_price'] > 0 ? (float)$item['sale_price'] : null;
+          $initialSaleWithTax = $initialSalePrice !== null ? round($initialSalePrice * (1 + ($currentTaxRate / 100)), 2) : null;
+        ?>
+        <div class="rf-card-muted p-5 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E2DFD7]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-white border border-[#E2DFD7] text-[#1C1B18] flex items-center justify-center"><i class="bi bi-calculator"></i></span>
+              <div>
+                <h2 class="text-sm font-semibold text-[#1C1B18]">Item Pricing &amp; GST Configuration</h2>
+                <p class="text-xs text-[#78746C]">Enter either price &mdash; the other calculates automatically from GST rate</p>
+              </div>
+            </div>
+            <span class="rf-badge rf-badge-slate"><i class="bi bi-arrow-left-right"></i> Auto-Calculation</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white border border-[#E2DFD7] rounded-xl p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="sale_price" class="text-xs font-semibold text-[#1C1B18]">Sale Price (Without GST) <span class="text-[#8F2D2B]">*</span></label>
+                <span class="rf-badge rf-badge-neutral text-[10px]">Excl. GST</span>
+              </div>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#5C5A54]">₹</span>
+                <input type="number" class="rf-input pl-8 text-right text-base font-semibold font-mono tabular-nums" id="sale_price" name="sale_price" step="any" min="0" placeholder="0.00" value="<?= $initialSalePrice !== null ? htmlspecialchars((string)$initialSalePrice, ENT_QUOTES, 'UTF-8') : '' ?>">
+              </div>
+              <p class="text-[11px] text-[#78746C] m-0">Base selling price excluding GST</p>
+            </div>
+
+            <div class="bg-[#F4F8FB] border border-[#CFDFEB] rounded-xl p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="sale_price_with_tax" class="text-xs font-semibold text-[#1C1B18]">Sale Price (With GST)</label>
+                <span class="rf-badge rf-badge-slate text-[10px]">Incl. GST</span>
+              </div>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#5C5A54]">₹</span>
+                <input type="number" class="rf-input pl-8 text-right text-base font-semibold font-mono tabular-nums" id="sale_price_with_tax" name="sale_price_with_tax" step="any" min="0" placeholder="0.00" value="<?= $initialSaleWithTax !== null ? htmlspecialchars((string)$initialSaleWithTax, ENT_QUOTES, 'UTF-8') : '' ?>">
+              </div>
+              <p class="text-[11px] text-[#78746C] m-0">Final customer bill amount including GST</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="tax_rate_select" class="rf-label-plain text-xs">Applicable GST Tax Rate (%)</label>
+              <select class="rf-select" id="tax_rate_select">
+                <option value="0" <?= (empty($item) || ($isStandardTax && $currentTaxRate === 0.0)) ? 'selected' : '' ?>>0% (Exempt / Nil)</option>
+                <option value="5" <?= ($isStandardTax && $currentTaxRate === 5.0) ? 'selected' : '' ?>>5% (GST 5%)</option>
+                <option value="12" <?= ($isStandardTax && $currentTaxRate === 12.0) ? 'selected' : '' ?>>12% (GST 12%)</option>
+                <option value="18" <?= ($isStandardTax && $currentTaxRate === 18.0) ? 'selected' : '' ?>>18% (GST 18%)</option>
+                <option value="28" <?= ($isStandardTax && $currentTaxRate === 28.0) ? 'selected' : '' ?>>28% (GST 28%)</option>
+                <option value="custom" <?= $isCustomTax ? 'selected' : '' ?>>Custom Tax %</option>
               </select>
-            </div>
-            <div class="col-md-4">
-              <label for="sub_unit" class="form-label">Sub-Unit <span class="text-muted small">(Optional Pack Unit)</span></label>
-              <div class="input-group">
-                <input type="text" class="form-control text-uppercase" id="sub_unit" name="sub_unit" placeholder="e.g. PCS, NOS" value="<?= htmlspecialchars($item['sub_unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>" maxlength="15">
-                <span class="input-group-text bg-light text-muted small">Qty:</span>
-                <input type="number" step="any" min="0.01" class="form-control text-end" id="sub_unit_qty" name="sub_unit_qty" placeholder="10" value="<?= !empty($item['sub_unit_qty']) ? (float)$item['sub_unit_qty'] : '' ?>" style="max-width: 90px;" title="Items per primary unit (e.g. 10)">
-              </div>
-              <div class="form-text small text-muted">e.g. 1 BOX = 10 PCS (leave empty if none)</div>
-            </div>
-          </div>
-
-          <!-- Pricing & GST Tax Rate Studio -->
-          <?php
-            $currentTaxRate = !empty($item) ? (float)($item['tax_rate'] ?? 0) : 0.0;
-            $isStandardTax = in_array($currentTaxRate, [0.0, 5.0, 12.0, 18.0, 28.0], true);
-            $isCustomTax = !empty($item) && !$isStandardTax;
-            $initialSalePrice = !empty($item) && isset($item['sale_price']) && (float)$item['sale_price'] > 0 ? (float)$item['sale_price'] : null;
-            $initialSaleWithTax = $initialSalePrice !== null ? round($initialSalePrice * (1 + ($currentTaxRate / 100)), 2) : null;
-          ?>
-          <div class="pricing-studio-card p-3 mb-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-primary text-white p-2 rounded-circle">
-                  <i class="bi bi-calculator"></i>
-                </span>
-                <div>
-                  <h6 class="fw-bold text-dark mb-0">Item Pricing &amp; GST Configuration</h6>
-                  <span class="text-muted small" style="font-size: 0.75rem;">Enter either price &mdash; the other calculates automatically based on GST rate</span>
+              <div id="customTaxRateContainer" class="mt-2 <?= $isCustomTax ? '' : 'hidden' ?>">
+                <div class="flex items-center gap-2">
+                  <input type="number" class="rf-input rf-input-sm text-right font-mono tabular-nums" id="custom_tax_rate_input" placeholder="1 - 100" min="1" max="100" step="any" value="<?= $isCustomTax ? htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                  <span class="text-xs text-[#5C5A54]">%</span>
                 </div>
+                <p class="rf-help">Enter custom rate (1 - 100%)</p>
               </div>
-              <div class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 small fw-semibold">
-                <i class="bi bi-arrow-left-right me-1"></i> Bidirectional Auto-Calculation
-              </div>
+              <input type="hidden" id="tax_rate" name="tax_rate" value="<?= htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') ?>">
             </div>
 
-            <!-- Dual Sales Pricing Row -->
-            <div class="row g-3 mb-3">
-              <!-- Without GST -->
-              <div class="col-md-6">
-                <div class="dual-price-box">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <label for="sale_price" class="form-label fw-bold text-dark mb-0">
-                      Sale Price (Without GST) <span class="text-danger">*</span>
-                    </label>
-                    <span class="price-calc-badge bg-secondary-subtle text-secondary border border-secondary-subtle">
-                      Base / Excl. GST
-                    </span>
-                  </div>
-                  <div class="input-group">
-                    <span class="input-group-text bg-light fw-bold text-dark">₹</span>
-                    <input type="number" class="form-control form-control-lg text-end fw-bold font-monospace" id="sale_price" name="sale_price" step="any" min="0" placeholder="0.00" value="<?= $initialSalePrice !== null ? htmlspecialchars((string)$initialSalePrice, ENT_QUOTES, 'UTF-8') : '' ?>">
-                  </div>
-                  <div class="form-text small text-muted mt-1">Base item selling price excluding GST</div>
-                </div>
+            <div>
+              <label for="purchase_price" class="rf-label-plain text-xs">Purchase Price / Cost (₹)</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-[#78746C]">₹</span>
+                <input type="number" class="rf-input pl-8 text-right font-mono tabular-nums" id="purchase_price" name="purchase_price" step="any" min="0" placeholder="0.00" value="<?= htmlspecialchars((string)($item['purchase_price'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
               </div>
-
-              <!-- With GST -->
-              <div class="col-md-6">
-                <div class="dual-price-box box-with-tax">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <label for="sale_price_with_tax" class="form-label fw-bold text-dark mb-0">
-                      Sale Price (With GST)
-                    </label>
-                    <span class="price-calc-badge bg-primary-subtle text-primary border border-primary-subtle">
-                      MRP / Incl. GST
-                    </span>
-                  </div>
-                  <div class="input-group">
-                    <span class="input-group-text bg-white fw-bold text-dark">₹</span>
-                    <input type="number" class="form-control form-control-lg text-end fw-bold font-monospace" id="sale_price_with_tax" name="sale_price_with_tax" step="any" min="0" placeholder="0.00" value="<?= $initialSaleWithTax !== null ? htmlspecialchars((string)$initialSaleWithTax, ENT_QUOTES, 'UTF-8') : '' ?>">
-                  </div>
-                  <div class="form-text small text-muted mt-1">Final customer bill amount including GST</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tax Rate & Purchase Price Sub-Row -->
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label for="tax_rate_select" class="form-label fw-semibold text-dark small">Applicable GST Tax Rate (%)</label>
-                <div class="input-group">
-                  <span class="input-group-text bg-white text-primary"><i class="bi bi-percent"></i></span>
-                  <select class="form-select" id="tax_rate_select">
-                    <option value="0" <?= (empty($item) || ($isStandardTax && $currentTaxRate === 0.0)) ? 'selected' : '' ?>>0% (Exempt / Nil)</option>
-                    <option value="5" <?= ($isStandardTax && $currentTaxRate === 5.0) ? 'selected' : '' ?>>5% (GST 5%)</option>
-                    <option value="12" <?= ($isStandardTax && $currentTaxRate === 12.0) ? 'selected' : '' ?>>12% (GST 12%)</option>
-                    <option value="18" <?= ($isStandardTax && $currentTaxRate === 18.0) ? 'selected' : '' ?>>18% (GST 18%)</option>
-                    <option value="28" <?= ($isStandardTax && $currentTaxRate === 28.0) ? 'selected' : '' ?>>28% (GST 28%)</option>
-                    <option value="custom" <?= $isCustomTax ? 'selected' : '' ?>>Custom Tax %</option>
-                  </select>
-                </div>
-                <div id="customTaxRateContainer" class="mt-2 <?= $isCustomTax ? '' : 'd-none' ?>">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light">Custom Rate</span>
-                    <input type="number" class="form-control text-end font-monospace" id="custom_tax_rate_input" placeholder="1 - 100" min="1" max="100" step="any" value="<?= $isCustomTax ? htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
-                    <span class="input-group-text bg-light">%</span>
-                  </div>
-                  <div class="form-text small text-muted">Enter custom rate (1 - 100%)</div>
-                </div>
-                <input type="hidden" id="tax_rate" name="tax_rate" value="<?= htmlspecialchars((string)$currentTaxRate, ENT_QUOTES, 'UTF-8') ?>">
-              </div>
-              <div class="col-md-6">
-                <label for="purchase_price" class="form-label fw-semibold text-dark small">Purchase Price / Cost (₹)</label>
-                <div class="input-group">
-                  <span class="input-group-text bg-white text-muted">₹</span>
-                  <input type="number" class="form-control text-end font-monospace" id="purchase_price" name="purchase_price" step="any" min="0" placeholder="0.00" value="<?= htmlspecialchars((string)($item['purchase_price'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-                </div>
-                <div class="form-text small text-muted">Your acquisition / supplier cost per unit</div>
-              </div>
+              <p class="rf-help">Acquisition / supplier cost per unit</p>
             </div>
           </div>
+        </div>
 
-          <!-- Stock Levels -->
-          <div class="row g-3 mb-3">
-            <?php if (empty($item)): ?>
-              <div class="col-md-6">
-                <label for="opening_stock" class="form-label">Opening Stock Quantity</label>
-                <input type="number" class="form-control" id="opening_stock" name="opening_stock" step="any" placeholder="0" value="0">
-              </div>
-            <?php endif; ?>
-            <div class="<?= !empty($item) ? 'col-md-12' : 'col-md-6' ?>">
-              <label for="low_stock_threshold" class="form-label">Low Stock Alert Threshold</label>
-              <input type="number" class="form-control" id="low_stock_threshold" name="low_stock_threshold" step="any" placeholder="e.g. 5" value="<?= htmlspecialchars((string)($item['low_stock_threshold'] ?? '5'), ENT_QUOTES, 'UTF-8') ?>">
-              <div class="form-text">Get an alert when stock drops below this number.</div>
+        <!-- Stock Levels -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <?php if (empty($item)): ?>
+            <div>
+              <label for="opening_stock" class="rf-label-plain">Opening Stock Quantity</label>
+              <input type="number" class="rf-input tabular-nums" id="opening_stock" name="opening_stock" step="any" placeholder="0" value="0">
             </div>
+          <?php endif; ?>
+          <div class="<?= !empty($item) ? 'md:col-span-2' : '' ?>">
+            <label for="low_stock_threshold" class="rf-label-plain">Low Stock Alert Threshold</label>
+            <input type="number" class="rf-input tabular-nums" id="low_stock_threshold" name="low_stock_threshold" step="any" placeholder="e.g. 5" value="<?= htmlspecialchars((string)($item['low_stock_threshold'] ?? '5'), ENT_QUOTES, 'UTF-8') ?>">
+            <p class="rf-help">Receive an alert when stock drops below this number.</p>
           </div>
+        </div>
 
-          <!-- Description -->
-          <div class="mb-4">
-            <label for="description" class="form-label">Item Description / Specifications</label>
-            <textarea class="form-control" id="description" name="description" rows="2" placeholder="Optional notes or product details..."><?= htmlspecialchars($item['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-          </div>
+        <!-- Description -->
+        <div>
+          <label for="description" class="rf-label-plain">Item Description / Specifications</label>
+          <textarea class="rf-textarea" id="description" name="description" rows="2" placeholder="Optional notes or product details..."><?= htmlspecialchars($item['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+        </div>
 
-          <div class="d-flex justify-content-end gap-2">
-            <a href="/items" class="btn btn-light px-4">Cancel</a>
-            <button type="submit" class="btn btn-primary px-4 shadow-sm">
-              <i class="bi bi-check2-circle me-1"></i> <?= !empty($item) ? 'Update Item' : 'Save Item' ?>
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-[#ECEAE4]">
+          <a href="/items" class="rf-btn rf-btn-secondary">Cancel</a>
+          <button type="submit" class="rf-btn rf-btn-primary">
+            <i class="bi bi-check2-circle"></i> <?= !empty($item) ? 'Update Item' : 'Save Item' ?>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -226,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const salePriceWithTax = document.getElementById('sale_price_with_tax');
   const itemForm = taxSelect ? taxSelect.closest('form') : null;
 
-  let lastEditedSalePrice = 'without_gst'; // 'without_gst' | 'with_gst'
+  let lastEditedSalePrice = 'without_gst';
 
   function getTaxRate() {
     if (!hiddenInput) return 0;
@@ -244,15 +221,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function updatePriceFromWithoutGst() {
     if (!salePriceWithoutTax || !salePriceWithTax) return;
     const val = salePriceWithoutTax.value.trim();
-    if (val === '') {
-      salePriceWithTax.value = '';
-      return;
-    }
+    if (val === '') { salePriceWithTax.value = ''; return; }
     const base = parseFloat(val);
-    if (isNaN(base) || base < 0) {
-      salePriceWithTax.value = '';
-      return;
-    }
+    if (isNaN(base) || base < 0) { salePriceWithTax.value = ''; return; }
     const taxRate = getTaxRate();
     const withTax = base * (1 + (taxRate / 100));
     salePriceWithTax.value = parseFloat(withTax.toFixed(2));
@@ -262,15 +233,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function updatePriceFromWithGst() {
     if (!salePriceWithoutTax || !salePriceWithTax) return;
     const val = salePriceWithTax.value.trim();
-    if (val === '') {
-      salePriceWithoutTax.value = '';
-      return;
-    }
+    if (val === '') { salePriceWithoutTax.value = ''; return; }
     const total = parseFloat(val);
-    if (isNaN(total) || total < 0) {
-      salePriceWithoutTax.value = '';
-      return;
-    }
+    if (isNaN(total) || total < 0) { salePriceWithoutTax.value = ''; return; }
     const taxRate = getTaxRate();
     const withoutTax = total / (1 + (taxRate / 100));
     salePriceWithoutTax.value = parseFloat(withoutTax.toFixed(2));
@@ -294,15 +259,14 @@ document.addEventListener('DOMContentLoaded', function() {
   function syncTax() {
     if (!taxSelect || !hiddenInput) return;
     if (taxSelect.value === 'custom') {
-      if (customContainer) customContainer.classList.remove('d-none');
+      if (customContainer) customContainer.classList.remove('hidden');
       let val = customInput ? parseFloat(customInput.value) : 0;
       hiddenInput.value = (isNaN(val) || val <= 0) ? '' : val;
     } else {
-      if (customContainer) customContainer.classList.add('d-none');
+      if (customContainer) customContainer.classList.add('hidden');
       hiddenInput.value = taxSelect.value;
     }
 
-    // Recompute whichever price wasn't last edited
     if (lastEditedSalePrice === 'with_gst') {
       updatePriceFromWithGst();
     } else {
@@ -313,9 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (taxSelect) {
     taxSelect.addEventListener('change', function() {
       syncTax();
-      if (taxSelect.value === 'custom' && customInput) {
-        customInput.focus();
-      }
+      if (taxSelect.value === 'custom' && customInput) customInput.focus();
     });
   }
 
@@ -325,41 +287,25 @@ document.addEventListener('DOMContentLoaded', function() {
       if (val !== '') {
         let num = parseFloat(val);
         if (!isNaN(num)) {
-          if (num > 100) {
-            customInput.value = 100;
-            num = 100;
-          } else if (num < 0) {
-            customInput.value = 1;
-            num = 1;
-          }
+          if (num > 100) { customInput.value = 100; num = 100; }
+          else if (num < 0) { customInput.value = 1; num = 1; }
           if (hiddenInput) hiddenInput.value = num;
         }
       } else {
         if (hiddenInput) hiddenInput.value = '';
       }
-      if (lastEditedSalePrice === 'with_gst') {
-        updatePriceFromWithGst();
-      } else {
-        updatePriceFromWithoutGst();
-      }
+      if (lastEditedSalePrice === 'with_gst') updatePriceFromWithGst();
+      else updatePriceFromWithoutGst();
     });
 
     customInput.addEventListener('blur', function() {
       if (customInput.value !== '') {
         let num = parseFloat(customInput.value);
-        if (isNaN(num) || num < 1) {
-          customInput.value = 1;
-          if (hiddenInput) hiddenInput.value = 1;
-        } else if (num > 100) {
-          customInput.value = 100;
-          if (hiddenInput) hiddenInput.value = 100;
-        }
+        if (isNaN(num) || num < 1) { customInput.value = 1; if (hiddenInput) hiddenInput.value = 1; }
+        else if (num > 100) { customInput.value = 100; if (hiddenInput) hiddenInput.value = 100; }
       }
-      if (lastEditedSalePrice === 'with_gst') {
-        updatePriceFromWithGst();
-      } else {
-        updatePriceFromWithoutGst();
-      }
+      if (lastEditedSalePrice === 'with_gst') updatePriceFromWithGst();
+      else updatePriceFromWithoutGst();
     });
   }
 
@@ -376,7 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hiddenInput) hiddenInput.value = num;
       }
 
-      // If user only filled With GST price, ensure Without GST price is computed before submit
       if (salePriceWithoutTax && salePriceWithTax) {
         if (salePriceWithoutTax.value.trim() === '' && salePriceWithTax.value.trim() !== '') {
           updatePriceFromWithGst();
@@ -394,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (customUnitForm) {
     customUnitForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (customUnitAlert) customUnitAlert.classList.add('d-none');
+      if (customUnitAlert) customUnitAlert.classList.add('hidden');
       if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = true;
 
       const codeInput = document.getElementById('newUnitCode');
@@ -405,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!codeVal) {
         if (customUnitAlert) {
           customUnitAlert.textContent = 'Please enter a unit code (e.g. PAIR, SET).';
-          customUnitAlert.classList.remove('d-none');
+          customUnitAlert.classList.remove('hidden');
         }
         if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
         return;
@@ -431,7 +376,6 @@ document.addEventListener('DOMContentLoaded', function() {
           const newCode = data.unit.code.toUpperCase();
           const newLabel = (data.unit.label || newCode) + ' (Custom)';
 
-          // Check if option already exists in select
           let opt = Array.from(unitSelect.options).find(o => o.value === newCode);
           if (!opt) {
             opt = document.createElement('option');
@@ -441,23 +385,18 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           unitSelect.value = newCode;
 
-          // Close modal
-          const modalEl = document.getElementById('modalAddCustomUnit');
-          if (modalEl) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modalInstance.hide();
-          }
+          if (window.RFUI) window.RFUI.closeModal('modalAddCustomUnit');
           customUnitForm.reset();
         } else {
           if (customUnitAlert) {
             customUnitAlert.textContent = data.error || 'Failed to create unit.';
-            customUnitAlert.classList.remove('d-none');
+            customUnitAlert.classList.remove('hidden');
           }
         }
       } catch (err) {
         if (customUnitAlert) {
           customUnitAlert.textContent = 'Network error: ' + err.message;
-          customUnitAlert.classList.remove('d-none');
+          customUnitAlert.classList.remove('hidden');
         }
       } finally {
         if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
@@ -468,36 +407,34 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Modal: Add Custom Unit -->
-<div class="modal fade" id="modalAddCustomUnit" tabindex="-1" aria-labelledby="modalAddCustomUnitLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header bg-primary text-white py-2 px-3">
-        <h6 class="modal-title fw-bold" id="modalAddCustomUnitLabel">
-          <i class="bi bi-plus-circle me-1"></i> Add Custom Unit
-        </h6>
-        <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="customUnitForm">
-        <div class="modal-body p-3">
-          <div id="customUnitAlert" class="alert alert-danger d-none py-1 px-2 small mb-2"></div>
-          <p class="small text-muted mb-2">Add a custom measurement unit visible only in your account.</p>
-          <div class="mb-2">
-            <label class="form-label small fw-semibold mb-1" for="newUnitCode">Unit Code <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm text-uppercase font-monospace" id="newUnitCode" name="new_unit_code" placeholder="e.g. PAIR, SET, CAN" maxlength="15" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 15).toUpperCase();">
-            <div class="form-text small text-muted" style="font-size: 0.72rem;">Short symbol (1-15 chars, alphanumeric)</div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-semibold mb-1" for="newUnitLabel">Display Label (Optional)</label>
-            <input type="text" class="form-control form-control-sm" id="newUnitLabel" name="new_unit_label" placeholder="e.g. PAIR (Pairs)" maxlength="50">
-          </div>
-        </div>
-        <div class="modal-footer bg-light py-2 px-3 border-0">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-sm fw-semibold" id="btnSaveCustomUnit">
-            <i class="bi bi-check-circle me-1"></i> Save Unit
-          </button>
-        </div>
-      </form>
+<div class="rf-modal hidden" id="modalAddCustomUnit" tabindex="-1" aria-labelledby="modalAddCustomUnitLabel" aria-hidden="true">
+  <div class="rf-modal-dialog max-w-sm">
+    <div class="rf-modal-header">
+      <h3 class="rf-modal-title text-sm" id="modalAddCustomUnitLabel">
+        <i class="bi bi-plus-circle text-[#5C5A54]"></i> Add Custom Unit
+      </h3>
+      <button type="button" class="text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" data-ui-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
     </div>
+    <form id="customUnitForm">
+      <div class="rf-modal-body space-y-4">
+        <div id="customUnitAlert" class="rf-alert rf-alert-danger hidden text-xs mb-0"></div>
+        <p class="text-xs text-[#5C5A54] m-0">Add a custom measurement unit visible only in your account.</p>
+        <div>
+          <label class="rf-label-plain text-xs" for="newUnitCode">Unit Code <span class="text-[#8F2D2B]">*</span></label>
+          <input type="text" class="rf-input rf-input-sm uppercase font-mono" id="newUnitCode" name="new_unit_code" placeholder="e.g. PAIR, SET, CAN" maxlength="15" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 15).toUpperCase();">
+          <p class="rf-help">Short symbol (1-15 chars, alphanumeric)</p>
+        </div>
+        <div>
+          <label class="rf-label-plain text-xs" for="newUnitLabel">Display Label (Optional)</label>
+          <input type="text" class="rf-input rf-input-sm" id="newUnitLabel" name="new_unit_label" placeholder="e.g. PAIR (Pairs)" maxlength="50">
+        </div>
+      </div>
+      <div class="rf-modal-footer">
+        <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Cancel</button>
+        <button type="submit" class="rf-btn rf-btn-primary rf-btn-sm" id="btnSaveCustomUnit">
+          <i class="bi bi-check-circle"></i> Save Unit
+        </button>
+      </div>
+    </form>
   </div>
 </div>

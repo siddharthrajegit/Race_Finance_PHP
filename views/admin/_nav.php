@@ -1,54 +1,32 @@
-<?php $activeMenu = $activeMenu ?? ''; ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<?php
+$activeMenu = $activeMenu ?? 'admin-dashboard';
+$adminTabs = [
+    'admin-dashboard' => ['href' => '/admin',          'icon' => 'bi-speedometer2',        'label' => 'Dashboard'],
+    'admin-users'     => ['href' => '/admin/users',    'icon' => 'bi-people',              'label' => 'Subscribers'],
+    'admin-firms'     => ['href' => '/admin/firms',    'icon' => 'bi-building',            'label' => 'Firms'],
+    'admin-invoices'  => ['href' => '/admin/invoices', 'icon' => 'bi-receipt',             'label' => 'Invoices'],
+    'admin-system'    => ['href' => '/admin/system',   'icon' => 'bi-hdd-network',         'label' => 'System'],
+    'admin-settings'  => ['href' => '/admin/settings', 'icon' => 'bi-sliders2',            'label' => 'Settings'],
+];
+?>
+<div class="mb-6 pb-5 border-b border-border flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
   <div>
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-warning text-dark px-2 py-1 fs-6 rounded-3 shadow-sm">
-        <i class="bi bi-shield-lock-fill me-1"></i> PLATFORM ADMIN
-      </span>
-      <h3 class="fw-bold mb-0 text-dark">RACE FINANCE Administrator &amp; SaaS Portal</h3>
+    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-canvas-alt border border-border text-[11px] font-medium tracking-wide uppercase text-ink-muted mb-2">
+      <i class="bi bi-shield-lock text-[11px]"></i> Platform Console
     </div>
-    <p class="text-muted small mb-0 mt-1">Platform management, business subscribers, subscriber deep inspector, records ledger, and governance</p>
+    <h1 class="text-2xl font-semibold tracking-tight text-ink mb-0.5">Platform Administration</h1>
+    <p class="text-sm text-ink-muted mb-0">System overview, subscriber accounts, storage quotas, and global defaults.</p>
   </div>
 
-  <div>
-    <!-- Admin Portal Header Badge -->
-  </div>
-</div>
-
-<!-- Admin Section Navigation Pills -->
-<div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
-  <div class="card-body p-2">
-    <ul class="nav nav-pills nav-fill flex-column flex-sm-row gap-1">
-      <li class="nav-item">
-        <a class="nav-link py-2 <?= $activeMenu === 'admin-dashboard' ? 'active bg-primary fw-bold text-white shadow-sm' : 'text-dark' ?>" href="/admin">
-          <i class="bi bi-speedometer2 me-1"></i> Command Center
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link py-2 <?= $activeMenu === 'admin-users' ? 'active bg-primary fw-bold text-white shadow-sm' : 'text-dark' ?>" href="/admin/users">
-          <i class="bi bi-people-fill me-1"></i> Subscribers &amp; Users
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link py-2 <?= $activeMenu === 'admin-firms' ? 'active bg-primary fw-bold text-white shadow-sm' : 'text-dark' ?>" href="/admin/firms">
-          <i class="bi bi-buildings-fill me-1"></i> Business Firms
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link py-2 <?= $activeMenu === 'admin-invoices' ? 'active bg-primary fw-bold text-white shadow-sm' : 'text-dark' ?>" href="/admin/invoices">
-          <i class="bi bi-receipt me-1"></i> Platform Records
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link py-2 <?= $activeMenu === 'admin-system' ? 'active bg-primary fw-bold text-white shadow-sm' : 'text-dark' ?>" href="/admin/system">
-          <i class="bi bi-hdd-network-fill me-1"></i> System &amp; Storage
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link py-2 <?= $activeMenu === 'admin-settings' ? 'active bg-primary fw-bold text-white shadow-sm' : 'text-dark' ?>" href="/admin/settings">
-          <i class="bi bi-sliders me-1"></i> Platform Settings
-        </a>
-      </li>
-    </ul>
-  </div>
+  <nav class="flex flex-wrap items-center gap-1.5 bg-canvas-alt/80 p-1 rounded-xl border border-border" aria-label="Admin sections">
+    <?php foreach ($adminTabs as $key => $tab):
+      $isActive = ($activeMenu === $key);
+    ?>
+      <a href="<?= $tab['href'] ?>"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors whitespace-nowrap <?= $isActive ? 'bg-surface text-ink shadow-xs border border-border' : 'text-ink-muted hover:text-ink hover:bg-surface/60' ?>">
+        <i class="bi <?= $tab['icon'] ?> text-[13px]"></i>
+        <span><?= $tab['label'] ?></span>
+      </a>
+    <?php endforeach; ?>
+  </nav>
 </div>

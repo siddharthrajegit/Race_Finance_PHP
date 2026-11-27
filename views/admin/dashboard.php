@@ -1,207 +1,193 @@
 <?php include __DIR__ . '/_nav.php'; ?>
 
-<!-- 1. Top KPI Summary Grid -->
-<div class="row g-3 mb-4">
-  <!-- Total Business Subscribers -->
-  <div class="col-sm-6 col-lg-3">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: #fff;">
-      <div class="card-body p-3 d-flex flex-column justify-content-between">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-white-50 small fw-bold text-uppercase" style="font-size: 0.72rem;">Subscribers &amp; Users</div>
-            <h2 class="fw-bold mb-0 text-white"><?= htmlspecialchars((string)($metrics['users']['total'] ?? 0), ENT_QUOTES, 'UTF-8') ?></h2>
-          </div>
-          <div class="rounded-circle bg-white bg-opacity-25 p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-            <i class="bi bi-people-fill fs-5"></i>
-          </div>
-        </div>
-        <div class="mt-3 pt-2 border-top border-white border-opacity-25 d-flex justify-content-between small text-white-50">
-          <span><strong class="text-white"><?= htmlspecialchars((string)($metrics['users']['active'] ?? 0), ENT_QUOTES, 'UTF-8') ?></strong> Active</span>
-          <span><strong class="text-warning"><?= htmlspecialchars((string)($metrics['users']['suspended'] ?? 0), ENT_QUOTES, 'UTF-8') ?></strong> Suspended</span>
-          <span><strong class="text-white"><?= htmlspecialchars((string)($metrics['users']['admins'] ?? 0), ENT_QUOTES, 'UTF-8') ?></strong> Admins</span>
+<!-- 1. Top KPI Summary Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+  <!-- Registered Subscribers -->
+  <div class="rf-card p-5 flex flex-col justify-between gap-3">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="text-[11px] font-medium uppercase tracking-wider text-ink-muted">Subscribers</div>
+        <div class="text-3xl font-semibold font-mono text-ink mt-1">
+          <?= (int)($metrics['users']['total'] ?? 0) ?>
         </div>
       </div>
+      <span class="w-9 h-9 rounded-lg bg-canvas-alt border border-border flex items-center justify-center text-ink-muted shrink-0">
+        <i class="bi bi-people text-base"></i>
+      </span>
+    </div>
+    <div class="flex flex-wrap items-center gap-1.5 text-xs pt-2 border-t border-border-subtle">
+      <span class="rf-badge rf-badge-sage font-mono"><?= (int)($metrics['users']['active'] ?? 0) ?> Active</span>
+      <?php if ((int)($metrics['users']['suspended'] ?? 0) > 0): ?>
+        <span class="rf-badge rf-badge-rose font-mono"><?= (int)$metrics['users']['suspended'] ?> Suspended</span>
+      <?php endif; ?>
+      <span class="rf-badge rf-badge-neutral font-mono"><?= (int)($metrics['users']['admins'] ?? 0) ?> Admins</span>
     </div>
   </div>
 
-  <!-- Total Registered Firms -->
-  <div class="col-sm-6 col-lg-3">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, #065f46, #10b981); color: #fff;">
-      <div class="card-body p-3 d-flex flex-column justify-content-between">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-white-50 small fw-bold text-uppercase" style="font-size: 0.72rem;">Registered Businesses</div>
-            <h2 class="fw-bold mb-0 text-white"><?= htmlspecialchars((string)($metrics['firms']['total'] ?? 0), ENT_QUOTES, 'UTF-8') ?></h2>
-          </div>
-          <div class="rounded-circle bg-white bg-opacity-25 p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-            <i class="bi bi-buildings-fill fs-5"></i>
-          </div>
-        </div>
-        <div class="mt-3 pt-2 border-top border-white border-opacity-25 d-flex justify-content-between small text-white-50">
-          <span>Max 2 Firms / User</span>
-          <span><strong class="text-white"><?= htmlspecialchars((string)($metrics['items']['total_items'] ?? 0), ENT_QUOTES, 'UTF-8') ?></strong> Items Logged</span>
+  <!-- Business Firms & Items -->
+  <div class="rf-card p-5 flex flex-col justify-between gap-3">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="text-[11px] font-medium uppercase tracking-wider text-ink-muted">Registered Firms</div>
+        <div class="text-3xl font-semibold font-mono text-ink mt-1">
+          <?= (int)($metrics['firms']['total'] ?? 0) ?>
         </div>
       </div>
+      <span class="w-9 h-9 rounded-lg bg-canvas-alt border border-border flex items-center justify-center text-ink-muted shrink-0">
+        <i class="bi bi-buildings text-base"></i>
+      </span>
+    </div>
+    <div class="text-xs text-ink-muted pt-2 border-t border-border-subtle flex items-center justify-between">
+      <span>Catalog Items Across Firms</span>
+      <strong class="font-mono text-ink"><?= number_format((int)($metrics['items']['total_items'] ?? 0)) ?></strong>
     </div>
   </div>
 
-  <!-- Platform Sales & Turnover -->
-  <div class="col-sm-6 col-lg-3">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, #5c3a21, #b45309); color: #fff;">
-      <div class="card-body p-3 d-flex flex-column justify-content-between">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-white-50 small fw-bold text-uppercase" style="font-size: 0.72rem;">Total Billed Volume</div>
-            <h2 class="fw-bold mb-0 text-white">₹ <?= number_format((float)($metrics['invoices']['total_sales_amount'] ?? 0), 0) ?></h2>
-          </div>
-          <div class="rounded-circle bg-white bg-opacity-25 p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-            <i class="bi bi-currency-rupee fs-5"></i>
-          </div>
-        </div>
-        <div class="mt-3 pt-2 border-top border-white border-opacity-25 d-flex justify-content-between small text-white-50">
-          <span><strong class="text-white"><?= htmlspecialchars((string)($metrics['invoices']['sales_count'] ?? 0), ENT_QUOTES, 'UTF-8') ?></strong> Sales Bills</span>
-          <span>Due: <strong class="text-warning">₹ <?= number_format((float)($metrics['invoices']['total_balance_due'] ?? 0), 0) ?></strong></span>
+  <!-- Total Billed Volume -->
+  <div class="rf-card p-5 flex flex-col justify-between gap-3">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="text-[11px] font-medium uppercase tracking-wider text-ink-muted">Platform Sales Volume</div>
+        <div class="text-2xl font-semibold font-mono text-sage mt-1">
+          ₹ <?= number_format((float)($metrics['invoices']['total_sales_amount'] ?? 0), 0) ?>
         </div>
       </div>
+      <span class="w-9 h-9 rounded-lg bg-sage-bg border border-border flex items-center justify-center text-sage shrink-0">
+        <i class="bi bi-graph-up-arrow text-base"></i>
+      </span>
+    </div>
+    <div class="text-xs text-ink-muted pt-2 border-t border-border-subtle flex items-center justify-between gap-2">
+      <span><?= number_format((int)($metrics['invoices']['sales_count'] ?? 0)) ?> sales</span>
+      <span class="font-mono text-rose">Due: ₹ <?= number_format((float)($metrics['invoices']['total_balance_due'] ?? 0), 0) ?></span>
     </div>
   </div>
 
-  <!-- Storage & Quota Pool Diagnostics -->
-  <div class="col-sm-6 col-lg-3">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; background: linear-gradient(135deg, #0f172a, #334155); color: #fff;">
-      <div class="card-body p-3 d-flex flex-column justify-content-between">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-white-50 small fw-bold text-uppercase" style="font-size: 0.72rem;">User Storage Pool</div>
-            <h2 class="fw-bold mb-0 text-white"><?= htmlspecialchars((string)($metrics['storage']['totalPoolUsedMB'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <span class="fs-6 fw-normal text-white-50">/ <?= htmlspecialchars((string)($metrics['storage']['totalPoolQuotaMB'] ?? 0), ENT_QUOTES, 'UTF-8') ?> MB</span></h2>
-          </div>
-          <div class="rounded-circle bg-white bg-opacity-25 p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-            <i class="bi bi-hdd-rack-fill fs-5"></i>
-          </div>
+  <!-- Platform Storage Pool -->
+  <div class="rf-card p-5 flex flex-col justify-between gap-3">
+    <?php
+      $poolPct = (float)($metrics['storage']['poolUsagePercentage'] ?? 0);
+      $poolBar = $poolPct > 85 ? 'bg-rose' : ($poolPct > 60 ? 'bg-amber' : 'bg-sage');
+    ?>
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="text-[11px] font-medium uppercase tracking-wider text-ink-muted">Storage Footprint</div>
+        <div class="text-2xl font-semibold font-mono text-ink mt-1">
+          <?= htmlspecialchars($storage['totalStorage'] ?? '--', ENT_QUOTES, 'UTF-8') ?>
         </div>
-        <div class="mt-3 pt-2 border-top border-white border-opacity-25 d-flex justify-content-between small text-white-50">
-          <span>Cap: <strong class="text-white">200 MB / User</strong></span>
-          <span>Pool Used: <strong class="text-warning"><?= htmlspecialchars((string)($metrics['storage']['poolUsagePercentage'] ?? 0), ENT_QUOTES, 'UTF-8') ?>%</strong></span>
-        </div>
+      </div>
+      <span class="w-9 h-9 rounded-lg bg-canvas-alt border border-border flex items-center justify-center text-ink-muted shrink-0">
+        <i class="bi bi-hdd-stack text-base"></i>
+      </span>
+    </div>
+    <div class="pt-2 border-t border-border-subtle space-y-1.5">
+      <div class="flex items-center justify-between text-[11px] text-ink-muted font-mono">
+        <span>Pool: <?= htmlspecialchars((string)($metrics['storage']['totalPoolUsedMB'] ?? 0), ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars((string)($metrics['storage']['totalPoolQuotaMB'] ?? 0), ENT_QUOTES, 'UTF-8') ?> MB</span>
+        <span><?= htmlspecialchars((string)$poolPct, ENT_QUOTES, 'UTF-8') ?>%</span>
+      </div>
+      <div class="w-full h-1.5 rounded-full bg-canvas-alt overflow-hidden">
+        <div class="h-full rounded-full <?= $poolBar ?>" style="width: <?= min(100, max($poolPct, 3)) ?>%;"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 2. Real-Time Activity Feed & Quick Admin Actions -->
-<div class="row g-4 mb-4">
-  <!-- Left: Real-Time Platform Activity Stream -->
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
-      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold text-dark mb-0">
-          <i class="bi bi-activity text-primary me-2"></i> Real-Time Platform Activity Stream
-        </h5>
-        <span class="badge bg-light text-dark border small">Latest 12 events</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="list-group list-group-flush">
-          <?php if (!empty($recentActivities)): ?>
-            <?php foreach ($recentActivities as $act): ?>
-              <div class="list-group-item px-4 py-3 d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-3">
-                  <?php if (($act['type'] ?? '') === 'user_registered'): ?>
-                    <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                      <i class="bi bi-person-plus-fill"></i>
-                    </div>
-                    <div>
-                      <div class="fw-semibold text-dark">New Subscriber: <?= htmlspecialchars($act['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-                      <small class="text-muted"><?= htmlspecialchars($act['subtitle'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
-                    </div>
-                  <?php elseif (($act['type'] ?? '') === 'firm_created'): ?>
-                    <div class="rounded-circle bg-success-subtle text-success p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                      <i class="bi bi-building-add"></i>
-                    </div>
-                    <div>
-                      <div class="fw-semibold text-dark">Firm Registered: <?= htmlspecialchars($act['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-                      <small class="text-muted">Owner: <?= htmlspecialchars($act['subtitle'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
-                    </div>
-                  <?php elseif (($act['type'] ?? '') === 'invoice_created'): ?>
-                    <div class="rounded-circle bg-warning-subtle text-warning-emphasis p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                      <i class="bi bi-receipt-cutoff"></i>
-                    </div>
-                    <div>
-                      <div class="fw-semibold text-dark">Bill Generated: <?= htmlspecialchars($act['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-                      <small class="text-muted"><?= htmlspecialchars($act['subtitle'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
-                    </div>
-                  <?php endif; ?>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-light text-muted border font-monospace small"><?= !empty($act['created_at']) ? date('d M, h:i A', strtotime($act['created_at'])) : '' ?></span>
-                </div>
-              </div>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <div class="p-4 text-center text-muted">No recent platform activity found.</div>
-          <?php endif; ?>
-        </div>
-      </div>
+<!-- 2. Fast-Track Operations Bar -->
+<div class="rf-card mb-6">
+  <div class="rf-card-body py-3.5 px-5 flex flex-wrap items-center justify-between gap-3">
+    <div class="text-xs font-medium uppercase tracking-wider text-ink-muted">Quick Administration</div>
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/admin/users" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-person-plus"></i> Manage Subscribers
+      </a>
+      <a href="/admin/firms" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-building"></i> Explore Firms
+      </a>
+      <a href="/admin/invoices" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-receipt"></i> Browse Records
+      </a>
+      <a href="/admin/system" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-hdd-network"></i> Storage &amp; Health
+      </a>
+      <a href="/admin/settings" class="rf-btn rf-btn-primary rf-btn-sm">
+        <i class="bi bi-sliders2"></i> Governance Settings
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Activity Feed & Security Audit Trail -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- Live Platform Activity -->
+  <div class="lg:col-span-6 rf-card flex flex-col">
+    <div class="rf-card-header flex items-center justify-between">
+      <h2 class="text-[15px] font-semibold text-ink mb-0 flex items-center gap-2">
+        <i class="bi bi-activity text-ink-muted"></i> Recent Platform Activity
+      </h2>
+      <span class="rf-badge rf-badge-neutral font-mono"><?= count($recentActivities ?? []) ?> events</span>
+    </div>
+    <div class="divide-y divide-border-subtle flex-1">
+      <?php if (!empty($recentActivities)): ?>
+        <?php foreach ($recentActivities as $act):
+          $aType = $act['type'] ?? '';
+          $aIcon = match($aType) {
+              'user_registered' => 'bi-person-plus text-sage bg-sage-bg',
+              'firm_created'    => 'bi-building text-slate bg-slate-bg',
+              'invoice_created' => 'bi-receipt text-amber bg-amber-bg',
+              default           => 'bi-dot text-ink-muted bg-canvas-alt',
+          };
+        ?>
+          <div class="px-5 py-3.5 flex items-start gap-3">
+            <span class="w-8 h-8 rounded-lg border border-border flex items-center justify-center shrink-0 <?= $aIcon ?>">
+              <i class="bi <?= explode(' ', $aIcon)[0] ?> text-xs"></i>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-medium text-ink truncate"><?= htmlspecialchars($act['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+              <?php if (!empty($act['subtitle'])): ?>
+                <div class="text-xs text-ink-muted truncate mt-0.5"><?= htmlspecialchars($act['subtitle'], ENT_QUOTES, 'UTF-8') ?></div>
+              <?php endif; ?>
+            </div>
+            <div class="text-[11px] font-mono text-ink-subtle shrink-0 whitespace-nowrap">
+              <?= !empty($act['created_at']) ? date('d M, h:i A', strtotime($act['created_at'])) : '--' ?>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="py-10 text-center text-sm text-ink-muted">No recent platform activities recorded.</div>
+      <?php endif; ?>
     </div>
   </div>
 
-  <!-- Right: Fast-Track Controls & Audit -->
-  <div class="col-lg-4">
-    <!-- Quick Actions Card -->
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
-      <div class="card-header bg-white py-3 border-0">
-        <h5 class="fw-bold text-dark mb-0">
-          <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Fast-Track Controls
-        </h5>
-      </div>
-      <div class="card-body p-3 pt-0 d-grid gap-2">
-        <a href="/admin/users" class="btn btn-outline-primary text-start d-flex align-items-center justify-content-between py-2 rounded-3">
-          <span><i class="bi bi-people me-2"></i> Inspect All Subscribers</span>
-          <i class="bi bi-chevron-right small"></i>
-        </a>
-        <a href="/admin/firms" class="btn btn-outline-success text-start d-flex align-items-center justify-content-between py-2 rounded-3">
-          <span><i class="bi bi-buildings me-2"></i> Business Firms Directory</span>
-          <i class="bi bi-chevron-right small"></i>
-        </a>
-        <a href="/admin/invoices" class="btn btn-outline-secondary text-start d-flex align-items-center justify-content-between py-2 rounded-3">
-          <span><i class="bi bi-receipt me-2"></i> Global Invoices Ledger</span>
-          <i class="bi bi-chevron-right small"></i>
-        </a>
-        <a href="/admin/system" class="btn btn-outline-dark text-start d-flex align-items-center justify-content-between py-2 rounded-3">
-          <span><i class="bi bi-hdd-network me-2"></i> System Health &amp; Storage Tools</span>
-          <i class="bi bi-chevron-right small"></i>
-        </a>
-        <a href="/admin/settings" class="btn btn-outline-warning text-start text-dark d-flex align-items-center justify-content-between py-2 rounded-3">
-          <span><i class="bi bi-sliders me-2"></i> SaaS Governance &amp; Broadcast</span>
-          <i class="bi bi-chevron-right small"></i>
-        </a>
-      </div>
+  <!-- Recent Admin Audit Trail -->
+  <div class="lg:col-span-6 rf-card flex flex-col">
+    <div class="rf-card-header flex items-center justify-between">
+      <h2 class="text-[15px] font-semibold text-ink mb-0 flex items-center gap-2">
+        <i class="bi bi-shield-check text-sage"></i> Recent Admin Audit Trail
+      </h2>
+      <a href="/admin/system" class="text-xs font-medium text-ink-muted hover:text-ink underline underline-offset-2">
+        View Full Audit
+      </a>
     </div>
-
-    <!-- Recent Admin Audit Logs -->
-    <div class="card border-0 shadow-sm" style="border-radius: 12px;">
-      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h6 class="fw-bold text-dark mb-0">
-          <i class="bi bi-shield-check text-success me-2"></i> Recent Admin Logs
-        </h6>
-        <a href="/admin/system" class="small text-decoration-none">View all</a>
-      </div>
-      <div class="card-body p-0">
-        <div class="list-group list-group-flush small">
-          <?php if (!empty($recentLogs)): ?>
-            <?php foreach ($recentLogs as $log): ?>
-              <div class="list-group-item px-3 py-2">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-dark"><?= htmlspecialchars($log['action'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
-                  <span class="text-muted font-monospace" style="font-size: 0.68rem;"><?= !empty($log['created_at']) ? date('h:i A', strtotime($log['created_at'])) : '' ?></span>
-                </div>
-                <div class="text-muted text-truncate" style="font-size: 0.72rem;"><?= htmlspecialchars($log['details'] ?? (!empty($log['admin_name']) ? 'By ' . $log['admin_name'] : ''), ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="divide-y divide-border-subtle flex-1">
+      <?php if (!empty($recentLogs)): ?>
+        <?php foreach ($recentLogs as $log): ?>
+          <div class="px-5 py-3.5 space-y-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="rf-badge rf-badge-neutral font-mono"><?= htmlspecialchars($log['action'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="text-xs font-medium text-ink"><?= htmlspecialchars($log['admin_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
               </div>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <div class="p-3 text-center text-muted small">No audit log records yet.</div>
-          <?php endif; ?>
-        </div>
-      </div>
+              <span class="text-[11px] font-mono text-ink-subtle">
+                <?= !empty($log['created_at']) ? date('d M Y, h:i A', strtotime($log['created_at'])) : '--' ?>
+              </span>
+            </div>
+            <?php if (!empty($log['details'])): ?>
+              <p class="text-xs text-ink-muted mb-0 leading-relaxed"><?= htmlspecialchars($log['details'], ENT_QUOTES, 'UTF-8') ?></p>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="py-10 text-center text-sm text-ink-muted">No admin actions logged yet.</div>
+      <?php endif; ?>
     </div>
   </div>
 </div>

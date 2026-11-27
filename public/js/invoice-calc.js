@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (btnClearPartySearch) btnClearPartySearch.style.display = 'block';
-    if (partySearchResults) partySearchResults.classList.add('d-none');
+    if (partySearchResults) partySearchResults.classList.add('hidden');
 
     validatePhoneField();
     validateGstinField();
@@ -214,43 +214,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (matches.length === 0) {
       const emptyDiv = document.createElement('div');
-      emptyDiv.className = 'list-group-item text-muted small p-2 text-center';
+      emptyDiv.className = 'px-3 py-2.5 text-xs text-[#78746C] text-center';
       emptyDiv.textContent = 'No matching registered parties found.';
       partySearchResults.appendChild(emptyDiv);
 
       if (currentQuery) {
         const createBtn = document.createElement('button');
         createBtn.type = 'button';
-        createBtn.className = 'list-group-item list-group-item-action p-2 text-start text-primary fw-bold bg-primary-subtle border-top';
-        createBtn.innerHTML = `<i class="bi bi-person-plus-fill me-1"></i> + Create "${currentQuery}" as New Party`;
+        createBtn.className = 'w-full px-3 py-2.5 text-left text-xs font-semibold text-[#2B526E] bg-[#F4F8FB] hover:bg-[#EBF2F7] border-t border-[#E6E4DF] cursor-pointer';
+        createBtn.innerHTML = `<i class="bi bi-person-plus-fill mr-1.5"></i> + Create "${currentQuery}" as New Party`;
         createBtn.addEventListener('click', () => {
-          partySearchResults.classList.add('d-none');
-          const modalEl = document.getElementById('modalQuickAddParty');
+          partySearchResults.classList.add('hidden');
           const quickNameInput = document.getElementById('quickPartyName');
           if (quickNameInput) quickNameInput.value = currentQuery;
-          if (modalEl) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modalInstance.show();
-          }
+          if (window.RFUI) window.RFUI.openModal('modalQuickAddParty');
         });
         partySearchResults.appendChild(createBtn);
       }
-      partySearchResults.classList.remove('d-none');
+      partySearchResults.classList.remove('hidden');
       return;
     }
 
     matches.forEach(p => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'list-group-item list-group-item-action p-2 text-start';
+      btn.className = 'w-full px-3.5 py-2.5 text-left hover:bg-[#FAF9F6] border-b border-[#F0EEE9] last:border-b-0 transition-colors cursor-pointer bg-white';
       btn.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-          <strong class="text-dark">${p.name}</strong>
-          ${p.phone ? `<span class="badge bg-light text-secondary border"><i class="bi bi-telephone me-1"></i>${p.phone}</span>` : ''}
+        <div class="flex justify-between items-center gap-2">
+          <strong class="text-sm font-semibold text-[#1C1B18]">${p.name}</strong>
+          ${p.phone ? `<span class="rf-badge rf-badge-neutral"><i class="bi bi-telephone"></i>${p.phone}</span>` : ''}
         </div>
-        <div class="small text-muted d-flex justify-content-between mt-1">
-          <span>${p.gstin ? `<span class="text-primary fw-medium">GSTIN: ${p.gstin}</span>` : (p.address || p.state || 'Manual Entry')}</span>
-          ${p.state ? `<span class="text-secondary">${p.state}</span>` : ''}
+        <div class="text-xs text-[#78746C] flex justify-between mt-1 gap-2">
+          <span>${p.gstin ? `<span class="text-[#2B526E] font-medium font-mono">GSTIN: ${p.gstin}</span>` : (p.address || p.state || 'Manual Entry')}</span>
+          ${p.state ? `<span class="text-[#5C5A54]">${p.state}</span>` : ''}
         </div>
       `;
 
@@ -266,22 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentQuery) {
       const createBtn = document.createElement('button');
       createBtn.type = 'button';
-      createBtn.className = 'list-group-item list-group-item-action p-2 text-start text-primary small fw-semibold border-top bg-light';
-      createBtn.innerHTML = `<i class="bi bi-plus-circle me-1"></i> + Create "${currentQuery}" as New Party`;
+      createBtn.className = 'w-full px-3 py-2.5 text-left text-xs font-semibold text-[#2B526E] bg-[#FAF9F6] hover:bg-[#F3F1EC] border-t border-[#E6E4DF] cursor-pointer';
+      createBtn.innerHTML = `<i class="bi bi-plus-circle mr-1.5"></i> + Create "${currentQuery}" as New Party`;
       createBtn.addEventListener('click', () => {
-        partySearchResults.classList.add('d-none');
-        const modalEl = document.getElementById('modalQuickAddParty');
+        partySearchResults.classList.add('hidden');
         const quickNameInput = document.getElementById('quickPartyName');
         if (quickNameInput) quickNameInput.value = currentQuery;
-        if (modalEl) {
-          const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-          modalInstance.show();
-        }
+        if (window.RFUI) window.RFUI.openModal('modalQuickAddParty');
       });
       partySearchResults.appendChild(createBtn);
     }
 
-    partySearchResults.classList.remove('d-none');
+    partySearchResults.classList.remove('hidden');
   }
 
   function getPartyMatches(rawQuery) {
@@ -328,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     partySearchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && partySearchResults) {
-        partySearchResults.classList.add('d-none');
+        partySearchResults.classList.add('hidden');
       }
     });
   }
@@ -338,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (partySearchInput) partySearchInput.value = '';
       if (partySelect) partySelect.value = '';
       btnClearPartySearch.style.display = 'none';
-      if (partySearchResults) partySearchResults.classList.add('d-none');
+      if (partySearchResults) partySearchResults.classList.add('hidden');
 
       if (partyNameInput) partyNameInput.value = '';
       if (partyPhoneInput) partyPhoneInput.value = '';
@@ -357,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close dropdown on click outside
   document.addEventListener('click', (e) => {
     if (partySearchResults && !partySearchResults.contains(e.target) && partySearchInput && !partySearchInput.contains(e.target)) {
-      partySearchResults.classList.add('d-none');
+      partySearchResults.classList.add('hidden');
     }
   });
 
@@ -439,31 +431,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     tr.innerHTML = `
-      <td class="text-center row-num text-muted small p-1">${rowCount + 1}</td>
+      <td class="text-center row-num text-[#87847C] text-xs tabular-nums p-1">${rowCount + 1}</td>
       <td>
         <input type="hidden" name="item_id[]" class="row-item-id" value="${itemId}">
-        <input type="text" name="item_name[]" class="form-control form-control-sm row-item-name" placeholder="Item name / Description" value="${itemName}" list="itemsDataList" required>
+        <input type="text" name="item_name[]" class="row-item-name" placeholder="Item name / Description" value="${itemName}" list="itemsDataList" required>
       </td>
       <td style="width: 85px;">
-        <input type="text" name="hsn_code[]" class="form-control form-control-sm row-hsn" placeholder="HSN/SAC" value="${itemData.hsn_code || ''}" maxlength="20">
+        <input type="text" name="hsn_code[]" class="row-hsn font-mono" placeholder="HSN/SAC" value="${itemData.hsn_code || ''}" maxlength="20">
       </td>
       <td style="width: 82px;">
-        <input type="number" name="quantity[]" class="form-control form-control-sm row-qty text-end" min="0.01" step="any" value="${itemData.quantity !== undefined ? itemData.quantity : '1'}" required>
+        <input type="number" name="quantity[]" class="row-qty text-right tabular-nums" min="0.01" step="any" value="${itemData.quantity !== undefined ? itemData.quantity : '1'}" required>
       </td>
       <td style="width: 78px;">
-        <select name="unit[]" class="form-select form-select-sm row-unit">
+        <select name="unit[]" class="row-unit">
           ${unitOptionsHtml}
         </select>
       </td>
       <td style="width: 95px;">
-        <input type="number" name="rate[]" class="form-control form-control-sm row-rate text-end" min="0" step="any" placeholder="0.00" value="${itemRate}" required>
+        <input type="number" name="rate[]" class="row-rate text-right tabular-nums" min="0" step="any" placeholder="0.00" value="${itemRate}" required>
       </td>
-      <td style="width: 72px;" class="discount-col ${!enableDiscount ? 'd-none' : ''}">
-        <input type="number" name="item_discount_percent[]" class="form-control form-control-sm row-discount-pct text-end" min="0" max="100" step="any" placeholder="0%" value="${itemData.discount_percent !== undefined ? itemData.discount_percent : '0'}">
+      <td style="width: 72px;" class="discount-col ${!enableDiscount ? 'hidden' : ''}">
+        <input type="number" name="item_discount_percent[]" class="row-discount-pct text-right tabular-nums" min="0" max="100" step="any" placeholder="0%" value="${itemData.discount_percent !== undefined ? itemData.discount_percent : '0'}">
         <input type="hidden" name="item_discount_amount[]" class="row-discount-amt" value="0">
       </td>
-      <td style="width: 96px;" class="gst-col ${!showRowTaxRate ? 'd-none' : ''}">
-        <select class="form-select form-select-sm row-tax-rate-select">
+      <td style="width: 96px;" class="gst-col ${!showRowTaxRate ? 'hidden' : ''}">
+        <select class="row-tax-rate-select">
           <option value="0" ${isStandardTax && itemTaxRate === 0 ? 'selected' : ''}>0%</option>
           <option value="5" ${isStandardTax && itemTaxRate === 5 ? 'selected' : ''}>5%</option>
           <option value="12" ${isStandardTax && itemTaxRate === 12 ? 'selected' : ''}>12%</option>
@@ -471,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <option value="28" ${isStandardTax && itemTaxRate === 28 ? 'selected' : ''}>28%</option>
           <option value="custom" ${!isStandardTax ? 'selected' : ''}>Custom %</option>
         </select>
-        <input type="number" class="form-control form-control-sm row-custom-tax text-end mt-1 ${!isStandardTax ? '' : 'd-none'}" placeholder="1-100" min="1" max="100" step="any" value="${customTaxVal}" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+        <input type="number" class="row-custom-tax text-right mt-1 tabular-nums ${!isStandardTax ? '' : 'hidden'}" placeholder="1-100" min="1" max="100" step="any" value="${customTaxVal}" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
         <input type="hidden" name="item_tax_rate[]" class="row-tax-rate" value="${itemTaxRate}">
         <input type="hidden" name="item_taxable[]" class="row-taxable" value="0">
         <input type="hidden" name="item_cgst_rate[]" class="row-cgst-rate" value="0">
@@ -481,12 +473,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="hidden" name="item_igst_rate[]" class="row-igst-rate" value="0">
         <input type="hidden" name="item_igst_amount[]" class="row-igst-amt" value="0">
       </td>
-      <td style="width: 105px;" class="text-end fw-bold">
+      <td style="width: 105px;" class="text-right font-semibold tabular-nums text-[#1C1B18]">
         <span class="row-total-display">0.00</span>
         <input type="hidden" name="item_total[]" class="row-total" value="0">
       </td>
       <td class="text-center p-1" style="width: 32px;">
-        <button type="button" class="btn btn-outline-danger btn-sm border-0 btn-remove-row p-1" title="Remove item">
+        <button type="button" class="btn-remove-row text-[#87847C] hover:text-[#8F2D2B] bg-transparent border-0 p-1 cursor-pointer transition-colors" title="Remove item">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -507,14 +499,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if ([0, 5, 12, 18, 28].includes(numRate)) {
       select.value = String(numRate);
       if (customInput) {
-        customInput.classList.add('d-none');
+        customInput.classList.add('hidden');
         customInput.value = '';
       }
       hiddenInput.value = numRate;
     } else {
       select.value = 'custom';
       if (customInput) {
-        customInput.classList.remove('d-none');
+        customInput.classList.remove('hidden');
         customInput.value = numRate > 0 ? numRate : '';
       }
       hiddenInput.value = numRate;
@@ -595,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
       taxRateSelect.addEventListener('change', () => {
         if (taxRateSelect.value === 'custom') {
           if (customTaxInput) {
-            customTaxInput.classList.remove('d-none');
+            customTaxInput.classList.remove('hidden');
             customTaxInput.focus();
             let val = parseFloat(customTaxInput.value);
             if (isNaN(val) || val < 1) {
@@ -606,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else {
           if (customTaxInput) {
-            customTaxInput.classList.add('d-none');
+            customTaxInput.classList.add('hidden');
           }
           if (hiddenTaxInput) hiddenTaxInput.value = taxRateSelect.value;
         }
@@ -855,29 +847,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
       gstCols.forEach(col => {
         if (isGst && isSeparateGst) {
-          col.classList.remove('d-none');
+          col.classList.remove('hidden');
         } else {
-          col.classList.add('d-none');
+          col.classList.add('hidden');
         }
       });
 
       if (finalGstRateRow) {
-        if (isGst && !isSeparateGst) finalGstRateRow.classList.remove('d-none');
-        else finalGstRateRow.classList.add('d-none');
+        if (isGst && !isSeparateGst) finalGstRateRow.classList.remove('hidden');
+        else finalGstRateRow.classList.add('hidden');
       }
 
       if (gstSummarySection) {
-        if (isGst) gstSummarySection.classList.remove('d-none');
-        else gstSummarySection.classList.add('d-none');
+        if (isGst) gstSummarySection.classList.remove('hidden');
+        else gstSummarySection.classList.add('hidden');
       }
 
       if (gstBadge) {
         if (isGst) {
           gstBadge.textContent = isSeparateGst ? 'GST Tax Invoice (Separate Item GST)' : 'GST Tax Invoice (Final Amount GST)';
-          gstBadge.className = 'badge bg-primary';
+          gstBadge.className = 'rf-badge rf-badge-slate';
         } else {
           gstBadge.textContent = 'Non-GST Retail Bill';
-          gstBadge.className = 'badge bg-secondary';
+          gstBadge.className = 'rf-badge rf-badge-neutral';
         }
       }
 
@@ -894,11 +886,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (cgstSgstRow && igstRow) {
         if (isInter) {
-          cgstSgstRow.classList.add('d-none');
-          igstRow.classList.remove('d-none');
+          cgstSgstRow.classList.add('hidden');
+          igstRow.classList.remove('hidden');
         } else {
-          cgstSgstRow.classList.remove('d-none');
-          igstRow.classList.add('d-none');
+          cgstSgstRow.classList.remove('hidden');
+          igstRow.classList.add('hidden');
         }
       }
 
@@ -927,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (finalTaxRateSelect) {
     finalTaxRateSelect.addEventListener('change', () => {
       if (finalTaxRateSelect.value === 'custom') {
-        if (finalCustomTaxContainer) finalCustomTaxContainer.classList.remove('d-none');
+        if (finalCustomTaxContainer) finalCustomTaxContainer.classList.remove('hidden');
         if (finalTaxRateCustom) {
           finalTaxRateCustom.focus();
           let val = parseFloat(finalTaxRateCustom.value);
@@ -937,7 +929,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } else {
-        if (finalCustomTaxContainer) finalCustomTaxContainer.classList.add('d-none');
+        if (finalCustomTaxContainer) finalCustomTaxContainer.classList.add('hidden');
       }
       updateAllCalculations();
     });
@@ -1227,11 +1219,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(draftKey, JSON.stringify(data));
         if (draftSaveIndicator && draftSaveTime) {
           draftSaveTime.textContent = `Draft saved ${data.timeFormatted}`;
-          draftSaveIndicator.classList.remove('d-none');
+          draftSaveIndicator.classList.remove('hidden');
         }
       } else {
         localStorage.removeItem(draftKey);
-        if (draftSaveIndicator) draftSaveIndicator.classList.add('d-none');
+        if (draftSaveIndicator) draftSaveIndicator.classList.add('hidden');
       }
     } catch (e) {
       console.warn('Draft auto-save error:', e);
@@ -1247,8 +1239,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function clearDraft() {
     try {
       localStorage.removeItem(draftKey);
-      if (draftRecoveryBanner) draftRecoveryBanner.classList.add('d-none');
-      if (draftSaveIndicator) draftSaveIndicator.classList.add('d-none');
+      if (draftRecoveryBanner) draftRecoveryBanner.classList.add('hidden');
+      if (draftSaveIndicator) draftSaveIndicator.classList.add('hidden');
     } catch (e) {}
   }
 
@@ -1329,10 +1321,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateAllCalculations();
-    if (draftRecoveryBanner) draftRecoveryBanner.classList.add('d-none');
+    if (draftRecoveryBanner) draftRecoveryBanner.classList.add('hidden');
     if (draftSaveIndicator && draftSaveTime) {
       draftSaveTime.textContent = `Draft restored (${draft.timeFormatted || 'Saved'})`;
-      draftSaveIndicator.classList.remove('d-none');
+      draftSaveIndicator.classList.remove('hidden');
     }
   }
 
@@ -1351,7 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemCount = draft.items ? draft.items.length : 0;
         const partyInfo = draft.party_name ? ` for "${draft.party_name}"` : '';
         draftDetailsText.textContent = `Saved on ${draft.timeFormatted || 'previous session'} with ${itemCount} item(s)${partyInfo}.`;
-        draftRecoveryBanner.classList.remove('d-none');
+        draftRecoveryBanner.classList.remove('hidden');
       }
 
       if (btnRestoreDraft) {
@@ -1406,48 +1398,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Toast Notification Helper
   function showToastNotification(message, type = 'success') {
-    let toastContainer = document.getElementById('appToastContainer');
-    if (!toastContainer) {
-      toastContainer = document.createElement('div');
-      toastContainer.id = 'appToastContainer';
-      toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
-      toastContainer.style.zIndex = '9999';
-      document.body.appendChild(toastContainer);
+    if (window.RFUI && typeof window.RFUI.toast === 'function') {
+      window.RFUI.toast(message, type === 'success' ? 'success' : 'danger', 3800);
+      return;
     }
-
-    const toastEl = document.createElement('div');
-    toastEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 shadow-lg`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.setAttribute('aria-live', 'assertive');
-    toastEl.setAttribute('aria-atomic', 'true');
-    toastEl.innerHTML = `
-      <div class="d-flex">
-        <div class="toast-body fw-medium">
-          ${message}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-    `;
-
-    toastContainer.appendChild(toastEl);
-    const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
-    toast.show();
-    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    alert(message);
   }
 
   // Modal reset alerts on open
-  const modalPartyEl = document.getElementById('modalQuickAddParty');
-  if (modalPartyEl) {
-    modalPartyEl.addEventListener('show.bs.modal', () => {
-      if (quickPartyAlert) quickPartyAlert.classList.add('d-none');
-    });
-  }
-  const modalItemEl = document.getElementById('modalQuickAddItem');
-  if (modalItemEl) {
-    modalItemEl.addEventListener('show.bs.modal', () => {
-      if (quickItemAlert) quickItemAlert.classList.add('d-none');
-    });
-  }
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-ui-modal]');
+    if (!trigger) return;
+    const target = trigger.getAttribute('data-ui-modal');
+    if (target === '#modalQuickAddParty' && quickPartyAlert) quickPartyAlert.classList.add('hidden');
+    if (target === '#modalQuickAddItem' && quickItemAlert) quickItemAlert.classList.add('hidden');
+    if (target === '#modalAddCustomUnit' && customUnitAlert) customUnitAlert.classList.add('hidden');
+  });
 
   // 1. Quick Party Modal Handlers
   const quickPartyForm = document.getElementById('quickPartyForm');
@@ -1467,8 +1433,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quickPartyForm) {
     quickPartyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (quickPartyAlert) quickPartyAlert.classList.add('d-none');
-      if (quickPartySpinner) quickPartySpinner.classList.remove('d-none');
+      if (quickPartyAlert) quickPartyAlert.classList.add('hidden');
+      if (quickPartySpinner) quickPartySpinner.classList.remove('hidden');
       if (btnSubmitQuickParty) btnSubmitQuickParty.disabled = true;
 
       const formData = new FormData(quickPartyForm);
@@ -1517,28 +1483,24 @@ document.addEventListener('DOMContentLoaded', () => {
           selectParty(newPartyObj);
 
           // Close modal and reset form
-          const modalEl = document.getElementById('modalQuickAddParty');
-          if (modalEl) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modalInstance.hide();
-          }
+          if (window.RFUI) window.RFUI.closeModal('modalQuickAddParty');
           quickPartyForm.reset();
 
           showToastNotification(`✓ Party "${p.name}" created and selected!`, 'success');
         } else {
           if (quickPartyAlert) {
             quickPartyAlert.textContent = result.error || 'Failed to create party.';
-            quickPartyAlert.classList.remove('d-none');
+            quickPartyAlert.classList.remove('hidden');
           }
         }
       } catch (err) {
         console.error('Error creating party:', err);
         if (quickPartyAlert) {
           quickPartyAlert.textContent = 'Server communication error: ' + err.message;
-          quickPartyAlert.classList.remove('d-none');
+          quickPartyAlert.classList.remove('hidden');
         }
       } finally {
-        if (quickPartySpinner) quickPartySpinner.classList.add('d-none');
+        if (quickPartySpinner) quickPartySpinner.classList.add('hidden');
         if (btnSubmitQuickParty) btnSubmitQuickParty.disabled = false;
       }
     });
@@ -1623,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quickItemTaxRate) {
     quickItemTaxRate.addEventListener('change', () => {
       if (quickItemTaxRate.value === 'custom') {
-        if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.remove('d-none');
+        if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.remove('hidden');
         if (quickItemCustomTax) {
           quickItemCustomTax.focus();
           let val = parseFloat(quickItemCustomTax.value);
@@ -1634,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = val;
         }
       } else {
-        if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('d-none');
+        if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('hidden');
         if (quickItemTaxRateHidden) quickItemTaxRateHidden.value = quickItemTaxRate.value;
       }
       if (lastEditedQuickPrice === 'with_gst') {
@@ -1687,9 +1649,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnToggleNewCategory) {
     btnToggleNewCategory.addEventListener('click', () => {
-      if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.add('d-none');
+      if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.add('hidden');
       if (quickItemNewCategoryWrap) {
-        quickItemNewCategoryWrap.classList.remove('d-none');
+        quickItemNewCategoryWrap.classList.remove('hidden');
         if (quickItemNewCategoryInput) {
           quickItemNewCategoryInput.value = '';
           quickItemNewCategoryInput.focus();
@@ -1701,9 +1663,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quickItemCategorySelect) {
     quickItemCategorySelect.addEventListener('change', () => {
       if (quickItemCategorySelect.value === '__create_new__') {
-        if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.add('d-none');
+        if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.add('hidden');
         if (quickItemNewCategoryWrap) {
-          quickItemNewCategoryWrap.classList.remove('d-none');
+          quickItemNewCategoryWrap.classList.remove('hidden');
           if (quickItemNewCategoryInput) {
             quickItemNewCategoryInput.value = '';
             quickItemNewCategoryInput.focus();
@@ -1715,8 +1677,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnCancelNewCategory) {
     btnCancelNewCategory.addEventListener('click', () => {
-      if (quickItemNewCategoryWrap) quickItemNewCategoryWrap.classList.add('d-none');
-      if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.remove('d-none');
+      if (quickItemNewCategoryWrap) quickItemNewCategoryWrap.classList.add('hidden');
+      if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.remove('hidden');
       if (quickItemCategorySelect) quickItemCategorySelect.value = '';
       if (quickItemNewCategoryInput) quickItemNewCategoryInput.value = '';
     });
@@ -1730,8 +1692,8 @@ document.addEventListener('DOMContentLoaded', () => {
           updateQuickPriceFromWithGst();
         }
       }
-      if (quickItemAlert) quickItemAlert.classList.add('d-none');
-      if (quickItemSpinner) quickItemSpinner.classList.remove('d-none');
+      if (quickItemAlert) quickItemAlert.classList.add('hidden');
+      if (quickItemSpinner) quickItemSpinner.classList.remove('hidden');
       if (btnSubmitQuickItem) btnSubmitQuickItem.disabled = true;
 
       const formData = new FormData(quickItemForm);
@@ -1739,7 +1701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Resolve category
       let finalCat = '';
-      if (quickItemNewCategoryWrap && !quickItemNewCategoryWrap.classList.contains('d-none')) {
+      if (quickItemNewCategoryWrap && !quickItemNewCategoryWrap.classList.contains('hidden')) {
         finalCat = quickItemNewCategoryInput ? quickItemNewCategoryInput.value.trim() : '';
       } else if (quickItemCategorySelect && quickItemCategorySelect.value !== '__create_new__') {
         finalCat = quickItemCategorySelect.value.trim();
@@ -1751,10 +1713,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(customTax) || customTax < 1 || customTax > 100) {
           if (quickItemAlert) {
             quickItemAlert.textContent = 'Custom tax rate must be a valid number between 1 and 100.';
-            quickItemAlert.classList.remove('d-none');
+            quickItemAlert.classList.remove('hidden');
           }
           if (btnSubmitQuickItem) btnSubmitQuickItem.disabled = false;
-          if (quickItemSpinner) quickItemSpinner.classList.add('d-none');
+          if (quickItemSpinner) quickItemSpinner.classList.add('hidden');
           if (quickItemCustomTax) quickItemCustomTax.focus();
           return;
         }
@@ -1828,13 +1790,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           // Close modal and reset form
-          const modalEl = document.getElementById('modalQuickAddItem');
-          if (modalEl) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modalInstance.hide();
-          }
+          if (window.RFUI) window.RFUI.closeModal('modalQuickAddItem');
           quickItemForm.reset();
-          if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('d-none');
+          if (quickItemCustomTaxContainer) quickItemCustomTaxContainer.classList.add('hidden');
 
           // Dynamically register newly created category in the dropdown
           if (item.category && quickItemCategorySelect) {
@@ -1852,8 +1810,8 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
           }
-          if (quickItemNewCategoryWrap) quickItemNewCategoryWrap.classList.add('d-none');
-          if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.remove('d-none');
+          if (quickItemNewCategoryWrap) quickItemNewCategoryWrap.classList.add('hidden');
+          if (quickItemCategorySelectWrap) quickItemCategorySelectWrap.classList.remove('hidden');
           if (quickItemCategorySelect) quickItemCategorySelect.value = '';
           if (quickItemNewCategoryInput) quickItemNewCategoryInput.value = '';
 
@@ -1861,17 +1819,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           if (quickItemAlert) {
             quickItemAlert.textContent = result.error || 'Failed to create item.';
-            quickItemAlert.classList.remove('d-none');
+            quickItemAlert.classList.remove('hidden');
           }
         }
       } catch (err) {
         console.error('Error creating item:', err);
         if (quickItemAlert) {
           quickItemAlert.textContent = 'Server communication error: ' + err.message;
-          quickItemAlert.classList.remove('d-none');
+          quickItemAlert.classList.remove('hidden');
         }
       } finally {
-        if (quickItemSpinner) quickItemSpinner.classList.add('d-none');
+        if (quickItemSpinner) quickItemSpinner.classList.add('hidden');
         if (btnSubmitQuickItem) btnSubmitQuickItem.disabled = false;
       }
     });
@@ -1886,7 +1844,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (customUnitForm) {
     customUnitForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (customUnitAlert) customUnitAlert.classList.add('d-none');
+      if (customUnitAlert) customUnitAlert.classList.add('hidden');
       if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = true;
 
       const codeInput = document.getElementById('newUnitCode');
@@ -1897,7 +1855,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!codeVal) {
         if (customUnitAlert) {
           customUnitAlert.textContent = 'Please enter a unit code (e.g. PAIR, SET).';
-          customUnitAlert.classList.remove('d-none');
+          customUnitAlert.classList.remove('hidden');
         }
         if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;
         return;
@@ -1960,23 +1918,19 @@ document.addEventListener('DOMContentLoaded', () => {
           });
 
           // Close modal
-          const modalEl = document.getElementById('modalAddCustomUnit');
-          if (modalEl) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-            modalInstance.hide();
-          }
+          if (window.RFUI) window.RFUI.closeModal('modalAddCustomUnit');
           customUnitForm.reset();
           showToastNotification(`✓ Custom unit "${newCode}" added!`, 'success');
         } else {
           if (customUnitAlert) {
             customUnitAlert.textContent = data.error || 'Failed to create unit.';
-            customUnitAlert.classList.remove('d-none');
+            customUnitAlert.classList.remove('hidden');
           }
         }
       } catch (err) {
         if (customUnitAlert) {
           customUnitAlert.textContent = 'Network error: ' + err.message;
-          customUnitAlert.classList.remove('d-none');
+          customUnitAlert.classList.remove('hidden');
         }
       } finally {
         if (btnSaveCustomUnit) btnSaveCustomUnit.disabled = false;

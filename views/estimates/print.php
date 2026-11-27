@@ -62,9 +62,6 @@ if (!function_exists('amountToIndianWords')) {
     }
 }
 
-// -------------------------------------------------------------
-// Calculate and normalize items + check if ANY GST or DISCOUNT exists
-// -------------------------------------------------------------
 $hasAnyGst = false;
 $hasAnyDiscount = false;
 
@@ -101,7 +98,6 @@ foreach ($items as $idx => $it) {
     $calculatedDiscTotal += $lineDisc;
     $calculatedGrandTotal += $lineTotal;
 
-    // Rate list calculations (per unit)
     $netPreGst = $discPercent > 0 ? round($rate * (1 - ($discPercent / 100)), 2) : $rate;
     $postGst = round($netPreGst * (1 + ($taxRate / 100)), 2);
     $origPostGst = round($rate * (1 + ($taxRate / 100)), 2);
@@ -159,24 +155,50 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $isRateList ? 'Rate List - ' . htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') : 'Estimate ' . htmlspecialchars($estimateNumber, ENT_QUOTES, 'UTF-8') . ' - ' . htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <!-- Bootstrap 5 CSS -->
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
+  <!-- Compiled Tailwind CSS -->
+  <link rel="stylesheet" href="/css/tailwind.css">
   <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
   <!-- html2pdf.js for instant PDF generation -->
   <script src="/vendor/html2pdf/html2pdf.bundle.min.js"></script>
   <script>if(typeof html2pdf==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>');}</script>
-  <link rel="stylesheet" href="/css/invoice-download.css?v=2">
+  <link rel="stylesheet" href="/css/invoice-download.css?v=3">
 
   <style>
-    /* Customer Single Line Bar */
+    body {
+      background-color: #F7F6F3 !important;
+      color: #1C1B18;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .top-action-bar {
+      background: #1C1B18 !important;
+      border-bottom: 1px solid #302E29 !important;
+      box-shadow: 0 2px 10px rgba(28, 27, 24, 0.08);
+    }
+    .theme-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 9999px;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.18);
+      flex-shrink: 0;
+    }
+    .paper-table-reset {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .paper-table-reset td {
+      padding: 2px 4px;
+      vertical-align: top;
+    }
     .customer-single-line {
-      background-color: var(--theme-light, #f8fafc);
-      border: 1px solid var(--theme-border, #e2e8f0);
-      border-left: 4px solid var(--theme-primary, #0f172a);
+      background-color: var(--theme-light, #FAF9F6);
+      border: 1px solid var(--theme-border, #E6E4DF);
+      border-left: 4px solid var(--theme-primary, #1C1B18);
       padding: 6px 12px;
       margin-bottom: 14px;
       font-size: 12px;
@@ -185,130 +207,113 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
       text-overflow: ellipsis;
       border-radius: 4px;
     }
+    @media print {
+      body {
+        background-color: #FFFFFF !important;
+      }
+    }
   </style>
 </head>
 <body class="print-mode-detailed">
 
   <!-- Top Action Toolbar -->
   <header class="top-action-bar no-print">
-    <div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="max-w-7xl mx-auto px-2 flex flex-wrap items-center justify-between gap-3">
       <!-- Left: Back link and Template Selector -->
-      <div class="d-flex align-items-center gap-3">
-        <a href="/estimates" class="btn btn-outline-light btn-sm d-flex align-items-center rounded-pill px-3">
-          <i class="bi bi-arrow-left me-1"></i> Back
+      <div class="flex flex-wrap items-center gap-3">
+        <a href="/estimates" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white/90 hover:bg-white/10 transition-colors">
+          <i class="bi bi-arrow-left"></i> Back
         </a>
 
         <!-- Template Layout Selector Buttons -->
         <div class="template-switcher-bar">
           <button type="button" class="template-btn active" id="tabDetailed" onclick="switchInvoiceTemplate('detailed')">
-            <i class="bi bi-file-earmark-spreadsheet me-1"></i> <?= $isRateList ? 'Detailed Rate List' : 'Detailed Quotation' ?>
+            <i class="bi bi-file-earmark-spreadsheet mr-1"></i> <?= $isRateList ? 'Detailed Rate List' : 'Detailed Quotation' ?>
           </button>
           <button type="button" class="template-btn" id="tabSimple" onclick="switchInvoiceTemplate('simple')">
-            <i class="bi bi-file-text me-1"></i> Simple (Portrait)
+            <i class="bi bi-file-text mr-1"></i> Simple (Portrait)
           </button>
           <button type="button" class="template-btn" id="tabHorizontal" onclick="switchInvoiceTemplate('horizontal')">
-            <i class="bi bi-layout-three-columns me-1"></i> Horizontal (3-in-1)
+            <i class="bi bi-layout-three-columns mr-1"></i> Horizontal (3-in-1)
           </button>
         </div>
       </div>
 
       <!-- Right: Action Buttons -->
-      <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <!-- Theme Selector Dropdown -->
-        <div class="dropdown">
-          <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-palette me-1 text-info"></i> Theme
+        <div class="rf-dropdown" data-ui-dropdown>
+          <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white/90 hover:bg-white/10 transition-colors cursor-pointer" type="button" data-ui-dropdown-toggle aria-expanded="false">
+            <i class="bi bi-palette text-amber-300"></i> Theme <i class="bi bi-chevron-down text-[10px] opacity-70"></i>
           </button>
-          <ul class="dropdown-menu dropdown-menu-dark shadow-sm border-secondary py-1" style="min-width: 230px;">
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('brown')">
-                <span class="theme-dot" style="background: #5c3a21;"></span> Classy Espresso Brown
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('leather')">
-                <span class="theme-dot" style="background: #78350f;"></span> Warm Cognac Leather
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('blue')">
-                <span class="theme-dot" style="background: #1e3a8a;"></span> Classic Vyapar Blue
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('emerald')">
-                <span class="theme-dot" style="background: #065f46;"></span> Royal Emerald
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('slate')">
-                <span class="theme-dot" style="background: #0f172a;"></span> Executive Slate
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('crimson')">
-                <span class="theme-dot" style="background: #831843;"></span> Imperial Crimson
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="setInvoiceTheme('purple')">
-                <span class="theme-dot" style="background: #4c1d95;"></span> Regal Purple
-              </button>
-            </li>
-            <li><hr class="dropdown-divider border-secondary my-1"></li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center text-warning fw-semibold" data-bs-toggle="modal" data-bs-target="#hsvCustomThemeModal">
-                <i class="bi bi-sliders2 me-2"></i> Customise HSV Colour...
-              </button>
-            </li>
-          </ul>
+          <div class="rf-dropdown-menu w-60" data-ui-dropdown-menu>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('brown'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #5c3a21;"></span> Classy Espresso Brown
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('leather'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #78350f;"></span> Warm Cognac Leather
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('blue'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #1e3a8a;"></span> Classic Vyapar Blue
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('emerald'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #065f46;"></span> Royal Emerald
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('slate'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #0f172a;"></span> Executive Slate
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('crimson'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #831843;"></span> Imperial Crimson
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="setInvoiceTheme('purple'); window.RFUI && RFUI.closeAllDropdowns();">
+              <span class="theme-dot" style="background: #4c1d95;"></span> Regal Purple
+            </button>
+            <div class="rf-dropdown-divider"></div>
+            <button type="button" class="rf-dropdown-item font-medium" data-ui-modal="#hsvCustomThemeModal">
+              <i class="bi bi-sliders2 text-amber"></i> Customise HSV Colour...
+            </button>
+          </div>
         </div>
 
         <!-- Customise HSV Theme Quick Button -->
-        <button class="btn btn-outline-warning btn-sm d-flex align-items-center rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#hsvCustomThemeModal" title="Set exact HSV colour">
-          <i class="bi bi-sliders2 me-1"></i> Customise
+        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-300/40 text-amber-200 text-xs font-medium hover:bg-amber-400/10 transition-colors cursor-pointer" data-ui-modal="#hsvCustomThemeModal" title="Set exact HSV colour">
+          <i class="bi bi-sliders2"></i> Customise
         </button>
 
         <!-- Bank Details & QR Code Toggle -->
         <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"]) || !empty($firm["qr_code_path"])): ?>
-          <button type="button" class="btn btn-outline-light btn-sm d-flex align-items-center rounded-pill px-3 shadow-sm" id="btnToggleBankQr" onclick="toggleBankQr()" title="Show or hide Bank Details and QR Code">
-            <i class="bi bi-qr-code me-1 text-info" id="bankQrToggleIcon"></i>
+          <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/90 text-xs font-medium hover:bg-white/10 transition-colors cursor-pointer" id="btnToggleBankQr" onclick="toggleBankQr()" title="Show or hide Bank Details and QR Code">
+            <i class="bi bi-qr-code text-sky-300" id="bankQrToggleIcon"></i>
             <span id="bankQrToggleText">Hide Bank &amp; QR</span>
           </button>
         <?php endif; ?>
 
         <!-- Download PDF Button -->
-        <button id="btnDownloadPdf" class="btn btn-primary btn-sm fw-semibold rounded-pill px-3 shadow-sm d-flex align-items-center">
-          <i class="bi bi-download me-1"></i> Download PDF
+        <button id="btnDownloadPdf" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-ink text-xs font-semibold hover:bg-white/90 transition-colors cursor-pointer">
+          <i class="bi bi-download"></i> Download PDF
         </button>
 
         <!-- Print Options Dropdown -->
-        <div class="dropdown">
-          <button class="btn btn-secondary btn-sm fw-semibold dropdown-toggle rounded-pill px-3 shadow-sm d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-printer me-1"></i> Print
+        <div class="rf-dropdown" data-ui-dropdown>
+          <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 text-white text-xs font-medium hover:bg-white/25 transition-colors cursor-pointer" type="button" data-ui-dropdown-toggle aria-expanded="false">
+            <i class="bi bi-printer"></i> Print <i class="bi bi-chevron-down text-[10px] opacity-70"></i>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1">
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="triggerPrintMode('detailed')">
-                <i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i> Print Detailed <?= $isRateList ? 'Rate List' : 'Quotation' ?> (Portrait)
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="triggerPrintMode('simple')">
-                <i class="bi bi-file-text text-success me-2"></i> Print Simple Format (Portrait)
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item py-2 d-flex align-items-center" onclick="triggerPrintMode('horizontal')">
-                <i class="bi bi-layout-three-columns text-warning-emphasis me-2"></i> Print Simple Slips (Horizontal 3-in-1)
-              </button>
-            </li>
-          </ul>
+          <div class="rf-dropdown-menu w-72" data-ui-dropdown-menu>
+            <button type="button" class="rf-dropdown-item" onclick="triggerPrintMode('detailed'); window.RFUI && RFUI.closeAllDropdowns();">
+              <i class="bi bi-file-earmark-spreadsheet text-ink-muted"></i> Print Detailed <?= $isRateList ? 'Rate List' : 'Quotation' ?> (Portrait)
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="triggerPrintMode('simple'); window.RFUI && RFUI.closeAllDropdowns();">
+              <i class="bi bi-file-text text-sage"></i> Print Simple Format (Portrait)
+            </button>
+            <button type="button" class="rf-dropdown-item" onclick="triggerPrintMode('horizontal'); window.RFUI && RFUI.closeAllDropdowns();">
+              <i class="bi bi-layout-three-columns text-amber"></i> Print Simple Slips (Horizontal 3-in-1)
+            </button>
+          </div>
         </div>
 
         <!-- Send WhatsApp Modal Trigger -->
-        <button type="button" class="btn btn-success btn-sm fw-semibold rounded-pill px-3 shadow-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#sendWhatsAppModal" title="Send details on WhatsApp">
-          <i class="bi bi-whatsapp me-1"></i> WhatsApp
+        <button type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#2E5A36] text-white text-xs font-semibold hover:bg-[#254A2C] transition-colors cursor-pointer" data-ui-modal="#sendWhatsAppModal" title="Send details on WhatsApp">
+          <i class="bi bi-whatsapp"></i> WhatsApp
         </button>
       </div>
     </div>
@@ -320,89 +325,83 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
   ============================================================= -->
   <div class="invoice-preview-container print-template-target" id="detailedInvoiceArea">
     <div class="invoice-paper" id="detailedPaperArea">
-      <!-- Top Colored Accent Bar -->
       <div class="vyapar-top-strip"></div>
 
       <div class="invoice-inner">
         <!-- 1. Header: Firm Profile & Document Metadata -->
-        <div class="row align-items-start mb-4 pb-3 border-bottom">
-          <!-- Left: Business Info -->
-          <div class="col-7">
-            <div class="d-flex align-items-center mb-2">
+        <div class="grid grid-cols-12 gap-4 items-start mb-4 pb-3 border-b border-border">
+          <div class="col-span-7">
+            <div class="flex items-center gap-3 mb-2">
               <?php if (!empty($firm["logo_path"])): ?>
-                <img src="<?= $firm["logo_path"] ?>" alt="<?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?>" class="rounded border p-1 me-3 bg-white" style="max-height: 52px; max-width: 90px; object-fit: contain;">
+                <img src="<?= $firm["logo_path"] ?>" alt="<?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?>" class="rounded border border-border p-1 bg-white max-h-[52px] max-w-[90px] object-contain">
               <?php endif; ?>
               <div>
                 <h3 class="firm-name mb-0"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></h3>
                 <?php if (!empty($firmGstin)): ?>
-                  <div class="small fw-semibold text-muted font-monospace mt-1">
-                    GSTIN: <span class="text-dark"><?= htmlspecialchars($firmGstin, ENT_QUOTES, 'UTF-8') ?></span>
+                  <div class="text-xs font-semibold text-ink-muted font-mono mt-1">
+                    GSTIN: <span class="text-ink"><?= htmlspecialchars($firmGstin, ENT_QUOTES, 'UTF-8') ?></span>
                   </div>
                 <?php endif; ?>
               </div>
             </div>
-            <div class="small text-muted pe-3" style="font-size: 0.82rem; line-height: 1.45;">
+            <div class="text-xs text-ink-muted pr-3 leading-relaxed space-y-0.5">
               <?php if (!empty($firmAddress)): ?><div><?= htmlspecialchars(implode(', ', $firmAddress), ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-              <?php if (!empty($firmPhone)): ?><div><i class="bi bi-telephone text-secondary me-1"></i> <?= htmlspecialchars($firmPhone, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-              <?php if (!empty($firmEmail)): ?><div><i class="bi bi-envelope text-secondary me-1"></i> <?= htmlspecialchars($firmEmail, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+              <?php if (!empty($firmPhone)): ?><div><i class="bi bi-telephone text-ink-subtle mr-1"></i> <?= htmlspecialchars($firmPhone, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+              <?php if (!empty($firmEmail)): ?><div><i class="bi bi-envelope text-ink-subtle mr-1"></i> <?= htmlspecialchars($firmEmail, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
             </div>
           </div>
 
-          <!-- Right: Document Title & Metadata -->
-          <div class="col-5 text-end">
+          <div class="col-span-5 text-right">
             <div class="invoice-title-badge mb-2">
               <?= $docTitle ?>
             </div>
-            <div class="small text-muted" style="font-size: 0.84rem;">
+            <div class="text-xs text-ink-muted space-y-0.5">
               <?php if (!$isRateList && !empty($estimateNumber)): ?>
-                <div><strong>Estimate No:</strong> <span class="font-monospace fw-bold text-dark">#<?= htmlspecialchars($estimateNumber, ENT_QUOTES, 'UTF-8') ?></span></div>
+                <div><strong class="text-ink">Estimate No:</strong> <span class="font-mono font-bold text-ink">#<?= htmlspecialchars($estimateNumber, ENT_QUOTES, 'UTF-8') ?></span></div>
               <?php endif; ?>
-              <div><strong>Date:</strong> <span class="text-dark"><?= htmlspecialchars(formatDate($estimateDate), ENT_QUOTES, 'UTF-8') ?></span></div>
+              <div><strong class="text-ink">Date:</strong> <span class="text-ink"><?= htmlspecialchars(formatDate($estimateDate), ENT_QUOTES, 'UTF-8') ?></span></div>
               <?php if (!empty($customerName)): ?>
-                <div class="mt-1">
-                  <strong>Customer:</strong> <span class="fw-bold text-dark"><?= htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') ?></span>
+                <div class="pt-1">
+                  <strong class="text-ink">Customer:</strong> <span class="font-bold text-ink"><?= htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
               <?php endif; ?>
             </div>
           </div>
         </div>
 
-        <!-- Optional Customer Line Bar (shown if customerName provided) -->
         <?php if (!empty($customerName)): ?>
           <div class="customer-single-line">
-            <span class="text-muted text-uppercase fw-semibold" style="font-size: 10.5px; letter-spacing: 0.5px;">Customer:</span>
-            <strong class="text-dark ms-1" style="font-size: 13px;"><?= htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') ?></strong>
+            <span class="text-ink-muted uppercase font-semibold text-[10.5px] tracking-wide">Customer:</span>
+            <strong class="text-ink ml-1 text-[13px]"><?= htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') ?></strong>
           </div>
         <?php endif; ?>
 
         <!-- Line Items Table -->
-        <div class="table-responsive mb-4">
+        <div class="overflow-x-auto mb-4">
           <table class="vyapar-table">
             <thead>
               <tr class="text-center">
-                <th style="width: 35px;">#</th>
-                <th class="text-start"><?= $isRateList ? 'Item / Product Name' : 'Item Description' ?></th>
-                <th style="width: 75px;">HSN/SAC</th>
+                <th class="w-9">#</th>
+                <th class="text-left"><?= $isRateList ? 'Item / Product Name' : 'Item Description' ?></th>
+                <th class="w-[75px]">HSN/SAC</th>
                 <?php if (!$isRateList): ?>
-                  <th style="width: 55px;">Qty</th>
-                  <th style="width: 55px;">Unit</th>
-                  <th style="width: 85px;" class="text-end">Rate (₹)</th>
+                  <th class="w-14">Qty</th>
+                  <th class="w-14">Unit</th>
+                  <th class="w-[85px] text-right">Rate (₹)</th>
                 <?php else: ?>
-                  <th style="width: 95px;" class="text-end">Pre-GST Price</th>
+                  <th class="w-[95px] text-right">Pre-GST Price</th>
                 <?php endif; ?>
-                <!-- Conditional Discount Header (Removed if all are 0) -->
                 <?php if ($hasAnyDiscount): ?>
-                  <th style="width: 65px;" class="text-center">Disc %</th>
+                  <th class="w-16 text-center">Disc %</th>
                 <?php endif; ?>
-                <!-- Conditional GST Header (Removed if all are 0) -->
                 <?php if ($hasAnyGst): ?>
-                  <th style="width: 65px;" class="<?= $isRateList ? 'text-center' : 'text-end' ?>"><?= $isRateList ? 'GST %' : 'GST' ?></th>
+                  <th class="w-16 <?= $isRateList ? 'text-center' : 'text-right' ?>"><?= $isRateList ? 'GST %' : 'GST' ?></th>
                 <?php endif; ?>
                 <?php if (!$isRateList): ?>
-                  <th style="width: 95px;" class="text-end">Amount (₹)</th>
+                  <th class="w-[95px] text-right">Amount (₹)</th>
                 <?php else: ?>
-                  <th style="width: 95px;" class="text-end">Post-GST Price</th>
-                  <th style="width: 135px;" class="text-start">Unit &amp; Packaging</th>
+                  <th class="w-[95px] text-right">Post-GST Price</th>
+                  <th class="w-[135px] text-left">Unit &amp; Packaging</th>
                 <?php endif; ?>
               </tr>
             </thead>
@@ -410,50 +409,48 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
               <?php if (!empty($normalizedItems)): ?>
                 <?php foreach ($normalizedItems as $item): ?>
                   <tr>
-                    <td class="text-center text-muted small"><?= $item['index'] ?></td>
+                    <td class="text-center text-ink-muted text-xs"><?= $item['index'] ?></td>
                     <td>
-                      <div class="fw-semibold text-dark"><?= htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8') ?></div>
+                      <div class="font-semibold text-ink"><?= htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8') ?></div>
                       <?php if (!empty($item['category'])): ?>
-                        <span class="badge bg-light text-muted border" style="font-size: 8px;"><?= htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8') ?></span>
+                        <span class="rf-badge rf-badge-neutral text-[9px]"><?= htmlspecialchars($item['category'], ENT_QUOTES, 'UTF-8') ?></span>
                       <?php endif; ?>
                     </td>
-                    <td class="text-center font-monospace small text-muted"><?= htmlspecialchars($item['hsn_code'] ?: '--', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td class="text-center font-mono text-xs text-ink-muted"><?= htmlspecialchars($item['hsn_code'] ?: '--', ENT_QUOTES, 'UTF-8') ?></td>
                     <?php if (!$isRateList): ?>
-                      <td class="text-center fw-bold"><?= $item['quantity'] ?></td>
-                      <td class="text-center text-muted small"><?= htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8') ?></td>
-                      <td class="text-end font-monospace">₹ <?= number_format($item['rate'], 2) ?></td>
+                      <td class="text-center font-bold"><?= $item['quantity'] ?></td>
+                      <td class="text-center text-ink-muted text-xs"><?= htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8') ?></td>
+                      <td class="text-right font-mono">₹ <?= number_format($item['rate'], 2) ?></td>
                     <?php else: ?>
-                      <td class="text-end font-monospace fw-semibold">₹ <?= number_format($item['rate'], 2) ?></td>
+                      <td class="text-right font-mono font-semibold">₹ <?= number_format($item['rate'], 2) ?></td>
                     <?php endif; ?>
-                    <!-- Conditional Discount Column Value -->
                     <?php if ($hasAnyDiscount): ?>
-                      <td class="text-center <?= $item['discount_percent'] > 0 ? 'text-danger fw-semibold' : 'text-muted' ?>">
+                      <td class="text-center <?= $item['discount_percent'] > 0 ? 'text-rose font-semibold' : 'text-ink-muted' ?>">
                         <?= $item['discount_percent'] > 0 ? ($item['discount_percent'] . '%') : '--' ?>
                       </td>
                     <?php endif; ?>
-                    <!-- Conditional GST Column Value -->
                     <?php if ($hasAnyGst): ?>
                       <?php if ($isRateList): ?>
-                        <td class="text-center font-monospace"><?= $item['tax_rate'] > 0 ? ($item['tax_rate'] . '%') : '--' ?></td>
+                        <td class="text-center font-mono"><?= $item['tax_rate'] > 0 ? ($item['tax_rate'] . '%') : '--' ?></td>
                       <?php else: ?>
-                        <td class="text-end small">
-                          <?= $item['tax_rate'] > 0 ? "₹ " . number_format($item['tax_amount'], 2) . "<br><span class='text-muted' style='font-size: 8px;'>(" . $item['tax_rate'] . "%)</span>" : '--' ?>
+                        <td class="text-right text-xs">
+                          <?= $item['tax_rate'] > 0 ? "₹ " . number_format($item['tax_amount'], 2) . "<br><span class='text-ink-muted text-[9px]'>(" . $item['tax_rate'] . "%)</span>" : '--' ?>
                         </td>
                       <?php endif; ?>
                     <?php endif; ?>
                     <?php if (!$isRateList): ?>
-                      <td class="text-end fw-bold text-dark font-monospace">₹ <?= number_format($item['total_amount'], 2) ?></td>
+                      <td class="text-right font-bold text-ink font-mono">₹ <?= number_format($item['total_amount'], 2) ?></td>
                     <?php else: ?>
-                      <td class="text-end fw-bold text-dark font-monospace">
+                      <td class="text-right font-bold text-ink font-mono">
                         ₹ <?= number_format($item['post_gst'], 2) ?>
                         <?php if ($item['discount_percent'] > 0): ?>
-                          <div class="text-muted text-decoration-line-through small" style="font-size: 8.5px;">₹ <?= number_format($item['orig_post_gst'], 2) ?></div>
+                          <div class="text-ink-muted line-through text-[9px]">₹ <?= number_format($item['orig_post_gst'], 2) ?></div>
                         <?php endif; ?>
                       </td>
-                      <td class="text-start">
+                      <td class="text-left">
                         <strong><?= htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8') ?></strong>
                         <?php if ($item['subUnitText'] !== '--'): ?>
-                          <div class="text-muted" style="font-size: 9.5px;"><?= htmlspecialchars($item['subUnitText'], ENT_QUOTES, 'UTF-8') ?></div>
+                          <div class="text-ink-muted text-[9.5px]"><?= htmlspecialchars($item['subUnitText'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                       </td>
                     <?php endif; ?>
@@ -461,7 +458,7 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
                 <?php endforeach; ?>
               <?php else: ?>
                 <tr>
-                  <td colspan="10" class="text-center py-4 text-muted">No items in this list.</td>
+                  <td colspan="10" class="text-center py-6 text-ink-muted">No items in this list.</td>
                 </tr>
               <?php endif; ?>
             </tbody>
@@ -469,30 +466,29 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
         </div>
 
         <!-- 4. Summary & Bank / QR Area -->
-        <div class="row g-4 mb-4">
-          <!-- Left Column: Bank / QR & Notes -->
-          <div class="col-md-6">
+        <div class="grid grid-cols-12 gap-4 mb-4">
+          <div class="col-span-6 space-y-3">
             <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"]) || !empty($firm["qr_code_path"])): ?>
-              <div class="bank-box bank-qr-block mb-3">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="small fw-bold text-uppercase text-dark" style="font-size: 0.75rem;">
-                    <i class="bi bi-bank2 text-primary me-1"></i> Bank &amp; Payment Details
+              <div class="bank-box bank-qr-block">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-xs font-bold uppercase text-ink flex items-center gap-1.5">
+                    <i class="bi bi-bank2 text-slate"></i> Bank &amp; Payment Details
                   </div>
                   <?php if (!empty($firm["upi_id"])): ?>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">UPI Accepted</span>
+                    <span class="rf-badge rf-badge-slate text-[10px]">UPI Accepted</span>
                   <?php endif; ?>
                 </div>
-                <div class="d-flex align-items-center justify-content-between gap-3">
-                  <div class="small text-muted flex-grow-1" style="font-size: 0.82rem; line-height: 1.45;">
-                    <?php if (!empty($firm["bank_name"])): ?><div>Bank Name: <strong class="text-dark"><?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
-                    <?php if (!empty($firm["bank_account_no"])): ?><div>A/C Number: <strong class="text-dark font-monospace"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
-                    <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC Code: <strong class="text-dark font-monospace"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
-                    <?php if (!empty($firm["upi_id"])): ?><div>UPI ID: <strong class="text-primary font-monospace"><?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                <div class="flex items-center justify-between gap-3">
+                  <div class="text-xs text-ink-muted flex-1 leading-relaxed space-y-0.5">
+                    <?php if (!empty($firm["bank_name"])): ?><div>Bank Name: <strong class="text-ink"><?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                    <?php if (!empty($firm["bank_account_no"])): ?><div>A/C Number: <strong class="text-ink font-mono"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                    <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC Code: <strong class="text-ink font-mono"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+                    <?php if (!empty($firm["upi_id"])): ?><div>UPI ID: <strong class="text-slate font-mono"><?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
                   </div>
                   <?php if (!empty($firm["qr_code_path"])): ?>
-                    <div class="text-center ps-3 border-start d-flex flex-column align-items-center">
-                      <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="Scan & Pay QR" class="rounded border p-1 bg-white" style="width: 72px; height: 72px; object-fit: contain;">
-                      <span class="text-uppercase fw-semibold text-muted mt-1" style="font-size: 0.62rem;">Scan to Pay</span>
+                    <div class="text-center pl-3 border-l border-border flex flex-col items-center">
+                      <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="Scan & Pay QR" class="rounded border border-border p-1 bg-white w-[72px] h-[72px] object-contain">
+                      <span class="uppercase font-semibold text-ink-muted mt-1 text-[10px]">Scan to Pay</span>
                     </div>
                   <?php endif; ?>
                 </div>
@@ -500,79 +496,76 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
             <?php endif; ?>
 
             <?php if (!empty($notes)): ?>
-              <div class="p-2 border rounded bg-white mb-2">
-                <div class="text-uppercase fw-bold text-muted mb-1" style="font-size: 0.7rem;">Terms / Notes:</div>
-                <div class="small text-muted" style="font-size: 0.76rem; line-height: 1.35; white-space: pre-line;">
+              <div class="p-2.5 border border-border rounded-lg bg-white">
+                <div class="uppercase font-bold text-ink-muted mb-1 text-[11px]">Terms / Notes:</div>
+                <div class="text-ink-muted text-xs leading-snug whitespace-pre-line">
                   <?= htmlspecialchars($notes, ENT_QUOTES, 'UTF-8') ?>
                 </div>
               </div>
             <?php else: ?>
-              <div class="text-muted small" style="font-size: 9.5px; line-height: 1.4;">
-                * <?= $isRateList ? 'Rates mentioned above are current as of ' . htmlspecialchars(formatDate($estimateDate), ENT_QUOTES, 'UTF-8') . ' and subject to standard terms & availability.' : 'This is a computerized commercial quotation/estimate and not an official tax invoice.' ?><br>
+              <div class="text-ink-muted text-[10px] leading-relaxed">
+                * <?= $isRateList ? 'Rates mentioned above are current as of ' . htmlspecialchars(formatDate($estimateDate), ENT_QUOTES, 'UTF-8') . ' and subject to standard terms &amp; availability.' : 'This is a computerized commercial quotation/estimate and not an official tax invoice.' ?><br>
                 * Subject to standard commercial terms and stock availability.
               </div>
             <?php endif; ?>
 
             <?php if (!$isRateList): ?>
-              <div class="mt-2 text-muted small" style="font-size: 0.78rem;">
-                <strong>Amount in Words:</strong> <?= amountToIndianWords($cleanGrandTotal) ?>
+              <div class="text-ink-muted text-xs">
+                <strong class="text-ink">Amount in Words:</strong> <?= amountToIndianWords($cleanGrandTotal) ?>
               </div>
             <?php endif; ?>
           </div>
 
-          <!-- Right Column: Calculation Summary (Only for Estimate Mode or Grand Total) -->
-          <div class="col-md-6">
+          <div class="col-span-6">
             <?php if (!$isRateList): ?>
               <div class="total-highlight-card">
-                <table class="table table-borderless table-sm mb-0" style="font-size: 0.84rem;">
+                <table class="paper-table-reset text-xs">
                   <tr>
-                    <td class="text-muted p-1">Taxable Subtotal:</td>
-                    <td class="text-end fw-semibold p-1">₹ <?= number_format($cleanSubtotal, 2) ?></td>
+                    <td class="text-ink-muted p-1">Taxable Subtotal:</td>
+                    <td class="text-right font-semibold font-mono p-1">₹ <?= number_format($cleanSubtotal, 2) ?></td>
                   </tr>
-                  <!-- Conditional Discount Summary Row (Removed if 0) -->
                   <?php if ($hasAnyDiscount && $cleanDiscTotal > 0): ?>
                     <tr>
-                      <td class="text-danger p-1">Discount Total:</td>
-                      <td class="text-end text-danger fw-semibold p-1">- ₹ <?= number_format($cleanDiscTotal, 2) ?></td>
+                      <td class="text-rose p-1">Discount Total:</td>
+                      <td class="text-right text-rose font-semibold font-mono p-1">- ₹ <?= number_format($cleanDiscTotal, 2) ?></td>
                     </tr>
                   <?php endif; ?>
-                  <!-- Conditional GST Summary Row (Removed if 0) -->
                   <?php if ($hasAnyGst && $cleanTaxTotal > 0): ?>
                     <tr>
-                      <td class="text-muted p-1">Estimated GST:</td>
-                      <td class="text-end p-1">₹ <?= number_format($cleanTaxTotal, 2) ?></td>
+                      <td class="text-ink-muted p-1">Estimated GST:</td>
+                      <td class="text-right font-mono p-1">₹ <?= number_format($cleanTaxTotal, 2) ?></td>
                     </tr>
                   <?php endif; ?>
-                  <tr class="border-top border-secondary-subtle">
-                    <td class="p-1 pt-2 fw-bold text-dark fs-6">Grand Total:</td>
-                    <td class="text-end p-1 pt-2 font-monospace total-amount-display">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
+                  <tr class="border-t border-border-strong">
+                    <td class="p-1 pt-2 font-bold text-ink text-sm">Grand Total:</td>
+                    <td class="text-right p-1 pt-2 font-mono total-amount-display">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
                   </tr>
                 </table>
               </div>
             <?php else: ?>
-              <div class="p-3 border rounded bg-light text-center">
-                <div class="fw-bold text-dark" style="font-size: 0.85rem;">Product Rate List &amp; Price Catalog</div>
-                <div class="text-muted small mt-1" style="font-size: 0.75rem;">Total <?= count($normalizedItems) ?> items configured. Rates reflect current inventory catalog.</div>
+              <div class="p-4 border border-border rounded-lg bg-[#FAF9F6] text-center">
+                <div class="font-bold text-ink text-xs">Product Rate List &amp; Price Catalog</div>
+                <div class="text-ink-muted text-xs mt-1">Total <?= count($normalizedItems) ?> items configured. Rates reflect current inventory catalog.</div>
               </div>
             <?php endif; ?>
           </div>
         </div>
 
         <!-- 5. Signatures Footer -->
-        <div class="row pt-3 border-top mt-3">
-          <div class="col-6 text-muted" style="font-size: 10px;">
+        <div class="grid grid-cols-12 pt-3 border-t border-border mt-3 items-end">
+          <div class="col-span-6 text-ink-muted text-[10px]">
             <?= $isRateList ? 'Verified &amp; Issued by' : 'Customer Acceptance (Signature)' ?>
           </div>
-          <div class="col-6 text-end">
-            <div class="d-inline-block text-center">
+          <div class="col-span-6 text-right">
+            <div class="inline-block text-center">
               <?php if (!empty($firm["signature_path"])): ?>
-                <img src="<?= $firm["signature_path"] ?>" alt="Signature" style="max-height: 44px; max-width: 140px;" class="mb-1">
+                <img src="<?= $firm["signature_path"] ?>" alt="Signature" class="max-h-11 max-w-[140px] mx-auto mb-1 object-contain">
               <?php else: ?>
-                <div style="height: 36px;"></div>
+                <div class="h-9"></div>
               <?php endif; ?>
               <div class="sign-box">
-                <small class="fw-bold text-dark d-block" style="font-size: 0.78rem;">For <?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></small>
-                <small class="text-muted" style="font-size: 0.7rem;">Authorized Signatory</small>
+                <div class="font-bold text-ink text-xs">For <?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="text-ink-muted text-[11px]">Authorized Signatory</div>
               </div>
             </div>
           </div>
@@ -588,10 +581,8 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
   ============================================================= -->
   <div class="invoice-preview-container print-template-target" id="simpleInvoiceArea" style="display: none;">
     <div class="invoice-paper simple-bill-paper" id="simplePaperArea">
-      <!-- Top 3 Columns: Seller, Customer, Details -->
-      <div class="row align-items-start mb-4">
-        <!-- 1. Seller Column -->
-        <div class="col-4">
+      <div class="grid grid-cols-12 gap-3 items-start mb-4">
+        <div class="col-span-4">
           <div class="simple-bill-header-title"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></div>
           <?php if (!empty($firmPhone)): ?><div>Phone no. : <?= htmlspecialchars($firmPhone, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
           <?php if (!empty($firmAddress)): ?><div>Address : <?= htmlspecialchars(implode(', ', $firmAddress), ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
@@ -599,8 +590,7 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
           <?php if (!empty($firmGstin)): ?><div>GSTIN : <?= htmlspecialchars($firmGstin, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
         </div>
 
-        <!-- 2. Customer Column -->
-        <div class="col-4">
+        <div class="col-span-4">
           <div class="simple-bill-header-title"><?= !empty($customerName) ? htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') : 'Customer' ?></div>
           <?php if (!empty($customerName)): ?>
             <div>Customer Details : Verified</div>
@@ -608,8 +598,7 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
           <div>Place of supply: <?= !empty($firm['state']) ? htmlspecialchars($firm['state'], ENT_QUOTES, 'UTF-8') : 'Local' ?></div>
         </div>
 
-        <!-- 3. Document Details Column -->
-        <div class="col-4 text-end">
+        <div class="col-span-4 text-right">
           <div class="simple-bill-header-title"><?= $docTitle ?></div>
           <?php if (!$isRateList && !empty($estimateNumber)): ?>
             <div>Estimate No. : #<?= htmlspecialchars($estimateNumber, ENT_QUOTES, 'UTF-8') ?></div>
@@ -618,32 +607,29 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
         </div>
       </div>
 
-      <!-- Simple Items Table -->
       <table class="simple-bill-table">
         <thead>
           <tr>
-            <th style="width: 35px;">#</th>
+            <th class="w-9">#</th>
             <th>Item name</th>
             <?php if (!$isRateList): ?>
-              <th style="width: 70px;" class="text-center">Qty</th>
-              <th style="width: 60px;" class="text-center">Unit</th>
-              <th style="width: 100px;" class="text-end">Price/Unit</th>
+              <th class="w-[70px] text-center">Qty</th>
+              <th class="w-16 text-center">Unit</th>
+              <th class="w-[100px] text-right">Price/Unit</th>
             <?php else: ?>
-              <th style="width: 110px;" class="text-end">Pre-GST Price</th>
+              <th class="w-[110px] text-right">Pre-GST Price</th>
             <?php endif; ?>
-            <!-- Conditional Discount Header -->
             <?php if ($hasAnyDiscount): ?>
-              <th style="width: 65px;" class="text-center">Disc %</th>
+              <th class="w-16 text-center">Disc %</th>
             <?php endif; ?>
-            <!-- Conditional GST Header -->
             <?php if ($hasAnyGst): ?>
-              <th style="width: 75px;" class="<?= $isRateList ? 'text-center' : 'text-end' ?>"><?= $isRateList ? 'GST %' : 'GST' ?></th>
+              <th class="w-[75px] <?= $isRateList ? 'text-center' : 'text-right' ?>"><?= $isRateList ? 'GST %' : 'GST' ?></th>
             <?php endif; ?>
             <?php if (!$isRateList): ?>
-              <th style="width: 110px;" class="text-end">Amount</th>
+              <th class="w-[110px] text-right">Amount</th>
             <?php else: ?>
-              <th style="width: 110px;" class="text-end">Post-GST Price</th>
-              <th style="width: 110px;" class="text-center">Unit</th>
+              <th class="w-[110px] text-right">Post-GST Price</th>
+              <th class="w-[110px] text-center">Unit</th>
             <?php endif; ?>
           </tr>
         </thead>
@@ -652,30 +638,28 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
             <?php foreach ($normalizedItems as $item): ?>
               <tr>
                 <td><?= $item['index'] ?></td>
-                <td class="fw-bold"><?= htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-bold"><?= htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8') ?></td>
                 <?php if (!$isRateList): ?>
                   <td class="text-center"><?= $item['quantity'] ?></td>
                   <td class="text-center"><?= htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8') ?></td>
-                  <td class="text-end">₹ <?= number_format($item['rate'], 2) ?></td>
+                  <td class="text-right">₹ <?= number_format($item['rate'], 2) ?></td>
                 <?php else: ?>
-                  <td class="text-end fw-semibold">₹ <?= number_format($item['rate'], 2) ?></td>
+                  <td class="text-right font-semibold">₹ <?= number_format($item['rate'], 2) ?></td>
                 <?php endif; ?>
-                <!-- Conditional Discount Cell -->
                 <?php if ($hasAnyDiscount): ?>
                   <td class="text-center"><?= $item['discount_percent'] > 0 ? ($item['discount_percent'] . '%') : '--' ?></td>
                 <?php endif; ?>
-                <!-- Conditional GST Cell -->
                 <?php if ($hasAnyGst): ?>
                   <?php if ($isRateList): ?>
                     <td class="text-center"><?= $item['tax_rate'] > 0 ? ($item['tax_rate'] . '%') : '--' ?></td>
                   <?php else: ?>
-                    <td class="text-end">₹ <?= number_format($item['tax_amount'], 2) ?></td>
+                    <td class="text-right">₹ <?= number_format($item['tax_amount'], 2) ?></td>
                   <?php endif; ?>
                 <?php endif; ?>
                 <?php if (!$isRateList): ?>
-                  <td class="text-end fw-bold">₹ <?= number_format($item['total_amount'], 2) ?></td>
+                  <td class="text-right font-bold">₹ <?= number_format($item['total_amount'], 2) ?></td>
                 <?php else: ?>
-                  <td class="text-end fw-bold">₹ <?= number_format($item['post_gst'], 2) ?></td>
+                  <td class="text-right font-bold">₹ <?= number_format($item['post_gst'], 2) ?></td>
                   <td class="text-center"><?= htmlspecialchars($item['unit'], ENT_QUOTES, 'UTF-8') ?></td>
                 <?php endif; ?>
               </tr>
@@ -683,21 +667,19 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
           <?php endif; ?>
 
           <?php if (!$isRateList): ?>
-            <!-- Total Row in Simple Table -->
             <tr class="total-row">
               <td></td>
               <td>Total</td>
               <td class="text-center"><?= $totalQtyCount ?></td>
               <td colspan="<?= 2 + ($hasAnyDiscount ? 1 : 0) + ($hasAnyGst ? 1 : 0) ?>"></td>
-              <td class="text-end">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
+              <td class="text-right">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
             </tr>
           <?php endif; ?>
         </tbody>
       </table>
 
-      <!-- Simple Breakdown & Signatures -->
-      <div class="row align-items-start mt-3">
-        <div class="col-6">
+      <div class="grid grid-cols-12 gap-4 items-start mt-4">
+        <div class="col-span-6">
           <?php if (!$isRateList): ?>
             <div class="mb-2">
               <strong>Invoice Amount In Words</strong>
@@ -705,10 +687,9 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
             </div>
           <?php endif; ?>
 
-          <!-- Bank info for simple bill -->
           <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"])): ?>
-            <div class="bank-qr-block mt-3 pt-2 border-top small text-muted">
-              <strong>Bank Details:</strong><br>
+            <div class="bank-qr-block mt-3 pt-2 border-t border-border text-xs text-ink-muted">
+              <strong class="text-ink">Bank Details:</strong><br>
               <?php if (!empty($firm["bank_name"])): ?>Bank: <?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?> | <?php endif; ?>
               <?php if (!empty($firm["bank_account_no"])): ?>A/C: <?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?> | <?php endif; ?>
               <?php if (!empty($firm["bank_ifsc"])): ?>IFSC: <?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
@@ -716,38 +697,36 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
           <?php endif; ?>
         </div>
 
-        <div class="col-6 text-end">
+        <div class="col-span-6 text-right">
           <?php if (!$isRateList): ?>
-            <table class="table table-borderless table-sm mb-3 ms-auto" style="max-width: 260px;">
+            <table class="paper-table-reset mb-3 ml-auto text-xs" style="max-width: 260px;">
               <tr>
-                <td class="text-muted p-1">Sub Total</td>
-                <td class="text-end p-1">₹ <?= number_format($cleanSubtotal, 2) ?></td>
+                <td class="text-ink-muted p-1">Sub Total</td>
+                <td class="text-right p-1">₹ <?= number_format($cleanSubtotal, 2) ?></td>
               </tr>
-              <!-- Conditional Discount Line -->
               <?php if ($hasAnyDiscount && $cleanDiscTotal > 0): ?>
                 <tr>
-                  <td class="text-danger p-1">Discount</td>
-                  <td class="text-end text-danger p-1">- ₹ <?= number_format($cleanDiscTotal, 2) ?></td>
+                  <td class="text-rose p-1">Discount</td>
+                  <td class="text-right text-rose p-1">- ₹ <?= number_format($cleanDiscTotal, 2) ?></td>
                 </tr>
               <?php endif; ?>
-              <!-- Conditional GST Line -->
               <?php if ($hasAnyGst && $cleanTaxTotal > 0): ?>
                 <tr>
-                  <td class="text-muted p-1">GST Total</td>
-                  <td class="text-end p-1">₹ <?= number_format($cleanTaxTotal, 2) ?></td>
+                  <td class="text-ink-muted p-1">GST Total</td>
+                  <td class="text-right p-1">₹ <?= number_format($cleanTaxTotal, 2) ?></td>
                 </tr>
               <?php endif; ?>
               <tr class="simple-total-bar">
                 <td class="py-1 px-2">Total</td>
-                <td class="text-end py-1 px-2">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
+                <td class="text-right py-1 px-2">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
               </tr>
             </table>
           <?php endif; ?>
 
           <div class="mt-4 pt-4">
-            <div class="fw-bold">For <?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></div>
-            <div style="height: 30px;"></div>
-            <div class="text-muted small">Authorized Signatory</div>
+            <div class="font-bold">For <?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></div>
+            <div class="h-7"></div>
+            <div class="text-ink-muted text-xs">Authorized Signatory</div>
           </div>
         </div>
       </div>
@@ -769,24 +748,22 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
         for ($slipIdx = 0; $slipIdx < 3; $slipIdx++): 
       ?>
         <div class="horizontal-slip-card">
-          <!-- Slip Badge -->
-          <div class="d-flex justify-content-between align-items-center horizontal-slip-badge">
+          <div class="flex items-center justify-between horizontal-slip-badge">
             <span><?= $slipLabels[$slipIdx] ?></span>
             <span><?= $docTitle ?></span>
           </div>
 
-          <!-- Header: Firm & Doc Meta -->
-          <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="flex items-start justify-between mb-1">
             <div>
-              <strong style="font-size: 0.82rem; color: #000;"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></strong>
+              <strong class="text-[13px] text-black"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></strong>
               <?php if (!empty($firmPhone)): ?>
-                <div style="font-size: 0.6rem; color: #475569;">Ph: <?= htmlspecialchars($firmPhone, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="text-[9.5px] text-ink-muted">Ph: <?= htmlspecialchars($firmPhone, ENT_QUOTES, 'UTF-8') ?></div>
               <?php endif; ?>
               <?php if (!empty($firmGstin)): ?>
-                <div style="font-size: 0.6rem; color: #475569;">GSTIN: <?= htmlspecialchars($firmGstin, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="text-[9.5px] text-ink-muted">GSTIN: <?= htmlspecialchars($firmGstin, ENT_QUOTES, 'UTF-8') ?></div>
               <?php endif; ?>
             </div>
-            <div class="text-end" style="font-size: 0.62rem; line-height: 1.25;">
+            <div class="text-right text-[10px] leading-tight">
               <?php if (!$isRateList && !empty($estimateNumber)): ?>
                 <div><strong>Est #:</strong> <?= htmlspecialchars($estimateNumber, ENT_QUOTES, 'UTF-8') ?></div>
               <?php endif; ?>
@@ -795,12 +772,11 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
           </div>
 
           <?php if (!empty($customerName)): ?>
-            <div class="mb-1 py-1 px-1 bg-light border rounded" style="font-size: 0.62rem;">
+            <div class="mb-1 py-1 px-1.5 bg-[#FAF9F6] border border-border rounded text-[10px]">
               <strong>Customer:</strong> <?= htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') ?>
             </div>
           <?php endif; ?>
 
-          <!-- Slip Items Table -->
           <table class="horizontal-slip-table">
             <thead>
               <tr>
@@ -808,19 +784,17 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
                 <th>Item</th>
                 <?php if (!$isRateList): ?>
                   <th style="width: 25px;" class="text-center">Qty</th>
-                  <th style="width: 45px;" class="text-end">Price</th>
+                  <th style="width: 45px;" class="text-right">Price</th>
                 <?php else: ?>
-                  <th style="width: 45px;" class="text-end">Pre-GST</th>
+                  <th style="width: 45px;" class="text-right">Pre-GST</th>
                 <?php endif; ?>
-                <!-- Conditional Disc -->
                 <?php if ($hasAnyDiscount): ?>
                   <th style="width: 28px;" class="text-center">Disc</th>
                 <?php endif; ?>
-                <!-- Conditional GST -->
                 <?php if ($hasAnyGst): ?>
                   <th style="width: 28px;" class="text-center">GST</th>
                 <?php endif; ?>
-                <th style="width: 48px;" class="text-end"><?= $isRateList ? 'Post-GST' : 'Amount' ?></th>
+                <th style="width: 48px;" class="text-right"><?= $isRateList ? 'Post-GST' : 'Amount' ?></th>
               </tr>
             </thead>
             <tbody>
@@ -828,12 +802,12 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
                 <?php foreach ($normalizedItems as $item): ?>
                   <tr>
                     <td><?= $item['index'] ?></td>
-                    <td class="fw-bold" style="word-break: break-word; white-space: normal;"><?= htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td class="font-bold break-words whitespace-normal"><?= htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <?php if (!$isRateList): ?>
                       <td class="text-center"><?= $item['quantity'] ?></td>
-                      <td class="text-end">₹ <?= number_format($item['rate'], 2) ?></td>
+                      <td class="text-right">₹ <?= number_format($item['rate'], 2) ?></td>
                     <?php else: ?>
-                      <td class="text-end">₹ <?= number_format($item['rate'], 2) ?></td>
+                      <td class="text-right">₹ <?= number_format($item['rate'], 2) ?></td>
                     <?php endif; ?>
                     <?php if ($hasAnyDiscount): ?>
                       <td class="text-center"><?= $item['discount_percent'] > 0 ? ($item['discount_percent'] . '%') : '--' ?></td>
@@ -841,63 +815,60 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
                     <?php if ($hasAnyGst): ?>
                       <td class="text-center"><?= $item['tax_rate'] > 0 ? ($item['tax_rate'] . '%') : '--' ?></td>
                     <?php endif; ?>
-                    <td class="text-end fw-bold">₹ <?= number_format($isRateList ? $item['post_gst'] : $item['total_amount'], 2) ?></td>
+                    <td class="text-right font-bold">₹ <?= number_format($isRateList ? $item['post_gst'] : $item['total_amount'], 2) ?></td>
                   </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
             </tbody>
           </table>
 
-          <!-- Slip Summary Breakdown -->
           <?php if (!$isRateList): ?>
-            <table class="table table-borderless table-sm mb-0 ms-auto" style="font-size: 0.65rem;">
+            <table class="paper-table-reset ml-auto text-[10.5px]">
               <tr>
                 <td class="p-0">Sub Total</td>
-                <td class="text-end p-0">₹ <?= number_format($cleanSubtotal, 2) ?></td>
+                <td class="text-right p-0">₹ <?= number_format($cleanSubtotal, 2) ?></td>
               </tr>
               <?php if ($hasAnyDiscount && $cleanDiscTotal > 0): ?>
                 <tr>
-                  <td class="p-0 text-danger">Discount</td>
-                  <td class="text-end p-0 text-danger">- ₹ <?= number_format($cleanDiscTotal, 2) ?></td>
+                  <td class="p-0 text-rose">Discount</td>
+                  <td class="text-right p-0 text-rose">- ₹ <?= number_format($cleanDiscTotal, 2) ?></td>
                 </tr>
               <?php endif; ?>
               <?php if ($hasAnyGst && $cleanTaxTotal > 0): ?>
                 <tr>
                   <td class="p-0">GST</td>
-                  <td class="text-end p-0">₹ <?= number_format($cleanTaxTotal, 2) ?></td>
+                  <td class="text-right p-0">₹ <?= number_format($cleanTaxTotal, 2) ?></td>
                 </tr>
               <?php endif; ?>
-              <tr class="simple-total-bar" style="font-size: 0.67rem;">
+              <tr class="simple-total-bar text-[11px]">
                 <td class="py-1 px-1">Total</td>
-                <td class="text-end py-1 px-1">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
+                <td class="text-right py-1 px-1">₹ <?= number_format($cleanGrandTotal, 2) ?></td>
               </tr>
             </table>
           <?php else: ?>
-            <div class="text-muted text-center py-1 border-top" style="font-size: 0.58rem;">
+            <div class="text-ink-muted text-center py-1 border-t border-border text-[9px]">
               Prices valid as of <?= htmlspecialchars(formatDate($estimateDate), ENT_QUOTES, 'UTF-8') ?>
             </div>
           <?php endif; ?>
 
-          <!-- Bank & QR for Horizontal Slip -->
           <?php if (!empty($firm["bank_name"]) || !empty($firm["bank_account_no"]) || !empty($firm["upi_id"]) || !empty($firm["qr_code_path"])): ?>
-            <div class="bank-qr-block horizontal-bank-qr mt-2 pt-1 border-top" style="font-size: 0.62rem; line-height: 1.25;">
-              <div class="d-flex align-items-center justify-content-between gap-1">
+            <div class="bank-qr-block horizontal-bank-qr mt-2 pt-1 border-t border-border text-[10px] leading-tight">
+              <div class="flex items-center justify-between gap-1">
                 <div>
                   <?php if (!empty($firm["bank_name"])): ?><div><strong>Bank:</strong> <?= htmlspecialchars($firm["bank_name"], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-                  <?php if (!empty($firm["bank_account_no"])): ?><div><strong>A/C:</strong> <span class="font-monospace"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+                  <?php if (!empty($firm["bank_account_no"])): ?><div><strong>A/C:</strong> <span class="font-mono"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
                   <?php if (!empty($firm["upi_id"])): ?><div><strong>UPI:</strong> <?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
                 </div>
                 <?php if (!empty($firm["qr_code_path"])): ?>
                   <div class="text-center">
-                    <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="QR" class="border p-1 bg-white rounded" style="height: 40px; width: 40px; object-fit: contain;">
+                    <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="QR" class="border border-border p-0.5 bg-white rounded h-10 w-10 object-contain">
                   </div>
                 <?php endif; ?>
               </div>
             </div>
           <?php endif; ?>
 
-          <!-- Signatory Line -->
-          <div class="d-flex justify-content-between align-items-end mt-2 pt-1 border-top" style="font-size: 0.58rem;">
+          <div class="flex items-end justify-between mt-2 pt-1 border-t border-border text-[9px]">
             <span>E.&amp;O.E.</span>
             <span>Auth. Signatory</span>
           </div>
@@ -911,187 +882,174 @@ $waDefaultMessage = "*{$docTitle} from {$firmName}*\n" .
        MODALS: HSV COLOR STUDIO & WHATSAPP SHARING
   ============================================================= -->
   <!-- HSV Custom Theme Modal -->
-  <div class="modal fade" id="hsvCustomThemeModal" tabindex="-1" aria-labelledby="hsvCustomThemeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-        <div class="modal-header border-0 bg-dark text-white py-3 px-4">
-          <div class="d-flex align-items-center">
-            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center me-3" style="width: 38px; height: 38px;">
-              <i class="bi bi-sliders2 fs-5"></i>
-            </div>
+  <div class="rf-modal hidden" id="hsvCustomThemeModal" tabindex="-1" aria-labelledby="hsvCustomThemeModalLabel" aria-hidden="true">
+    <div class="rf-modal-dialog rf-modal-dialog-lg">
+      <div class="rf-modal-header">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-amber-bg border border-border text-amber flex items-center justify-center shrink-0">
+            <i class="bi bi-sliders2 text-base"></i>
+          </div>
+          <div>
+            <h5 class="text-base font-semibold text-ink mb-0" id="hsvCustomThemeModalLabel">Customise Theme Palette</h5>
+            <p class="text-xs text-ink-muted mb-0">Select Hue, Saturation &amp; Brightness for document styling</p>
+          </div>
+        </div>
+        <button type="button" class="rf-modal-close" data-ui-dismiss="modal" aria-label="Close">
+          <i class="bi bi-x-lg text-sm"></i>
+        </button>
+      </div>
+
+      <div class="rf-modal-body">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-7 space-y-4">
             <div>
-              <h5 class="modal-title fw-bold mb-0" id="hsvCustomThemeModalLabel">Customise Theme Palette</h5>
-              <small class="text-white-50">Select Hue, Saturation &amp; Brightness for document styling</small>
+              <label class="rf-label mb-1.5">
+                <i class="bi bi-palette mr-1 text-ink-muted"></i> Interactive Saturation &amp; Value Pad
+              </label>
+              <div id="hsvColorPad" class="hsv-color-pad">
+                <div id="hsvCursor" class="hsv-cursor"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="rf-label mb-0">Hue (H) &mdash; Color Spectrum</label>
+                <div class="flex items-center w-24">
+                  <input type="number" id="hsvHNum" class="rf-input rf-input-sm text-right font-mono font-semibold rounded-r-none" min="0" max="360" value="28">
+                  <span class="px-2 py-1 text-xs border border-l-0 border-border rounded-r-lg bg-canvas-alt text-ink-muted">°</span>
+                </div>
+              </div>
+              <input type="range" id="hsvHSlider" class="hsv-slider-hue" min="0" max="360" value="28">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="rf-label mb-0">Saturation (S) &mdash; Chroma / Intensity</label>
+                <div class="flex items-center w-24">
+                  <input type="number" id="hsvSNum" class="rf-input rf-input-sm text-right font-mono font-semibold rounded-r-none" min="0" max="100" value="64">
+                  <span class="px-2 py-1 text-xs border border-l-0 border-border rounded-r-lg bg-canvas-alt text-ink-muted">%</span>
+                </div>
+              </div>
+              <input type="range" id="hsvSSlider" class="hsv-slider-bar" min="0" max="100" value="64">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="rf-label mb-0">Value / Brightness (V)</label>
+                <div class="flex items-center w-24">
+                  <input type="number" id="hsvVNum" class="rf-input rf-input-sm text-right font-mono font-semibold rounded-r-none" min="0" max="100" value="36">
+                  <span class="px-2 py-1 text-xs border border-l-0 border-border rounded-r-lg bg-canvas-alt text-ink-muted">%</span>
+                </div>
+              </div>
+              <input type="range" id="hsvVSlider" class="hsv-slider-bar" min="0" max="100" value="36">
             </div>
           </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
 
-        <div class="modal-body p-4 bg-white">
-          <div class="row g-4">
-            <!-- Left Column: 2D Interactive HSV Pad & Sliders -->
-            <div class="col-lg-7">
-              <div class="mb-3">
-                <label class="form-label fw-bold text-dark small mb-1">
-                  <i class="bi bi-palette text-primary me-1"></i> Interactive Saturation &amp; Value Pad
-                </label>
-                <div id="hsvColorPad" class="hsv-color-pad">
-                  <div id="hsvCursor" class="hsv-cursor"></div>
-                </div>
+          <div class="lg:col-span-5 space-y-4">
+            <div class="p-4 rounded-xl text-white flex items-center justify-between shadow-sm min-h-[72px]" id="hsvCurrentColorBox" style="background-color: #5c3a21;">
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Active Colour</div>
+                <div class="text-xl font-bold font-mono" id="hsvHexDisplay">#5C3A21</div>
               </div>
-
-              <!-- Hue (H) Slider: 0 - 360° -->
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <label class="form-label fw-bold text-dark small mb-0">
-                    <i class="bi bi-circle-half text-danger me-1"></i> Hue (H) &mdash; Color Spectrum
-                  </label>
-                  <div class="input-group input-group-sm" style="width: 90px;">
-                    <input type="number" id="hsvHNum" class="form-control form-control-sm text-end fw-bold font-monospace" min="0" max="360" value="28">
-                    <span class="input-group-text py-0 px-2 small">°</span>
-                  </div>
-                </div>
-                <input type="range" id="hsvHSlider" class="hsv-slider-hue" min="0" max="360" value="28">
-              </div>
-
-              <!-- Saturation (S) Slider: 0 - 100% -->
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <label class="form-label fw-bold text-dark small mb-0">
-                    <i class="bi bi-droplet-half text-primary me-1"></i> Saturation (S) &mdash; Chroma / Intensity
-                  </label>
-                  <div class="input-group input-group-sm" style="width: 90px;">
-                    <input type="number" id="hsvSNum" class="form-control form-control-sm text-end fw-bold font-monospace" min="0" max="100" value="64">
-                    <span class="input-group-text py-0 px-2 small">%</span>
-                  </div>
-                </div>
-                <input type="range" id="hsvSSlider" class="hsv-slider-bar" min="0" max="100" value="64">
-              </div>
-
-              <!-- Value (V) Slider: 0 - 100% -->
-              <div class="mb-2">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <label class="form-label fw-bold text-dark small mb-0">
-                    <i class="bi bi-brightness-high text-warning me-1"></i> Value / Brightness (V)
-                  </label>
-                  <div class="input-group input-group-sm" style="width: 90px;">
-                    <input type="number" id="hsvVNum" class="form-control form-control-sm text-end fw-bold font-monospace" min="0" max="100" value="36">
-                    <span class="input-group-text py-0 px-2 small">%</span>
-                  </div>
-                </div>
-                <input type="range" id="hsvVSlider" class="hsv-slider-bar" min="0" max="100" value="36">
+              <div class="text-right font-mono text-xs">
+                <div id="hsvRgbDisplay">rgb(92, 58, 33)</div>
+                <div class="text-white/70" id="hsvValDisplay">H:28° S:64% V:36%</div>
               </div>
             </div>
 
-            <!-- Right Column: Exact Color Codes & Swatches -->
-            <div class="col-lg-5">
-              <div class="p-3 rounded-3 mb-3 text-white d-flex align-items-center justify-content-between shadow-sm" id="hsvCurrentColorBox" style="background-color: #5c3a21; min-height: 70px;">
-                <div>
-                  <div class="small text-uppercase text-white-50 fw-bold" style="font-size: 0.7rem;">Active Colour</div>
-                  <div class="fs-4 fw-bold font-monospace" id="hsvHexDisplay">#5C3A21</div>
+            <div>
+              <label class="rf-label">Enter Exact HEX Code</label>
+              <div class="flex items-center gap-1.5">
+                <div class="flex flex-1 items-center">
+                  <span class="px-2.5 py-1.5 text-xs font-mono border border-r-0 border-border rounded-l-lg bg-canvas-alt text-ink-muted">#</span>
+                  <input type="text" class="rf-input rf-input-sm font-mono font-semibold rounded-l-none" id="hsvHexInput" value="5C3A21" maxlength="6">
                 </div>
-                <div class="text-end font-monospace small">
-                  <div id="hsvRgbDisplay">rgb(92, 58, 33)</div>
-                  <div class="text-white-50" id="hsvValDisplay">H:28° S:64% V:36%</div>
-                </div>
+                <button class="rf-btn rf-btn-secondary rf-btn-sm" type="button" id="btnApplyHexInput">Set</button>
               </div>
+            </div>
 
-              <div class="mb-3">
-                <label class="form-label fw-bold small text-dark mb-1">Enter Exact HEX Code:</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white font-monospace">#</span>
-                  <input type="text" class="form-control font-monospace fw-bold" id="hsvHexInput" value="5C3A21" maxlength="6">
-                  <button class="btn btn-outline-secondary" type="button" id="btnApplyHexInput">Set</button>
-                </div>
+            <div>
+              <label class="rf-label">Quick Tuning</label>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm text-xs" onclick="stepHsv('v', -5)">Darker (-5%)</button>
+                <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm text-xs" onclick="stepHsv('v', 5)">Brighter (+5%)</button>
+                <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm text-xs" onclick="stepHsv('s', -10)">Mute (-10%)</button>
+                <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm text-xs" onclick="stepHsv('s', 10)">Vibrant (+10%)</button>
               </div>
+            </div>
 
-              <div class="mb-3">
-                <label class="form-label fw-bold small text-dark mb-1">Quick Tuning:</label>
-                <div class="d-flex flex-wrap gap-1">
-                  <button type="button" class="btn btn-light btn-sm py-1 px-2 border small" onclick="stepHsv('v', -5)">Darker (-5%)</button>
-                  <button type="button" class="btn btn-light btn-sm py-1 px-2 border small" onclick="stepHsv('v', 5)">Brighter (+5%)</button>
-                  <button type="button" class="btn btn-light btn-sm py-1 px-2 border small" onclick="stepHsv('s', -10)">Mute (-10%)</button>
-                  <button type="button" class="btn btn-light btn-sm py-1 px-2 border small" onclick="stepHsv('s', 10)">Vibrant (+10%)</button>
-                </div>
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label fw-bold small text-dark mb-1">Starting Swatches:</label>
-                <div class="d-flex flex-wrap gap-2">
-                  <button type="button" class="palette-swatch-btn" style="background: #5c3a21;" title="Classy Brown" onclick="setHsvValues(24, 68, 35)"></button>
-                  <button type="button" class="palette-swatch-btn" style="background: #78350f;" title="Cognac Leather" onclick="setHsvValues(22, 88, 47)"></button>
-                  <button type="button" class="palette-swatch-btn" style="background: #1e3a8a;" title="Royal Blue" onclick="setHsvValues(224, 78, 54)"></button>
-                  <button type="button" class="palette-swatch-btn" style="background: #065f46;" title="Forest Emerald" onclick="setHsvValues(165, 89, 37)"></button>
-                  <button type="button" class="palette-swatch-btn" style="background: #831843;" title="Imperial Ruby" onclick="setHsvValues(335, 82, 51)"></button>
-                  <button type="button" class="palette-swatch-btn" style="background: #0f172a;" title="Executive Slate" onclick="setHsvValues(222, 47, 16)"></button>
-                </div>
+            <div>
+              <label class="rf-label">Starting Swatches</label>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="palette-swatch-btn" style="background: #5c3a21;" title="Classy Brown" onclick="setHsvValues(24, 68, 35)"></button>
+                <button type="button" class="palette-swatch-btn" style="background: #78350f;" title="Cognac Leather" onclick="setHsvValues(22, 88, 47)"></button>
+                <button type="button" class="palette-swatch-btn" style="background: #1e3a8a;" title="Royal Blue" onclick="setHsvValues(224, 78, 54)"></button>
+                <button type="button" class="palette-swatch-btn" style="background: #065f46;" title="Forest Emerald" onclick="setHsvValues(165, 89, 37)"></button>
+                <button type="button" class="palette-swatch-btn" style="background: #831843;" title="Imperial Ruby" onclick="setHsvValues(335, 82, 51)"></button>
+                <button type="button" class="palette-swatch-btn" style="background: #0f172a;" title="Executive Slate" onclick="setHsvValues(222, 47, 16)"></button>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="modal-footer border-0 bg-light p-3 d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="setHsvValues(24, 68, 35)">
-            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Default
+      <div class="rf-modal-footer justify-between">
+        <button type="button" class="rf-btn rf-btn-ghost rf-btn-sm" onclick="setHsvValues(24, 68, 35)">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset Default
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Close</button>
+          <button type="button" class="rf-btn rf-btn-primary rf-btn-sm" id="btnSaveHsvTheme">
+            <i class="bi bi-check2-circle"></i> Apply &amp; Save
           </button>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold shadow-sm" id="btnSaveHsvTheme">
-              <i class="bi bi-check2-circle me-1"></i> Apply &amp; Save
-            </button>
-          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Send WhatsApp Modal -->
-  <div class="modal fade" id="sendWhatsAppModal" tabindex="-1" aria-labelledby="sendWhatsAppModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-        <div class="modal-header border-0 bg-success text-white py-3 px-4">
-          <div class="d-flex align-items-center">
-            <div class="rounded-circle bg-white text-success d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-              <i class="bi bi-whatsapp fs-4"></i>
-            </div>
-            <div>
-              <h5 class="modal-title fw-bold mb-0" id="sendWhatsAppModalLabel">Send on WhatsApp</h5>
-              <small class="text-white-50">Share summary with customer or contacts</small>
-            </div>
+  <div class="rf-modal hidden" id="sendWhatsAppModal" tabindex="-1" aria-labelledby="sendWhatsAppModalLabel" aria-hidden="true">
+    <div class="rf-modal-dialog">
+      <div class="rf-modal-header">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-sage-bg text-sage flex items-center justify-center shrink-0">
+            <i class="bi bi-whatsapp text-base"></i>
           </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body p-4">
-          <div class="mb-3">
-            <label class="form-label fw-bold small text-dark">Recipient Mobile Number:</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light fw-bold">+91</span>
-              <input type="tel" id="waCustomPhoneInput" class="form-control form-control-lg font-monospace fw-bold" placeholder="9876543210" maxlength="10">
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold small text-dark">Message Preview:</label>
-            <textarea id="waMessageText" class="form-control font-monospace small" rows="5"></textarea>
-          </div>
-          <div class="d-grid gap-2">
-            <button type="button" class="btn btn-success btn-lg fw-bold shadow-sm d-flex align-items-center justify-content-center" id="btnLaunchWhatsApp">
-              <i class="bi bi-whatsapp fs-5 me-2"></i> Open WhatsApp Web / App
-            </button>
+          <div>
+            <h5 class="text-base font-semibold text-ink mb-0" id="sendWhatsAppModalLabel">Send on WhatsApp</h5>
+            <p class="text-xs text-ink-muted mb-0">Share summary with customer or contacts</p>
           </div>
         </div>
+        <button type="button" class="rf-modal-close" data-ui-dismiss="modal" aria-label="Close">
+          <i class="bi bi-x-lg text-sm"></i>
+        </button>
+      </div>
+      <div class="rf-modal-body space-y-4">
+        <div>
+          <label class="rf-label">Recipient Mobile Number</label>
+          <div class="flex items-center">
+            <span class="px-3 py-2 text-xs font-mono font-semibold border border-r-0 border-border rounded-l-lg bg-canvas-alt text-ink">+91</span>
+            <input type="tel" id="waCustomPhoneInput" class="rf-input font-mono font-semibold rounded-l-none" placeholder="9876543210" maxlength="10">
+          </div>
+        </div>
+        <div>
+          <label class="rf-label">Message Preview</label>
+          <textarea id="waMessageText" class="rf-textarea font-mono text-xs bg-canvas-alt/60" rows="5"></textarea>
+        </div>
+        <button type="button" class="rf-btn rf-btn-sage-solid rf-btn-lg w-full justify-center" id="btnLaunchWhatsApp">
+          <i class="bi bi-whatsapp"></i> Open WhatsApp Web / App
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap 5 Bundle JS -->
-  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script>if(typeof bootstrap==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>');}</script>
   <script>
     window.RACE_INVOICE_DOWNLOAD = {
       invoiceNumber: <?= json_encode($estimateNumber ?: 'QUOTATION') ?>,
       whatsAppMessage: <?= json_encode($waDefaultMessage) ?>
     };
   </script>
+  <script src="/js/ui.js"></script>
   <script src="/js/invoice-download.js"></script>
 </body>
 </html>

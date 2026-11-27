@@ -13,12 +13,13 @@ if (!$isEditMode && !empty($billSettings["default_due_days"]) && (int)$billSetti
 $activeDateFormat = $currentSettings['general']['date_format'] ?? ($firmSettings['general']['date_format'] ?? 'DD/MM/YYYY');
 $formattedInvoiceDate = formatDate($isEditMode ? $invoice['invoice_date'] : $today, $activeDateFormat);
 $formattedDueDate = !empty($defaultDueDate) ? formatDate($defaultDueDate, $activeDateFormat) : '';
-$existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (float)$invoice['taxable_amount'] > 0) 
-    ? (int)round(((float)($invoice['tax_amount'] ?? 0) / (float)$invoice['taxable_amount']) * 100) 
+$existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (float)$invoice['taxable_amount'] > 0)
+    ? (int)round(((float)($invoice['tax_amount'] ?? 0) / (float)$invoice['taxable_amount']) * 100)
     : 18;
 ?>
 
-<form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm" 
+<form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm"
+  class="space-y-6"
   data-firm-id="<?= htmlspecialchars((string)($activeFirm['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
   data-is-edit="<?= $isEditMode ? '1' : '0' ?>"
   data-firm-state-code="<?= htmlspecialchars((string)($activeFirm['state_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
@@ -29,225 +30,216 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
   <input type="hidden" name="type" value="<?= htmlspecialchars($invoiceType ?? 'sale', ENT_QUOTES, 'UTF-8') ?>">
   <input type="hidden" name="gst_calc_mode" id="gstCalcModeInput" value="<?= htmlspecialchars($billSettings['gst_calc_mode'] ?? 'separate', ENT_QUOTES, 'UTF-8') ?>">
 
-  <!-- Unsaved Draft Recovery Alert Banner -->
-  <div id="draftRecoveryBanner" class="alert alert-warning shadow-sm d-none mb-3 border-warning d-flex flex-wrap align-items-center justify-content-between p-3 gap-2" role="alert">
-    <div class="d-flex align-items-center">
-      <i class="bi bi-clock-history fs-3 text-warning me-3"></i>
+  <!-- Draft Recovery Banner -->
+  <div id="draftRecoveryBanner" class="rf-alert rf-alert-warning hidden justify-between flex-wrap items-center gap-3 mb-0" role="alert">
+    <div class="flex items-center gap-3">
+      <i class="bi bi-clock-history text-xl text-[#8A5A00] shrink-0"></i>
       <div>
-        <div class="fw-bold text-dark mb-0">Unsaved Bill Draft Found</div>
-        <div class="small text-muted" id="draftDetailsText">You have an unsaved draft from a previous session.</div>
+        <div class="font-semibold text-[#1C1B18] text-sm">Unsaved Bill Draft Found</div>
+        <div class="text-xs text-[#5C5A54]" id="draftDetailsText">You have an unsaved draft from a previous session.</div>
       </div>
     </div>
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-warning btn-sm fw-semibold shadow-sm" id="btnRestoreDraft">
-        <i class="bi bi-arrow-counterclockwise me-1"></i> Restore Draft
+    <div class="flex items-center gap-2">
+      <button type="button" class="rf-btn rf-btn-amber rf-btn-sm" id="btnRestoreDraft">
+        <i class="bi bi-arrow-counterclockwise"></i> Restore Draft
       </button>
-      <button type="button" class="btn btn-outline-secondary btn-sm" id="btnDiscardDraft">
-        Discard
-      </button>
+      <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" id="btnDiscardDraft">Discard</button>
     </div>
   </div>
 
   <!-- Top Action Header -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <div class="d-flex align-items-center flex-wrap gap-2">
-        <h3 class="fw-bold mb-0 text-dark">
-          <i class="bi <?= $isEditMode ? 'bi-pencil-square text-warning' : ($invoiceType === 'sale' ? 'bi-cart-check text-success' : 'bi-bag-plus text-primary') ?> me-2"></i>
-          <?= $isEditMode ? ($invoiceType === 'sale' ? 'Edit Sales Record' : 'Edit Purchase Record') : ($invoiceType === 'sale' ? 'Create Sales Record' : 'Create Purchase Record') ?>
-        </h3>
-        <span id="draftSaveIndicator" class="badge bg-light text-muted border small d-none" style="font-size: 0.75rem;">
-          <i class="bi bi-cloud-check text-success me-1"></i> <span id="draftSaveTime">Draft saved</span>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight flex items-center gap-2">
+          <i class="bi <?= $isEditMode ? 'bi-pencil-square text-[#8A5A00]' : ($invoiceType === 'sale' ? 'bi-cart-check text-[#2E5A36]' : 'bi-bag-plus text-[#2B526E]') ?>"></i>
+          <span><?= $isEditMode ? ($invoiceType === 'sale' ? 'Edit Sales Record' : 'Edit Purchase Record') : ($invoiceType === 'sale' ? 'Create Sales Record' : 'Create Purchase Record') ?></span>
+        </h1>
+        <span id="draftSaveIndicator" class="rf-badge rf-badge-neutral hidden">
+          <i class="bi bi-cloud-check text-[#2E5A36]"></i> <span id="draftSaveTime">Draft saved</span>
         </span>
       </div>
-      <span class="badge <?= $isGstDefault ? 'bg-primary' : 'bg-secondary' ?> mt-1" id="gstModeBadge">
-        <?= $isGstDefault ? ($isSeparateGst ? 'GST Sales Record (Separate Item GST)' : 'GST Sales Record (Final Amount GST)') : 'Non-GST Business Record' ?>
-      </span>
+      <div class="mt-1.5">
+        <span class="rf-badge <?= $isGstDefault ? 'rf-badge-slate' : 'rf-badge-neutral' ?>" id="gstModeBadge">
+          <?= $isGstDefault ? ($isSeparateGst ? 'GST Sales Record (Separate Item GST)' : 'GST Sales Record (Final Amount GST)') : 'Non-GST Business Record' ?>
+        </span>
+      </div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <a href="/settings?tab=<?= $invoiceType === 'sale' ? 'sales' : 'purchases' ?>" class="btn btn-outline-secondary btn-sm" title="Record Settings">
-        <i class="bi bi-gear me-1"></i> Settings
+
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/settings?tab=<?= $invoiceType === 'sale' ? 'sales' : 'purchases' ?>" class="rf-btn rf-btn-ghost rf-btn-sm" title="Record Settings">
+        <i class="bi bi-gear"></i> Settings
       </a>
-      <a href="<?= $isEditMode ? ('/invoices/view/' . $invoice['id']) : ($invoiceType === 'sale' ? '/sales' : '/purchases') ?>" class="btn btn-outline-secondary btn-sm">Cancel</a>
-      <button type="submit" class="btn btn-success btn-sm px-3 shadow-sm fw-semibold">
-        <i class="bi bi-check2-circle me-1"></i> <?= $isEditMode ? 'Update Record' : 'Save Record' ?>
+      <a href="<?= $isEditMode ? ('/invoices/view/' . $invoice['id']) : ($invoiceType === 'sale' ? '/sales' : '/purchases') ?>" class="rf-btn rf-btn-secondary rf-btn-sm">Cancel</a>
+      <button type="submit" class="rf-btn rf-btn-primary rf-btn-sm">
+        <i class="bi bi-check2-circle"></i> <?= $isEditMode ? 'Update Record' : 'Save Record' ?>
       </button>
     </div>
   </div>
 
-  <!-- Row 1: Record Settings & Dates -->
-  <div class="card shadow-sm border-0 mb-3">
-    <div class="card-body p-3">
-      <div class="row g-3 align-items-center">
-        <!-- Record Number (Numbers Only) -->
-        <div class="col-sm-6 col-md-3">
-          <label class="form-label small mb-1">Record Number <span class="text-danger">*</span></label>
-          <input type="text" class="form-control form-control-sm font-monospace fw-bold text-primary" id="invoiceNumberInput" name="invoice_number" value="<?= $isEditMode ? $invoice['invoice_number'] : $nextInvoiceNumber ?>" pattern="[0-9]+" inputmode="numeric" required title="Record number must contain only numbers" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 101">
-        </div>
+  <!-- Row 1: Record Metadata & Tax Toggles -->
+  <div class="rf-card p-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+      <div class="lg:col-span-3">
+        <label class="rf-label-plain text-xs" for="invoiceNumberInput">Record Number <span class="text-[#8F2D2B]">*</span></label>
+        <input type="text" class="rf-input rf-input-sm font-mono font-semibold" id="invoiceNumberInput" name="invoice_number" value="<?= $isEditMode ? $invoice['invoice_number'] : $nextInvoiceNumber ?>" pattern="[0-9]+" inputmode="numeric" required title="Record number must contain only numbers" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 101">
+      </div>
 
-        <!-- Record Date -->
-        <div class="col-sm-6 col-md-3">
-          <label class="form-label small mb-1" for="invoiceDateInput">Record Date <span class="text-danger">*</span></label>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control form-control-sm date-picker" id="invoiceDateInput" name="invoice_date" value="<?= htmlspecialchars($formattedInvoiceDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" oninput="this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);" required autocomplete="off">
-            <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('invoiceDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
-          </div>
+      <div class="lg:col-span-3">
+        <label class="rf-label-plain text-xs" for="invoiceDateInput">Record Date <span class="text-[#8F2D2B]">*</span></label>
+        <div class="relative">
+          <input type="text" class="rf-input rf-input-sm pr-9 date-picker" id="invoiceDateInput" name="invoice_date" value="<?= htmlspecialchars($formattedInvoiceDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" oninput="this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);" required autocomplete="off">
+          <button type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#78746C] bg-transparent border-0 cursor-pointer p-0" onclick="const el = document.getElementById('invoiceDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3 text-xs"></i></button>
         </div>
+      </div>
 
-        <!-- Due Date -->
-        <div class="col-sm-6 col-md-2">
-          <label class="form-label small mb-1" for="dueDateInput">Due Date</label>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control form-control-sm date-picker" id="dueDateInput" name="due_date" value="<?= htmlspecialchars($formattedDueDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" oninput="this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);" autocomplete="off">
-            <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('dueDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3"></i></span>
-          </div>
+      <div class="lg:col-span-2">
+        <label class="rf-label-plain text-xs" for="dueDateInput">Due Date</label>
+        <div class="relative">
+          <input type="text" class="rf-input rf-input-sm pr-9 date-picker" id="dueDateInput" name="due_date" value="<?= htmlspecialchars($formattedDueDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" oninput="this.value = this.value.replace(/[^0-9\/\-\.]/g, '').slice(0, 10);" autocomplete="off">
+          <button type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#78746C] bg-transparent border-0 cursor-pointer p-0" onclick="const el = document.getElementById('dueDateInput'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }"><i class="bi bi-calendar3 text-xs"></i></button>
         </div>
+      </div>
 
-        <!-- GST & Interstate Toggles -->
-        <div class="col-sm-6 col-md-4">
-          <label class="form-label small mb-1 text-muted">Tax & GST Breakdown</label>
-          <div class="d-flex flex-wrap gap-3 mt-1">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="isGstToggle" name="is_gst_bill" value="1" <?= $isGstDefault ? 'checked' : '' ?>>
-              <label class="form-check-label small fw-semibold" for="isGstToggle">Calculate GST</label>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="isInterstateToggle" name="is_interstate" value="1" <?= $isEditMode && $invoice['is_interstate'] === 1 ? 'checked' : '' ?>>
-              <label class="form-check-label small" for="isInterstateToggle">Inter-State (IGST)</label>
-            </div>
-          </div>
+      <div class="lg:col-span-4 space-y-1.5">
+        <div class="text-xs font-medium text-[#78746C]">Tax &amp; GST Breakdown</div>
+        <div class="flex flex-wrap items-center gap-5 pt-1">
+          <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-[#1C1B18]">
+            <span class="rf-switch">
+              <input type="checkbox" id="isGstToggle" name="is_gst_bill" value="1" <?= $isGstDefault ? 'checked' : '' ?>>
+              <span class="rf-switch-thumb"></span>
+            </span>
+            <span>Calculate GST</span>
+          </label>
+          <label class="inline-flex items-center gap-2 cursor-pointer text-xs text-[#5C5A54]">
+            <span class="rf-switch">
+              <input type="checkbox" id="isInterstateToggle" name="is_interstate" value="1" <?= $isEditMode && $invoice['is_interstate'] === 1 ? 'checked' : '' ?>>
+              <span class="rf-switch-thumb"></span>
+            </span>
+            <span>Inter-State (IGST)</span>
+          </label>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Row 2: Customer / Party Details -->
-  <div class="card shadow-sm border-0 mb-3">
-    <div class="card-header bg-white py-2">
-      <div class="d-flex justify-content-between align-items-center">
-        <span class="fw-bold small text-uppercase text-secondary">
-          <i class="bi bi-person me-1"></i> <?= $invoiceType === 'sale' ? 'Bill To (Customer Details)' : 'Bill From (Supplier Details)' ?>
-        </span>
-        <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 small fw-semibold" data-bs-toggle="modal" data-bs-target="#modalQuickAddParty" id="btnOpenAddPartyModal">
-          <i class="bi bi-person-plus-fill me-1"></i> + Add New Party
-        </button>
-      </div>
-    </div>
-    <div class="card-body p-3">
-      <div class="row g-3">
-        <!-- Party Quick Searchable Dropdown -->
-        <div class="col-md-4">
-          <label class="form-label small mb-1">Select Existing Party</label>
-          <div class="position-relative">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control form-control-sm" id="partySearchInput" placeholder="Type name, phone or GSTIN to search..." autocomplete="off" value="<?= $isEditMode ? htmlspecialchars(($invoice['party_name'] ?? '') . (!empty($invoice['party_phone']) ? ' (' . $invoice['party_phone'] . ')' : ''), ENT_QUOTES, 'UTF-8') : '' ?>">
-              <button class="btn btn-outline-secondary" type="button" id="btnClearPartySearch" title="Clear selection" style="<?= ($isEditMode && !empty($invoice['party_id'])) ? 'display: block;' : 'display: none;' ?>">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-            <!-- Live Party Search Results Dropdown -->
-            <div id="partySearchResults" class="list-group shadow position-absolute w-100 mt-1 d-none" style="max-height: 250px; overflow-y: auto; z-index: 1050; border-radius: 6px; font-size: 0.85rem;">
-              <!-- Populated dynamically via JS -->
-            </div>
-          </div>
-          <!-- Underlying select element for state and form submission -->
-          <select class="d-none" id="partySelect" name="party_id">
-            <option value="">-- Choose Party or Enter Manually --</option>
-            <?php foreach (($parties ?? []) as $p): ?>
-              <option value="<?= $p['id'] ?>"
-                data-name="<?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?>"
-                data-phone="<?= htmlspecialchars($p['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                data-gstin="<?= htmlspecialchars($p['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                data-address="<?= htmlspecialchars($p['billing_address'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                data-state="<?= htmlspecialchars($p['state'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                data-state-code="<?= htmlspecialchars($p['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                <?= ($isEditMode && ($invoice['party_id'] ?? null) == $p['id']) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?> <?= !empty($p['phone']) ? '(' . htmlspecialchars($p['phone'], ENT_QUOTES, 'UTF-8') . ')' : '' ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <!-- Party Name (Mandatory) -->
-        <div class="col-md-4">
-          <label class="form-label small mb-1">Party / Customer Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control form-control-sm" id="partyNameInput" name="party_name" placeholder="Enter party name" value="<?= $isEditMode ? htmlspecialchars($invoice['party_name'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" required>
-        </div>
-
-        <!-- Phone Number (Strict 10 Digits) -->
-        <div class="col-md-4">
-          <label class="form-label small mb-1">Phone / Mobile (10 Digits)</label>
-          <input type="tel" class="form-control form-control-sm font-monospace" id="partyPhoneInput" name="party_phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= $isEditMode ? htmlspecialchars($invoice['party_phone'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-          <div id="phoneValidationStatus" class="form-text small" style="font-size: 0.72rem;">Exact 10 digits required</div>
-        </div>
-
-        <!-- GSTIN (Strict 15 Alphanumeric Characters) -->
-        <div class="col-md-3">
-          <label class="form-label small mb-1">Party GSTIN (15 Chars)</label>
-          <input type="text" class="form-control form-control-sm font-monospace text-uppercase" id="partyGstinInput" name="party_gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= $isEditMode ? htmlspecialchars($invoice['party_gstin'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
-          <div id="gstinValidationStatus" class="form-text small" style="font-size: 0.72rem;">Exact 15 letters & numbers</div>
-        </div>
-
-        <!-- Address -->
-        <div class="col-md-5">
-          <label class="form-label small mb-1">Billing Address</label>
-          <input type="text" class="form-control form-control-sm" id="partyAddressInput" name="party_address" placeholder="Building, Street, Area..." value="<?= $isEditMode ? htmlspecialchars($invoice['party_address'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>">
-        </div>
-
-        <!-- State & State Code (Strict State Dropdown + Auto Code) -->
-        <div class="col-md-3">
-          <label class="form-label small mb-1">State / UT <span class="text-danger">*</span></label>
-          <select class="form-select form-select-sm" id="partyStateSelect" name="party_state" required>
-            <option value="">-- Select State --</option>
-            <?php foreach (($gstStates ?? []) as $st): ?>
-              <?php 
-                $isSelected = ($isEditMode && (($invoice['party_state'] ?? '') === $st['name'] || ($invoice['party_state_code'] ?? '') === $st['code'])) || 
-                               (!$isEditMode && !empty($activeFirm) && (($activeFirm['state'] ?? '') === $st['name'] || ($activeFirm['state_code'] ?? '') === $st['code']));
-              ?>
-              <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= $isSelected ? 'selected' : '' ?>>
-                <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="col-md-1">
-          <label class="form-label small mb-1">Code</label>
-          <input type="text" class="form-control form-control-sm font-monospace bg-light fw-bold text-center text-primary" id="partyStateCodeInput" name="party_state_code" placeholder="00" value="<?= $isEditMode ? htmlspecialchars($invoice['party_state_code'] ?? '', ENT_QUOTES, 'UTF-8') : htmlspecialchars($activeFirm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly title="State code is auto-populated">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Row 3: Dynamic Line Items Table -->
-  <div class="card shadow-sm border-0 mb-3">
-    <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-      <span class="fw-bold small text-uppercase text-secondary">
-        <i class="bi bi-box-seam me-1"></i> Bill Line Items
+  <!-- Row 2: Party Details -->
+  <div class="rf-card">
+    <div class="rf-card-header py-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-[#5C5A54] flex items-center gap-1.5">
+        <i class="bi bi-person"></i> <?= $invoiceType === 'sale' ? 'Bill To (Customer Details)' : 'Bill From (Supplier Details)' ?>
       </span>
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalQuickAddItem" id="btnOpenAddItemModal">
-          <i class="bi bi-plus-circle me-1"></i> + New Item
+      <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm py-1 px-2.5" data-ui-modal="#modalQuickAddParty" id="btnOpenAddPartyModal">
+        <i class="bi bi-person-plus"></i> Add New Party
+      </button>
+    </div>
+
+    <div class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4">
+      <div class="md:col-span-4">
+        <label class="rf-label-plain text-xs">Select Existing Party</label>
+        <div class="relative">
+          <div class="relative flex items-center">
+            <i class="bi bi-search absolute left-3 text-[#87847C] text-xs pointer-events-none"></i>
+            <input type="text" class="rf-input rf-input-sm pl-8 pr-8" id="partySearchInput" placeholder="Type name, phone or GSTIN..." autocomplete="off" value="<?= $isEditMode ? htmlspecialchars(($invoice['party_name'] ?? '') . (!empty($invoice['party_phone']) ? ' (' . $invoice['party_phone'] . ')' : ''), ENT_QUOTES, 'UTF-8') : '' ?>">
+            <button class="absolute right-2 text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" type="button" id="btnClearPartySearch" title="Clear selection" style="<?= ($isEditMode && !empty($invoice['party_id'])) ? 'display: block;' : 'display: none;' ?>">
+              <i class="bi bi-x-lg text-xs"></i>
+            </button>
+          </div>
+          <div id="partySearchResults" class="hidden absolute left-0 right-0 mt-1 max-h-64 overflow-y-auto z-50 bg-white border border-[#E2DFD7] rounded-xl shadow-lg"></div>
+        </div>
+
+        <select class="hidden" id="partySelect" name="party_id">
+          <option value="">-- Choose Party or Enter Manually --</option>
+          <?php foreach (($parties ?? []) as $p): ?>
+            <option value="<?= $p['id'] ?>"
+              data-name="<?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?>"
+              data-phone="<?= htmlspecialchars($p['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+              data-gstin="<?= htmlspecialchars($p['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+              data-address="<?= htmlspecialchars($p['billing_address'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+              data-state="<?= htmlspecialchars($p['state'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+              data-state-code="<?= htmlspecialchars($p['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+              <?= ($isEditMode && ($invoice['party_id'] ?? null) == $p['id']) ? 'selected' : '' ?>>
+              <?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?> <?= !empty($p['phone']) ? '(' . htmlspecialchars($p['phone'], ENT_QUOTES, 'UTF-8') . ')' : '' ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="md:col-span-4">
+        <label class="rf-label-plain text-xs" for="partyNameInput">Party / Customer Name <span class="text-[#8F2D2B]">*</span></label>
+        <input type="text" class="rf-input rf-input-sm" id="partyNameInput" name="party_name" placeholder="Enter party name" value="<?= $isEditMode ? htmlspecialchars($invoice['party_name'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" required>
+      </div>
+
+      <div class="md:col-span-4">
+        <label class="rf-label-plain text-xs" for="partyPhoneInput">Phone / Mobile (10 Digits)</label>
+        <input type="tel" class="rf-input rf-input-sm font-mono" id="partyPhoneInput" name="party_phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= $isEditMode ? htmlspecialchars($invoice['party_phone'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        <div id="phoneValidationStatus" class="text-[11px] text-[#78746C] mt-1">Exact 10 digits required</div>
+      </div>
+
+      <div class="md:col-span-3">
+        <label class="rf-label-plain text-xs" for="partyGstinInput">Party GSTIN (15 Chars)</label>
+        <input type="text" class="rf-input rf-input-sm font-mono uppercase" id="partyGstinInput" name="party_gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= $isEditMode ? htmlspecialchars($invoice['party_gstin'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+        <div id="gstinValidationStatus" class="text-[11px] text-[#78746C] mt-1">Exact 15 letters &amp; numbers</div>
+      </div>
+
+      <div class="md:col-span-5">
+        <label class="rf-label-plain text-xs" for="partyAddressInput">Billing Address</label>
+        <input type="text" class="rf-input rf-input-sm" id="partyAddressInput" name="party_address" placeholder="Building, Street, Area..." value="<?= $isEditMode ? htmlspecialchars($invoice['party_address'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?>">
+      </div>
+
+      <div class="md:col-span-3">
+        <label class="rf-label-plain text-xs" for="partyStateSelect">State / UT <span class="text-[#8F2D2B]">*</span></label>
+        <select class="rf-select rf-select-sm" id="partyStateSelect" name="party_state" required>
+          <option value="">-- Select State --</option>
+          <?php foreach (($gstStates ?? []) as $st): ?>
+            <?php
+              $isSelected = ($isEditMode && (($invoice['party_state'] ?? '') === $st['name'] || ($invoice['party_state_code'] ?? '') === $st['code'])) ||
+                            (!$isEditMode && !empty($activeFirm) && (($activeFirm['state'] ?? '') === $st['name'] || ($activeFirm['state_code'] ?? '') === $st['code']));
+            ?>
+            <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= $isSelected ? 'selected' : '' ?>>
+              <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="md:col-span-1">
+        <label class="rf-label-plain text-xs" for="partyStateCodeInput">Code</label>
+        <input type="text" class="rf-input rf-input-sm font-mono bg-[#F3F1EC] text-center font-semibold" id="partyStateCodeInput" name="party_state_code" placeholder="00" value="<?= $isEditMode ? htmlspecialchars($invoice['party_state_code'] ?? '', ENT_QUOTES, 'UTF-8') : htmlspecialchars($activeFirm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly title="State code is auto-populated">
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Line Items Table -->
+  <div class="rf-card">
+    <div class="rf-card-header py-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-[#5C5A54] flex items-center gap-1.5">
+        <i class="bi bi-box-seam"></i> Bill Line Items
+      </span>
+      <div class="flex items-center gap-2">
+        <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm py-1 px-2.5" data-ui-modal="#modalQuickAddItem" id="btnOpenAddItemModal">
+          <i class="bi bi-plus-circle"></i> New Item
         </button>
-        <button type="button" class="btn btn-primary btn-sm" id="btnAddItem">
-          <i class="bi bi-plus-lg me-1"></i> Add Row
+        <button type="button" class="rf-btn rf-btn-primary rf-btn-sm py-1 px-2.5" id="btnAddItem">
+          <i class="bi bi-plus-lg"></i> Add Row
         </button>
       </div>
     </div>
-    <div class="card-body p-0">
+
+    <div class="p-3">
       <div class="invoice-table-wrap">
-        <table class="table table-bordered table-sm mb-0 invoice-items-table align-middle" id="invoiceItemsTable">
-          <thead class="table-light">
+        <table class="invoice-items-table" id="invoiceItemsTable">
+          <thead>
             <tr>
               <th class="text-center" style="width: 28px;">#</th>
               <th>Item Name / Description</th>
               <th style="width: 85px;">HSN/SAC</th>
-              <th style="width: 82px;" class="text-end">Qty</th>
+              <th style="width: 82px;" class="text-right">Qty</th>
               <th style="width: 78px;">Unit</th>
-              <th style="width: 95px;" class="text-end">Rate (₹)</th>
-              <th style="width: 72px;" class="text-end discount-col <?= !$showDiscountCol ? 'd-none' : '' ?>">Disc %</th>
-              <th style="width: 96px;" class="gst-col <?= (!$isGstDefault || !$isSeparateGst) ? 'd-none' : '' ?>">Tax %</th>
-              <th style="width: 105px;" class="text-end">Amount (₹)</th>
+              <th style="width: 95px;" class="text-right">Rate (₹)</th>
+              <th style="width: 72px;" class="text-right discount-col <?= !$showDiscountCol ? 'hidden' : '' ?>">Disc %</th>
+              <th style="width: 96px;" class="gst-col <?= (!$isGstDefault || !$isSeparateGst) ? 'hidden' : '' ?>">Tax %</th>
+              <th style="width: 105px;" class="text-right">Amount (₹)</th>
               <th style="width: 32px;" class="text-center"></th>
             </tr>
           </thead>
@@ -259,174 +251,139 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
     </div>
   </div>
 
-  <!-- Preloaded Items Element for JS -->
-  <div id="preloadedInvoiceItems" data-items="<?= htmlspecialchars(json_encode(!empty($invoice['items']) ? $invoice['items'] : []), ENT_QUOTES, 'UTF-8') ?>" class="d-none"></div>
-  <div id="unitOptionsData" data-units="<?= htmlspecialchars(json_encode($allUnits ?? []), ENT_QUOTES, 'UTF-8') ?>" class="d-none"></div>
+  <div id="preloadedInvoiceItems" data-items="<?= htmlspecialchars(json_encode(!empty($invoice['items']) ? $invoice['items'] : []), ENT_QUOTES, 'UTF-8') ?>" class="hidden"></div>
+  <div id="unitOptionsData" data-units="<?= htmlspecialchars(json_encode($allUnits ?? []), ENT_QUOTES, 'UTF-8') ?>" class="hidden"></div>
 
-  <!-- Row 4: Calculation Summary, Discounts, Payments, Notes -->
-  <div class="row g-3">
-    <!-- Left: Notes, Terms, Payment Mode -->
-    <div class="col-lg-6">
-      <div class="card shadow-sm border-0 mb-3">
-        <div class="card-body p-3">
-          <div class="mb-3">
-            <label class="form-label small">Payment Mode</label>
-            <div class="d-flex flex-wrap gap-3">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_mode" id="modeCash" value="cash" <?= !$isEditMode || $invoice['payment_mode'] === 'cash' ? 'checked' : '' ?>>
-                <label class="form-check-label small" for="modeCash">Cash</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_mode" id="modeBank" value="bank" <?= $isEditMode && $invoice['payment_mode'] === 'bank' ? 'checked' : '' ?>>
-                <label class="form-check-label small" for="modeBank">Bank Transfer</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_mode" id="modeUpi" value="upi" <?= $isEditMode && $invoice['payment_mode'] === 'upi' ? 'checked' : '' ?>>
-                <label class="form-check-label small" for="modeUpi">UPI</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_mode" id="modeCheque" value="cheque" <?= $isEditMode && $invoice['payment_mode'] === 'cheque' ? 'checked' : '' ?>>
-                <label class="form-check-label small" for="modeCheque">Cheque</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_mode" id="modeCredit" value="credit" <?= $isEditMode && $invoice['payment_mode'] === 'credit' ? 'checked' : '' ?>>
-                <label class="form-check-label small" for="modeCredit">Credit (Unpaid)</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="notes" class="form-label small">Private Notes / Remarks</label>
-            <textarea class="form-control form-control-sm" id="notes" name="notes" rows="2" placeholder="Optional notes for your reference..."><?= $isEditMode ? htmlspecialchars($invoice['notes'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?></textarea>
-          </div>
-
-          <div>
-            <label for="terms" class="form-label small">Invoice Terms & Conditions</label>
-            <textarea class="form-control form-control-sm" id="terms" name="terms" rows="2"><?= $isEditMode ? htmlspecialchars($invoice['terms'] ?? ($activeFirm['terms'] ?? ''), ENT_QUOTES, 'UTF-8') : htmlspecialchars(!empty($activeFirm['terms']) ? $activeFirm['terms'] : '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
-          </div>
+  <!-- Row 4: Payment & Totals -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="lg:col-span-6 rf-card p-5 space-y-5">
+      <div>
+        <div class="rf-label-plain text-xs">Payment Mode</div>
+        <div class="flex flex-wrap gap-4 pt-1 text-xs text-[#1C1B18]">
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input class="rf-radio" type="radio" name="payment_mode" id="modeCash" value="cash" <?= !$isEditMode || $invoice['payment_mode'] === 'cash' ? 'checked' : '' ?>>
+            <span>Cash</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input class="rf-radio" type="radio" name="payment_mode" id="modeBank" value="bank" <?= $isEditMode && $invoice['payment_mode'] === 'bank' ? 'checked' : '' ?>>
+            <span>Bank Transfer</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input class="rf-radio" type="radio" name="payment_mode" id="modeUpi" value="upi" <?= $isEditMode && $invoice['payment_mode'] === 'upi' ? 'checked' : '' ?>>
+            <span>UPI</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input class="rf-radio" type="radio" name="payment_mode" id="modeCheque" value="cheque" <?= $isEditMode && $invoice['payment_mode'] === 'cheque' ? 'checked' : '' ?>>
+            <span>Cheque</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input class="rf-radio" type="radio" name="payment_mode" id="modeCredit" value="credit" <?= $isEditMode && $invoice['payment_mode'] === 'credit' ? 'checked' : '' ?>>
+            <span>Credit (Unpaid)</span>
+          </label>
         </div>
+      </div>
+
+      <div>
+        <label for="notes" class="rf-label-plain text-xs">Private Notes / Remarks</label>
+        <textarea class="rf-textarea text-xs" id="notes" name="notes" rows="2" placeholder="Optional notes for your reference..."><?= $isEditMode ? htmlspecialchars($invoice['notes'] ?? '', ENT_QUOTES, 'UTF-8') : '' ?></textarea>
+      </div>
+
+      <div>
+        <label for="terms" class="rf-label-plain text-xs">Invoice Terms &amp; Conditions</label>
+        <textarea class="rf-textarea text-xs" id="terms" name="terms" rows="2"><?= $isEditMode ? htmlspecialchars($invoice['terms'] ?? ($activeFirm['terms'] ?? ''), ENT_QUOTES, 'UTF-8') : htmlspecialchars(!empty($activeFirm['terms']) ? $activeFirm['terms'] : '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
       </div>
     </div>
 
-    <!-- Right: Totals & Tax Breakdown -->
-    <div class="col-lg-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body p-3">
-          <!-- Subtotal -->
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="text-muted small">Taxable Subtotal:</span>
-            <span class="fw-semibold" id="displaySubtotal">₹ 0.00</span>
-            <input type="hidden" name="subtotal" id="subtotalInput" value="<?= $isEditMode ? $invoice['subtotal'] : '0' ?>">
-            <input type="hidden" name="taxable_amount" id="taxableAmountInput" value="<?= $isEditMode ? $invoice['taxable_amount'] : '0' ?>">
-          </div>
+    <div class="lg:col-span-6 rf-card p-5 space-y-4">
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-xs text-[#5C5A54]">Taxable Subtotal</span>
+        <span class="font-semibold tabular-nums" id="displaySubtotal">₹ 0.00</span>
+        <input type="hidden" name="subtotal" id="subtotalInput" value="<?= $isEditMode ? $invoice['subtotal'] : '0' ?>">
+        <input type="hidden" name="taxable_amount" id="taxableAmountInput" value="<?= $isEditMode ? $invoice['taxable_amount'] : '0' ?>">
+      </div>
 
-          <!-- Overall Invoice Discount -->
-          <div class="d-flex justify-content-between align-items-center mb-2 gap-2">
-            <span class="text-muted small text-nowrap">Discount:</span>
-            <div class="d-flex align-items-center gap-2" style="max-width: 270px; width: 100%;">
-              <div style="width: 140px; min-width: 130px;">
-                <select name="discount_type" id="discountTypeSelect" class="form-select fw-medium">
-                  <option value="percentage" <?= $isEditMode && $invoice['discount_type'] === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
-                  <option value="flat" <?= $isEditMode && $invoice['discount_type'] === 'flat' ? 'selected' : '' ?>>Flat Amount (₹)</option>
-                </select>
-              </div>
-              <div class="flex-grow-1">
-                <input type="number" name="discount_value" id="discountValueInput" class="form-control text-end fw-semibold" min="0" max="<?= ($isEditMode && $invoice['discount_type'] === 'flat') ? '' : '100' ?>" step="any" placeholder="0.00" value="<?= $isEditMode ? $invoice['discount_value'] : '0' ?>">
-                <input type="hidden" name="discount_amount" id="discountAmountInput" value="<?= $isEditMode ? $invoice['discount_amount'] : '0' ?>">
-              </div>
-            </div>
-          </div>
-
-          <!-- GST Summary (Collapsible / Toggleable) -->
-          <div id="gstSummarySection">
-            <!-- Composite Final Amount GST Rate Selector (if mode is final_amount) -->
-            <div class="row g-2 align-items-center mb-2 <?= $isSeparateGst ? 'd-none' : '' ?>" id="finalGstRateRow">
-              <div class="col-6">
-                <span class="text-muted small fw-semibold">GST Rate on Final Amount:</span>
-              </div>
-              <div class="col-6">
-                <?php
-                  $isStandardFinalTax = in_array((int)$existingFinalTaxRate, [0, 5, 12, 18, 28], true);
-                ?>
-                <select id="finalTaxRateSelect" class="form-select form-select-sm">
-                  <option value="0" <?= ($isStandardFinalTax && $existingFinalTaxRate === 0) ? 'selected' : '' ?>>0% (Tax Exempt)</option>
-                  <option value="5" <?= ($isStandardFinalTax && $existingFinalTaxRate === 5) ? 'selected' : '' ?>>5% GST</option>
-                  <option value="12" <?= ($isStandardFinalTax && $existingFinalTaxRate === 12) ? 'selected' : '' ?>>12% GST</option>
-                  <option value="18" <?= ($isStandardFinalTax && $existingFinalTaxRate === 18) ? 'selected' : '' ?>>18% GST</option>
-                  <option value="28" <?= ($isStandardFinalTax && $existingFinalTaxRate === 28) ? 'selected' : '' ?>>28% GST</option>
-                  <option value="custom" <?= !$isStandardFinalTax ? 'selected' : '' ?>>Custom Tax %</option>
-                </select>
-                <div id="finalCustomTaxContainer" class="mt-1 <?= !$isStandardFinalTax ? '' : 'd-none' ?>">
-                  <div class="input-group input-group-sm">
-                    <input type="number" id="finalTaxRateCustom" class="form-control form-control-sm text-end" min="1" max="100" step="any" placeholder="1-100" value="<?= !$isStandardFinalTax ? $existingFinalTaxRate : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
-                    <span class="input-group-text">%</span>
-                  </div>
-                </div>
-                <input type="hidden" name="final_tax_rate" id="finalTaxRateInput" value="<?= $existingFinalTaxRate ?>">
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-1 text-muted small" id="cgstSgstSummaryRow">
-              <span>CGST + SGST:</span>
-              <span class="fw-medium" id="displayTax">₹ 0.00</span>
-              <input type="hidden" name="cgst_amount" id="cgstAmountInput" value="<?= $isEditMode ? $invoice['cgst_amount'] : '0' ?>">
-              <input type="hidden" name="sgst_amount" id="sgstAmountInput" value="<?= $isEditMode ? $invoice['sgst_amount'] : '0' ?>">
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-1 text-muted small d-none" id="igstSummaryRow">
-              <span>IGST (Integrated Tax):</span>
-              <span class="fw-medium">₹ 0.00</span>
-              <input type="hidden" name="igst_amount" id="igstAmountInput" value="<?= $isEditMode ? $invoice['igst_amount'] : '0' ?>">
-            </div>
-            <input type="hidden" name="tax_amount" id="taxAmountInput" value="<?= $isEditMode ? $invoice['tax_amount'] : '0' ?>">
-          </div>
-
-          <!-- Round Off -->
-          <div class="d-flex justify-content-between align-items-center mb-2 text-muted small">
-            <span>Round Off:</span>
-            <input type="hidden" name="round_off" id="roundOffInput" value="<?= $isEditMode ? $invoice['round_off'] : '0' ?>">
-            <span class="text-muted">₹ 0.00</span>
-          </div>
-
-          <hr class="my-2">
-
-          <!-- Grand Total -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="fs-5 fw-bold text-dark">Grand Total:</span>
-            <span class="fs-4 fw-bold text-primary" id="displayGrandTotal">₹ 0.00</span>
-            <input type="hidden" name="grand_total" id="grandTotalInput" value="<?= $isEditMode ? $invoice['grand_total'] : '0' ?>">
-          </div>
-
-          <!-- Paid Amount & Due Balance -->
-          <div class="bg-light p-3 rounded mb-3">
-            <div class="row g-2 align-items-center mb-2">
-              <div class="col-sm-5">
-                <label for="paidAmountInput" class="form-label small mb-0 fw-semibold text-success">
-                  Amount Received / Paid:
-                </label>
-              </div>
-              <div class="col-sm-4">
-                <input type="number" name="paid_amount" id="paidAmountInput" class="form-control form-control-sm text-end fw-bold" step="any" min="0" placeholder="0.00" value="<?= $isEditMode ? $invoice['paid_amount'] : '0' ?>">
-              </div>
-              <div class="col-sm-3 d-flex gap-1">
-                <button type="button" class="btn btn-outline-success btn-sm w-50 p-1 small" id="btnPayFull" title="Full Payment">Full</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm w-50 p-1 small" id="btnPayZero" title="Unpaid / Credit">Zero</button>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="small fw-semibold text-danger">Balance Due:</span>
-              <span class="fw-bold text-danger fs-6" id="displayBalanceDue">₹ 0.00</span>
-              <input type="hidden" name="balance_due" id="balanceDueInput" value="<?= $isEditMode ? $invoice['balance_due'] : '0' ?>">
-            </div>
-          </div>
-
-          <div class="d-grid">
-            <button type="submit" class="btn btn-success btn-lg shadow-sm fw-bold">
-              <i class="bi bi-check2-circle me-1"></i> <?= $isEditMode ? ('Update ' . ($invoiceType === 'sale' ? 'Sales Record' : 'Purchase Record')) : ('Save ' . ($invoiceType === 'sale' ? 'Sales Record' : 'Purchase Record')) ?>
-            </button>
-          </div>
+      <div class="flex justify-between items-center gap-3">
+        <span class="text-xs text-[#5C5A54] shrink-0">Discount</span>
+        <div class="flex items-center gap-2 max-w-[270px] w-full">
+          <select name="discount_type" id="discountTypeSelect" class="rf-select rf-select-sm w-36">
+            <option value="percentage" <?= $isEditMode && $invoice['discount_type'] === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
+            <option value="flat" <?= $isEditMode && $invoice['discount_type'] === 'flat' ? 'selected' : '' ?>>Flat Amount (₹)</option>
+          </select>
+          <input type="number" name="discount_value" id="discountValueInput" class="rf-input rf-input-sm text-right font-semibold tabular-nums flex-1" min="0" max="<?= ($isEditMode && $invoice['discount_type'] === 'flat') ? '' : '100' ?>" step="any" placeholder="0.00" value="<?= $isEditMode ? $invoice['discount_value'] : '0' ?>">
+          <input type="hidden" name="discount_amount" id="discountAmountInput" value="<?= $isEditMode ? $invoice['discount_amount'] : '0' ?>">
         </div>
       </div>
+
+      <div id="gstSummarySection" class="space-y-2">
+        <div class="grid grid-cols-2 gap-3 items-center <?= $isSeparateGst ? 'hidden' : '' ?>" id="finalGstRateRow">
+          <span class="text-xs font-medium text-[#5C5A54]">GST Rate on Final Amount</span>
+          <div>
+            <?php $isStandardFinalTax = in_array((int)$existingFinalTaxRate, [0, 5, 12, 18, 28], true); ?>
+            <select id="finalTaxRateSelect" class="rf-select rf-select-sm">
+              <option value="0" <?= ($isStandardFinalTax && $existingFinalTaxRate === 0) ? 'selected' : '' ?>>0% (Tax Exempt)</option>
+              <option value="5" <?= ($isStandardFinalTax && $existingFinalTaxRate === 5) ? 'selected' : '' ?>>5% GST</option>
+              <option value="12" <?= ($isStandardFinalTax && $existingFinalTaxRate === 12) ? 'selected' : '' ?>>12% GST</option>
+              <option value="18" <?= ($isStandardFinalTax && $existingFinalTaxRate === 18) ? 'selected' : '' ?>>18% GST</option>
+              <option value="28" <?= ($isStandardFinalTax && $existingFinalTaxRate === 28) ? 'selected' : '' ?>>28% GST</option>
+              <option value="custom" <?= !$isStandardFinalTax ? 'selected' : '' ?>>Custom Tax %</option>
+            </select>
+            <div id="finalCustomTaxContainer" class="mt-1.5 <?= !$isStandardFinalTax ? '' : 'hidden' ?>">
+              <div class="flex items-center gap-1.5">
+                <input type="number" id="finalTaxRateCustom" class="rf-input rf-input-sm text-right tabular-nums" min="1" max="100" step="any" placeholder="1-100" value="<?= !$isStandardFinalTax ? $existingFinalTaxRate : '' ?>" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                <span class="text-xs text-[#5C5A54]">%</span>
+              </div>
+            </div>
+            <input type="hidden" name="final_tax_rate" id="finalTaxRateInput" value="<?= $existingFinalTaxRate ?>">
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-xs text-[#5C5A54]" id="cgstSgstSummaryRow">
+          <span>CGST + SGST</span>
+          <span class="font-medium tabular-nums" id="displayTax">₹ 0.00</span>
+          <input type="hidden" name="cgst_amount" id="cgstAmountInput" value="<?= $isEditMode ? $invoice['cgst_amount'] : '0' ?>">
+          <input type="hidden" name="sgst_amount" id="sgstAmountInput" value="<?= $isEditMode ? $invoice['sgst_amount'] : '0' ?>">
+        </div>
+        <div class="flex justify-between items-center text-xs text-[#5C5A54] hidden" id="igstSummaryRow">
+          <span>IGST (Integrated Tax)</span>
+          <span class="font-medium tabular-nums">₹ 0.00</span>
+          <input type="hidden" name="igst_amount" id="igstAmountInput" value="<?= $isEditMode ? $invoice['igst_amount'] : '0' ?>">
+        </div>
+        <input type="hidden" name="tax_amount" id="taxAmountInput" value="<?= $isEditMode ? $invoice['tax_amount'] : '0' ?>">
+      </div>
+
+      <div class="flex justify-between items-center text-xs text-[#78746C]">
+        <span>Round Off</span>
+        <input type="hidden" name="round_off" id="roundOffInput" value="<?= $isEditMode ? $invoice['round_off'] : '0' ?>">
+        <span class="tabular-nums">₹ 0.00</span>
+      </div>
+
+      <div class="pt-3 border-t border-[#E6E4DF] flex justify-between items-center">
+        <span class="text-base font-semibold text-[#1C1B18]">Grand Total</span>
+        <span class="text-2xl font-semibold text-[#1C1B18] tabular-nums" id="displayGrandTotal">₹ 0.00</span>
+        <input type="hidden" name="grand_total" id="grandTotalInput" value="<?= $isEditMode ? $invoice['grand_total'] : '0' ?>">
+      </div>
+
+      <div class="rf-card-muted p-4 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+          <label for="paidAmountInput" class="sm:col-span-5 text-xs font-semibold text-[#2E5A36]">Amount Received / Paid</label>
+          <div class="sm:col-span-4">
+            <input type="number" name="paid_amount" id="paidAmountInput" class="rf-input rf-input-sm text-right font-semibold tabular-nums" step="any" min="0" placeholder="0.00" value="<?= $isEditMode ? $invoice['paid_amount'] : '0' ?>">
+          </div>
+          <div class="sm:col-span-3 flex gap-1.5">
+            <button type="button" class="rf-btn rf-btn-sage rf-btn-sm flex-1 py-1 px-2" id="btnPayFull" title="Full Payment">Full</button>
+            <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm flex-1 py-1 px-2" id="btnPayZero" title="Unpaid / Credit">Zero</button>
+          </div>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-semibold text-[#8F2D2B]">Balance Due</span>
+          <span class="text-sm font-semibold text-[#8F2D2B] tabular-nums" id="displayBalanceDue">₹ 0.00</span>
+          <input type="hidden" name="balance_due" id="balanceDueInput" value="<?= $isEditMode ? $invoice['balance_due'] : '0' ?>">
+        </div>
+      </div>
+
+      <button type="submit" class="rf-btn rf-btn-primary w-full py-3">
+        <i class="bi bi-check2-circle"></i> <?= $isEditMode ? ('Update ' . ($invoiceType === 'sale' ? 'Sales Record' : 'Purchase Record')) : ('Save ' . ($invoiceType === 'sale' ? 'Sales Record' : 'Purchase Record')) ?>
+      </button>
     </div>
   </div>
 </form>
@@ -445,271 +402,243 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
   <?php endforeach; ?>
 </datalist>
 
-<!-- Modal: Quick Add Party (In-Page, Zero Data Loss) -->
-<div class="modal fade" id="modalQuickAddParty" tabindex="-1" aria-labelledby="modalQuickAddPartyLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-      <div class="modal-header bg-primary text-white border-0 py-3">
-        <h5 class="modal-title fw-bold" id="modalQuickAddPartyLabel">
-          <i class="bi bi-person-plus-fill me-2"></i> Quick Create <?= $invoiceType === 'sale' ? 'Customer' : 'Supplier' ?> Party
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="quickPartyForm">
-        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-        <input type="hidden" name="type" value="<?= $invoiceType === 'sale' ? 'customer' : 'supplier' ?>">
-        <div class="modal-body p-4">
-          <div id="quickPartyAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
-          
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label small fw-bold">Party / Business Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-sm" name="name" id="quickPartyName" placeholder="e.g. Ramesh Trading Co." required>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-bold">Phone Number (10 Digits)</label>
-              <input type="tel" class="form-control form-control-sm font-monospace" name="phone" id="quickPartyPhone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-              <div class="form-text text-muted small" style="font-size: 0.72rem;">Exact 10 digits without country code</div>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-bold">GSTIN (15 Chars)</label>
-              <input type="text" class="form-control form-control-sm font-monospace text-uppercase" name="gstin" id="quickPartyGstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-bold">Email Address</label>
-              <input type="email" class="form-control form-control-sm" name="email" id="quickPartyEmail" placeholder="party@example.com">
-            </div>
-
-            <div class="col-12">
-              <label class="form-label small fw-bold">Billing Address</label>
-              <input type="text" class="form-control form-control-sm" name="billing_address" id="quickPartyAddress" placeholder="Building, Street, Area...">
-            </div>
-
-            <div class="col-md-5">
-              <label class="form-label small fw-bold">State / UT <span class="text-danger">*</span></label>
-              <select class="form-select form-select-sm" name="state" id="quickPartyState" required>
+<!-- Modal: Quick Add Party -->
+<div class="rf-modal hidden" id="modalQuickAddParty" tabindex="-1" aria-labelledby="modalQuickAddPartyLabel" aria-hidden="true">
+  <div class="rf-modal-dialog rf-modal-dialog-lg">
+    <div class="rf-modal-header">
+      <h3 class="rf-modal-title" id="modalQuickAddPartyLabel">
+        <i class="bi bi-person-plus text-[#2B526E]"></i> Quick Create <?= $invoiceType === 'sale' ? 'Customer' : 'Supplier' ?> Party
+      </h3>
+      <button type="button" class="text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" data-ui-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <form id="quickPartyForm">
+      <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+      <input type="hidden" name="type" value="<?= $invoiceType === 'sale' ? 'customer' : 'supplier' ?>">
+      <div class="rf-modal-body space-y-4">
+        <div id="quickPartyAlert" class="rf-alert rf-alert-danger hidden text-xs mb-0"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="rf-label-plain text-xs">Party / Business Name <span class="text-[#8F2D2B]">*</span></label>
+            <input type="text" class="rf-input rf-input-sm" name="name" id="quickPartyName" placeholder="e.g. Ramesh Trading Co." required>
+          </div>
+          <div>
+            <label class="rf-label-plain text-xs">Phone Number (10 Digits)</label>
+            <input type="tel" class="rf-input rf-input-sm font-mono" name="phone" id="quickPartyPhone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <p class="rf-help">Exact 10 digits without country code</p>
+          </div>
+          <div>
+            <label class="rf-label-plain text-xs">GSTIN (15 Chars)</label>
+            <input type="text" class="rf-input rf-input-sm font-mono uppercase" name="gstin" id="quickPartyGstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+          </div>
+          <div>
+            <label class="rf-label-plain text-xs">Email Address</label>
+            <input type="email" class="rf-input rf-input-sm" name="email" id="quickPartyEmail" placeholder="party@example.com">
+          </div>
+          <div class="md:col-span-2">
+            <label class="rf-label-plain text-xs">Billing Address</label>
+            <input type="text" class="rf-input rf-input-sm" name="billing_address" id="quickPartyAddress" placeholder="Building, Street, Area...">
+          </div>
+          <div class="grid grid-cols-12 gap-3 md:col-span-2">
+            <div class="col-span-5">
+              <label class="rf-label-plain text-xs">State / UT <span class="text-[#8F2D2B]">*</span></label>
+              <select class="rf-select rf-select-sm" name="state" id="quickPartyState" required>
                 <option value="">-- Select State --</option>
                 <?php foreach (($gstStates ?? []) as $st): ?>
-              <?php 
-                $isSelected = ($isEditMode && (($invoice['party_state'] ?? '') === $st['name'] || ($invoice['party_state_code'] ?? '') === $st['code'])) || 
-                               (!$isEditMode && !empty($activeFirm) && (($activeFirm['state'] ?? '') === $st['name'] || ($activeFirm['state_code'] ?? '') === $st['code']));
-              ?>
-              <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= $isSelected ? 'selected' : '' ?>>
-                <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
-              </option>
-            <?php endforeach; ?>
-              </select>
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label small fw-bold">State Code</label>
-              <input type="text" class="form-control form-control-sm bg-light text-center font-monospace fw-bold text-primary" name="state_code" id="quickPartyStateCode" value="<?= htmlspecialchars($activeFirm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label small fw-bold">Opening Balance (₹)</label>
-              <input type="number" class="form-control form-control-sm" name="opening_balance" id="quickPartyOpeningBalance" step="any" placeholder="0.00" value="0">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer bg-light border-0 py-2 px-4">
-          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold" id="btnSubmitQuickParty">
-            <span class="spinner-border spinner-border-sm me-1 d-none" id="quickPartySpinner" role="status"></span>
-            <i class="bi bi-check-circle me-1"></i> Save & Select Party
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Quick Add Item (In-Page, Zero Data Loss) -->
-<div class="modal fade" id="modalQuickAddItem" tabindex="-1" aria-labelledby="modalQuickAddItemLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-      <div class="modal-header bg-success text-white border-0 py-3">
-        <h5 class="modal-title fw-bold" id="modalQuickAddItemLabel">
-          <i class="bi bi-box-seam me-2"></i> Quick Create Inventory Item
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="quickItemForm">
-        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-        <div class="modal-body p-4">
-          <div id="quickItemAlert" class="alert alert-danger d-none py-2 small mb-3"></div>
-
-          <div class="row g-3">
-            <div class="col-md-7">
-              <label class="form-label small fw-bold">Item / Product Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-sm" name="name" id="quickItemName" placeholder="e.g. Cotton Shirt Blue - XL" required>
-            </div>
-
-            <div class="col-md-5">
-              <label class="form-label small fw-bold">Item Code / Barcode</label>
-              <input type="text" class="form-control form-control-sm font-monospace" name="item_code" id="quickItemCode" placeholder="e.g. SKU-101">
-            </div>
-
-            <div class="col-md-6">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label small fw-bold mb-0">Category <span class="text-muted small fw-normal">(Optional)</span></label>
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" id="btnToggleNewCategory" style="font-size: 0.75rem;">
-                  <i class="bi bi-plus-circle me-1"></i>+ Add Category
-                </button>
-              </div>
-              <div id="quickItemCategorySelectWrap">
-                <select class="form-select form-select-sm" id="quickItemCategorySelect">
-                  <option value="">-- No Category --</option>
-                  <?php foreach (($categories ?? []) as $cat): ?>
-                    <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?></option>
-                  <?php endforeach; ?>
-                  <option value="__create_new__" class="fw-bold text-primary">+ Create New Category...</option>
-                </select>
-              </div>
-              <div id="quickItemNewCategoryWrap" class="d-none">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white text-primary"><i class="bi bi-tag-fill"></i></span>
-                  <input type="text" class="form-control form-control-sm" id="quickItemNewCategoryInput" placeholder="Enter new category name...">
-                  <button class="btn btn-outline-secondary" type="button" id="btnCancelNewCategory" title="Select from existing categories">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                </div>
-              </div>
-              <input type="hidden" name="category" id="quickItemCategory" value="">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-bold">HSN / SAC Code</label>
-              <input type="text" class="form-control form-control-sm font-monospace" name="hsn_code" id="quickItemHsn" placeholder="e.g. 6205" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
-            </div>
-
-            <div class="col-md-4">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label small fw-bold mb-0">Measurement Unit <span class="text-danger">*</span></label>
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#modalAddCustomUnit">
-                  <i class="bi bi-plus-circle me-1"></i>+ Add Unit
-                </button>
-              </div>
-              <select class="form-select form-select-sm" name="unit" id="quickItemUnit" required>
-                <?php foreach (($allUnits ?? []) as $u): ?>
-                  <option value="<?= htmlspecialchars(strtoupper($u['code']), ENT_QUOTES, 'UTF-8') ?>" <?= strtoupper($u['code']) === 'PCS' ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($u['label'] ?? $u['code'], ENT_QUOTES, 'UTF-8') ?><?= !empty($u['is_custom']) ? ' (Custom)' : '' ?>
+                  <?php
+                    $isSelected = ($isEditMode && (($invoice['party_state'] ?? '') === $st['name'] || ($invoice['party_state_code'] ?? '') === $st['code'])) ||
+                                  (!$isEditMode && !empty($activeFirm) && (($activeFirm['state'] ?? '') === $st['name'] || ($activeFirm['state_code'] ?? '') === $st['code']));
+                  ?>
+                  <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= $isSelected ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
                   </option>
                 <?php endforeach; ?>
               </select>
             </div>
-
-            <div class="col-md-4">
-              <label class="form-label small fw-bold mb-1">Sub-Unit <span class="text-muted small fw-normal">(Packaging)</span></label>
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control form-control-sm text-uppercase" name="sub_unit" id="quickItemSubUnit" placeholder="e.g. PCS" maxlength="15">
-                <span class="input-group-text bg-light text-muted small">Qty:</span>
-                <input type="number" step="any" min="0.01" class="form-control form-control-sm text-end" name="sub_unit_qty" id="quickItemSubUnitQty" placeholder="10" style="max-width: 70px;">
-              </div>
+            <div class="col-span-3">
+              <label class="rf-label-plain text-xs">State Code</label>
+              <input type="text" class="rf-input rf-input-sm bg-[#F3F1EC] text-center font-mono font-semibold" name="state_code" id="quickPartyStateCode" value="<?= htmlspecialchars($activeFirm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly>
             </div>
-
-            <div class="col-md-4">
-              <label class="form-label small fw-bold mb-1">Opening Stock Qty</label>
-              <input type="number" class="form-control form-control-sm" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label small fw-bold text-dark mb-1"><?= $invoiceType === 'purchase' ? 'Price (Excl. GST)' : 'Sale Price (Ex-GST)' ?> <span class="text-danger">*</span></label>
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-light text-muted">₹</span>
-                <input type="number" class="form-control form-control-sm text-end font-monospace" name="sale_price" id="quickItemPrice" min="0" step="any" placeholder="0.00" required>
-              </div>
-              <div class="text-muted" style="font-size: 0.7rem;">Without GST</div>
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label small fw-bold text-dark mb-1"><?= $invoiceType === 'purchase' ? 'Price (Incl. GST)' : 'Sale Price (Inc-GST)' ?></label>
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-light text-muted">₹</span>
-                <input type="number" class="form-control form-control-sm text-end font-monospace" name="sale_price_with_tax" id="quickItemPriceWithTax" min="0" step="any" placeholder="0.00">
-              </div>
-              <div class="text-muted" style="font-size: 0.7rem;">With GST (MRP)</div>
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label small fw-bold">GST Tax Rate (%)</label>
-              <select class="form-select form-select-sm" name="tax_rate_select" id="quickItemTaxRate">
-                <option value="0">0% (Nil / Exempt)</option>
-                <option value="5">5% GST</option>
-                <option value="12">12% GST</option>
-                <option value="18" selected>18% GST</option>
-                <option value="28">28% GST</option>
-                <option value="custom">Custom Tax %</option>
-              </select>
-              <div id="quickItemCustomTaxContainer" class="mt-1 d-none">
-                <div class="input-group input-group-sm">
-                  <input type="number" class="form-control form-control-sm text-end" id="quickItemCustomTax" placeholder="1-100" min="1" max="100" step="any" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
-                  <span class="input-group-text">%</span>
-                </div>
-              </div>
-              <input type="hidden" name="tax_rate" id="quickItemTaxRateHidden" value="18">
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label small fw-bold">Opening Stock Qty</label>
-              <input type="number" class="form-control form-control-sm" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
-            </div>
-
-            <div class="col-md-12">
-              <label class="form-label small fw-bold">Item Description (Optional)</label>
-              <input type="text" class="form-control form-control-sm" name="description" id="quickItemDesc" placeholder="Optional details...">
+            <div class="col-span-4">
+              <label class="rf-label-plain text-xs">Opening Balance (₹)</label>
+              <input type="number" class="rf-input rf-input-sm tabular-nums" name="opening_balance" id="quickPartyOpeningBalance" step="any" placeholder="0.00" value="0">
             </div>
           </div>
         </div>
-        <div class="modal-footer bg-light border-0 py-2 px-4">
-          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 fw-semibold" id="btnSubmitQuickItem">
-            <span class="spinner-border spinner-border-sm me-1 d-none" id="quickItemSpinner" role="status"></span>
-            <i class="bi bi-check-circle me-1"></i> Save & Add to Record
-          </button>
-        </div>
-      </form>
+      </div>
+      <div class="rf-modal-footer">
+        <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Cancel</button>
+        <button type="submit" class="rf-btn rf-btn-primary rf-btn-sm" id="btnSubmitQuickParty">
+          <i class="bi bi-arrow-repeat animate-spin hidden" id="quickPartySpinner"></i>
+          <i class="bi bi-check-circle"></i> Save &amp; Select Party
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Quick Add Item -->
+<div class="rf-modal hidden" id="modalQuickAddItem" tabindex="-1" aria-labelledby="modalQuickAddItemLabel" aria-hidden="true">
+  <div class="rf-modal-dialog rf-modal-dialog-lg">
+    <div class="rf-modal-header">
+      <h3 class="rf-modal-title" id="modalQuickAddItemLabel">
+        <i class="bi bi-box-seam text-[#2E5A36]"></i> Quick Create Inventory Item
+      </h3>
+      <button type="button" class="text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" data-ui-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
     </div>
+    <form id="quickItemForm">
+      <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+      <div class="rf-modal-body space-y-4">
+        <div id="quickItemAlert" class="rf-alert rf-alert-danger hidden text-xs mb-0"></div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-7">
+            <label class="rf-label-plain text-xs">Item / Product Name <span class="text-[#8F2D2B]">*</span></label>
+            <input type="text" class="rf-input rf-input-sm" name="name" id="quickItemName" placeholder="e.g. Cotton Shirt Blue - XL" required>
+          </div>
+          <div class="md:col-span-5">
+            <label class="rf-label-plain text-xs">Item Code / Barcode</label>
+            <input type="text" class="rf-input rf-input-sm font-mono" name="item_code" id="quickItemCode" placeholder="e.g. SKU-101">
+          </div>
+
+          <div class="md:col-span-6">
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs font-medium text-[#2C2B27]">Category <span class="text-[#78746C] font-normal">(Optional)</span></label>
+              <button type="button" class="text-[11px] font-medium text-[#2B526E] hover:underline bg-transparent border-0 p-0 cursor-pointer" id="btnToggleNewCategory">
+                <i class="bi bi-plus-circle"></i> Add Category
+              </button>
+            </div>
+            <div id="quickItemCategorySelectWrap">
+              <select class="rf-select rf-select-sm" id="quickItemCategorySelect">
+                <option value="">-- No Category --</option>
+                <?php foreach (($categories ?? []) as $cat): ?>
+                  <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+                <option value="__create_new__">+ Create New Category...</option>
+              </select>
+            </div>
+            <div id="quickItemNewCategoryWrap" class="hidden">
+              <div class="flex items-center gap-1.5">
+                <input type="text" class="rf-input rf-input-sm" id="quickItemNewCategoryInput" placeholder="Enter new category name...">
+                <button class="rf-btn rf-btn-secondary rf-btn-sm px-2.5" type="button" id="btnCancelNewCategory" title="Select from existing categories">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+            <input type="hidden" name="category" id="quickItemCategory" value="">
+          </div>
+
+          <div class="md:col-span-6">
+            <label class="rf-label-plain text-xs">HSN / SAC Code</label>
+            <input type="text" class="rf-input rf-input-sm font-mono" name="hsn_code" id="quickItemHsn" placeholder="e.g. 6205" maxlength="20" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\-\.\/ ]/g, '').slice(0, 20);">
+          </div>
+
+          <div class="md:col-span-4">
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs font-medium text-[#2C2B27]">Unit <span class="text-[#8F2D2B]">*</span></label>
+              <button type="button" class="text-[11px] font-medium text-[#2B526E] hover:underline bg-transparent border-0 p-0 cursor-pointer" data-ui-modal="#modalAddCustomUnit">
+                <i class="bi bi-plus-circle"></i> Add Unit
+              </button>
+            </div>
+            <select class="rf-select rf-select-sm" name="unit" id="quickItemUnit" required>
+              <?php foreach (($allUnits ?? []) as $u): ?>
+                <option value="<?= htmlspecialchars(strtoupper($u['code']), ENT_QUOTES, 'UTF-8') ?>" <?= strtoupper($u['code']) === 'PCS' ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($u['label'] ?? $u['code'], ENT_QUOTES, 'UTF-8') ?><?= !empty($u['is_custom']) ? ' (Custom)' : '' ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="md:col-span-4">
+            <label class="rf-label-plain text-xs">Sub-Unit <span class="text-[#78746C] font-normal">(Pack)</span></label>
+            <div class="flex gap-1.5">
+              <input type="text" class="rf-input rf-input-sm uppercase" name="sub_unit" id="quickItemSubUnit" placeholder="PCS" maxlength="15">
+              <input type="number" step="any" min="0.01" class="rf-input rf-input-sm w-20 text-right tabular-nums" name="sub_unit_qty" id="quickItemSubUnitQty" placeholder="Qty">
+            </div>
+          </div>
+
+          <div class="md:col-span-4">
+            <label class="rf-label-plain text-xs">Opening Stock Qty</label>
+            <input type="number" class="rf-input rf-input-sm tabular-nums" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="rf-label-plain text-xs"><?= $invoiceType === 'purchase' ? 'Price (Excl. GST)' : 'Sale Price (Ex-GST)' ?> <span class="text-[#8F2D2B]">*</span></label>
+            <input type="number" class="rf-input rf-input-sm text-right font-mono tabular-nums" name="sale_price" id="quickItemPrice" min="0" step="any" placeholder="0.00" required>
+            <p class="text-[10px] text-[#78746C] mt-1">Without GST</p>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="rf-label-plain text-xs"><?= $invoiceType === 'purchase' ? 'Price (Incl. GST)' : 'Sale Price (Inc-GST)' ?></label>
+            <input type="number" class="rf-input rf-input-sm text-right font-mono tabular-nums" name="sale_price_with_tax" id="quickItemPriceWithTax" min="0" step="any" placeholder="0.00">
+            <p class="text-[10px] text-[#78746C] mt-1">With GST (MRP)</p>
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="rf-label-plain text-xs">GST Tax Rate (%)</label>
+            <select class="rf-select rf-select-sm" name="tax_rate_select" id="quickItemTaxRate">
+              <option value="0">0% (Nil / Exempt)</option>
+              <option value="5">5% GST</option>
+              <option value="12">12% GST</option>
+              <option value="18" selected>18% GST</option>
+              <option value="28">28% GST</option>
+              <option value="custom">Custom Tax %</option>
+            </select>
+            <div id="quickItemCustomTaxContainer" class="mt-1.5 hidden">
+              <div class="flex items-center gap-1">
+                <input type="number" class="rf-input rf-input-sm text-right tabular-nums" id="quickItemCustomTax" placeholder="1-100" min="1" max="100" step="any" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                <span class="text-xs text-[#5C5A54]">%</span>
+              </div>
+            </div>
+            <input type="hidden" name="tax_rate" id="quickItemTaxRateHidden" value="18">
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="rf-label-plain text-xs">Description</label>
+            <input type="text" class="rf-input rf-input-sm" name="description" id="quickItemDesc" placeholder="Optional details...">
+          </div>
+        </div>
+      </div>
+      <div class="rf-modal-footer">
+        <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Cancel</button>
+        <button type="submit" class="rf-btn rf-btn-sage-solid rf-btn-sm" id="btnSubmitQuickItem">
+          <i class="bi bi-arrow-repeat animate-spin hidden" id="quickItemSpinner"></i>
+          <i class="bi bi-check-circle"></i> Save &amp; Add to Record
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Modal: Add Custom Unit -->
-<div class="modal fade" id="modalAddCustomUnit" tabindex="-1" aria-labelledby="modalAddCustomUnitLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header bg-primary text-white py-2 px-3">
-        <h6 class="modal-title fw-bold" id="modalAddCustomUnitLabel">
-          <i class="bi bi-plus-circle me-1"></i> Add Custom Unit
-        </h6>
-        <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="customUnitForm">
-        <div class="modal-body p-3">
-          <div id="customUnitAlert" class="alert alert-danger d-none py-1 px-2 small mb-2"></div>
-          <p class="small text-muted mb-2">Add a custom measurement unit visible only in your account.</p>
-          <div class="mb-2">
-            <label class="form-label small fw-semibold mb-1" for="newUnitCode">Unit Code <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm text-uppercase font-monospace" id="newUnitCode" name="new_unit_code" placeholder="e.g. PAIR, SET, CAN" maxlength="15" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 15).toUpperCase();">
-            <div class="form-text small text-muted" style="font-size: 0.72rem;">Short symbol (1-15 chars, alphanumeric)</div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-semibold mb-1" for="newUnitLabel">Display Label (Optional)</label>
-            <input type="text" class="form-control form-control-sm" id="newUnitLabel" name="new_unit_label" placeholder="e.g. PAIR (Pairs)" maxlength="50">
-          </div>
-        </div>
-        <div class="modal-footer bg-light py-2 px-3 border-0">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-sm fw-semibold" id="btnSaveCustomUnit">
-            <i class="bi bi-check-circle me-1"></i> Save Unit
-          </button>
-        </div>
-      </form>
+<div class="rf-modal hidden" id="modalAddCustomUnit" tabindex="-1" aria-labelledby="modalAddCustomUnitLabel" aria-hidden="true">
+  <div class="rf-modal-dialog max-w-sm">
+    <div class="rf-modal-header">
+      <h3 class="rf-modal-title text-sm" id="modalAddCustomUnitLabel">
+        <i class="bi bi-plus-circle text-[#5C5A54]"></i> Add Custom Unit
+      </h3>
+      <button type="button" class="text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" data-ui-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
     </div>
+    <form id="customUnitForm">
+      <div class="rf-modal-body space-y-4">
+        <div id="customUnitAlert" class="rf-alert rf-alert-danger hidden text-xs mb-0"></div>
+        <p class="text-xs text-[#5C5A54] m-0">Add a custom measurement unit visible only in your account.</p>
+        <div>
+          <label class="rf-label-plain text-xs" for="newUnitCode">Unit Code <span class="text-[#8F2D2B]">*</span></label>
+          <input type="text" class="rf-input rf-input-sm uppercase font-mono" id="newUnitCode" name="new_unit_code" placeholder="e.g. PAIR, SET, CAN" maxlength="15" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 15).toUpperCase();">
+          <p class="rf-help">Short symbol (1-15 chars, alphanumeric)</p>
+        </div>
+        <div>
+          <label class="rf-label-plain text-xs" for="newUnitLabel">Display Label (Optional)</label>
+          <input type="text" class="rf-input rf-input-sm" id="newUnitLabel" name="new_unit_label" placeholder="e.g. PAIR (Pairs)" maxlength="50">
+        </div>
+      </div>
+      <div class="rf-modal-footer">
+        <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Cancel</button>
+        <button type="submit" class="rf-btn rf-btn-primary rf-btn-sm" id="btnSaveCustomUnit">
+          <i class="bi bi-check-circle"></i> Save Unit
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
-<script src="/js/invoice-calc.js?v=5"></script>
-
+<script src="/js/invoice-calc.js?v=6"></script>

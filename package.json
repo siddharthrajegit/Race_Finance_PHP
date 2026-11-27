@@ -1,0 +1,14 @@
+{
+  "name": "race-finance-php-ui",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tailwind CSS build pipeline for RACE FINANCE PHP Edition",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./public/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/tailwind.css -o ./public/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "tailwindcss": "^4.3.5"
+  }
+}

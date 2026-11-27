@@ -3,69 +3,53 @@ $rec = (float)($totalReceivables ?? 0);
 $pay = (float)($totalPayables ?? 0);
 $partyList = !empty($parties) ? $parties : [];
 ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-  <div>
-    <a href="/reports" class="text-decoration-none text-muted small">&larr; Back to Reports</a>
-    <h3 class="fw-bold mb-1 mt-1">Party & Customer Wise Report</h3>
-    <p class="text-muted small mb-0">Overview of all customer and supplier accounts and net balances</p>
-  </div>
-  <div class="d-flex gap-2">
-    <button type="button" class="btn btn-outline-secondary btn-trigger-print shadow-sm">
-      <i class="bi bi-printer me-1"></i> Print Report
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4 no-print">
+    <div>
+      <a href="/reports" class="text-xs text-[#78746C] hover:text-[#1C1B18] no-underline">&larr; Back to Reports</a>
+      <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight mt-1">Party &amp; Customer Wise Report</h1>
+      <p class="text-sm text-[#5C5A54] mt-1">Overview of all customer and supplier accounts and net balances</p>
+    </div>
+    <button type="button" class="rf-btn rf-btn-secondary btn-trigger-print">
+      <i class="bi bi-printer"></i> Print Report
     </button>
   </div>
-</div>
 
-<!-- Balance KPI Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-md-6">
-    <div class="card kpi-card kpi-receivable shadow-sm p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="text-muted small text-uppercase fw-semibold">Total Receivables (To Collect)</div>
-          <h3 class="fw-bold text-warning mb-0 mt-1">₹ <?= number_format($rec, 2) ?></h3>
-        </div>
-        <div class="kpi-icon-wrap bg-warning-subtle text-warning">
-          <i class="bi bi-arrow-down-left-circle"></i>
-        </div>
+  <!-- Balance Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="rf-card p-6 flex items-center justify-between gap-4">
+      <div>
+        <div class="text-[11px] font-semibold uppercase tracking-wider text-[#78746C]">Total Receivables (To Collect)</div>
+        <div class="text-2xl font-semibold text-[#8A5A00] mt-1.5 tabular-nums">₹ <?= number_format($rec, 2) ?></div>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-[#FBF3DB] border border-[#EAE0B8] text-[#8A5A00] flex items-center justify-center text-xl shrink-0">
+        <i class="bi bi-arrow-down-left-circle"></i>
+      </div>
+    </div>
+
+    <div class="rf-card p-6 flex items-center justify-between gap-4">
+      <div>
+        <div class="text-[11px] font-semibold uppercase tracking-wider text-[#78746C]">Total Payables (To Pay)</div>
+        <div class="text-2xl font-semibold text-[#8F2D2B] mt-1.5 tabular-nums">₹ <?= number_format($pay, 2) ?></div>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-[#FBEAEA] border border-[#ECD0D0] text-[#8F2D2B] flex items-center justify-center text-xl shrink-0">
+        <i class="bi bi-arrow-up-right-circle"></i>
       </div>
     </div>
   </div>
 
-  <div class="col-md-6">
-    <div class="card kpi-card kpi-payable shadow-sm p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="text-muted small text-uppercase fw-semibold">Total Payables (To Pay)</div>
-          <h3 class="fw-bold text-danger mb-0 mt-1">₹ <?= number_format($pay, 2) ?></h3>
-        </div>
-        <div class="kpi-icon-wrap bg-danger-subtle text-danger">
-          <i class="bi bi-arrow-up-right-circle"></i>
-        </div>
+  <!-- Parties Summary Table -->
+  <div class="rf-card">
+    <div class="rf-card-header">
+      <h2 class="text-sm font-semibold text-[#1C1B18]">Party Balances</h2>
+      <div class="relative w-full sm:w-72">
+        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#87847C] text-xs"></i>
+        <input type="text" class="rf-input rf-input-sm pl-8" placeholder="Filter parties..." data-table-search="partyReportTable">
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Parties Summary Table -->
-<div class="card shadow-sm border-0">
-  <div class="card-header bg-white py-3">
-    <div class="row g-3 align-items-center">
-      <div class="col-md-6">
-        <h6 class="fw-bold mb-0 text-dark">Party Balances</h6>
-      </div>
-      <div class="col-md-6">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" class="form-control border-start-0" placeholder="Filter parties..." data-table-search="partyReportTable">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0" id="partyReportTable">
+    <div class="rf-table-wrap">
+      <table class="rf-table" id="partyReportTable">
         <thead>
           <tr>
             <th>Party Name</th>
@@ -73,49 +57,47 @@ $partyList = !empty($parties) ? $parties : [];
             <th>Contact</th>
             <th>GSTIN</th>
             <th>State</th>
-            <th class="text-end">Net Balance (₹)</th>
-            <th class="text-end">Ledger</th>
+            <th class="text-right">Net Balance (₹)</th>
+            <th class="text-right">Ledger</th>
           </tr>
         </thead>
         <tbody>
           <?php if (!empty($partyList)): ?>
-            <?php foreach ($partyList as $p): 
+            <?php foreach ($partyList as $p):
               $cBal = (float)($p['closing_balance'] ?? 0);
             ?>
               <tr>
-                <td class="fw-bold">
-                  <a href="/parties/ledger/<?= $p['id'] ?>" class="text-decoration-none text-dark">
+                <td class="font-medium">
+                  <a href="/parties/ledger/<?= $p['id'] ?>" class="text-[#1C1B18] hover:underline no-underline">
                     <?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?>
                   </a>
                 </td>
                 <td>
                   <?php if ($p['type'] === 'customer'): ?>
-                    <span class="badge bg-success-subtle text-success">Customer</span>
+                    <span class="rf-badge rf-badge-sage">Customer</span>
                   <?php elseif ($p['type'] === 'supplier'): ?>
-                    <span class="badge bg-info-subtle text-info">Supplier</span>
+                    <span class="rf-badge rf-badge-slate">Supplier</span>
                   <?php else: ?>
-                    <span class="badge bg-secondary-subtle text-secondary">Both</span>
+                    <span class="rf-badge rf-badge-neutral">Both</span>
                   <?php endif; ?>
                 </td>
-                <td class="small text-muted"><?= htmlspecialchars($p['phone'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="font-monospace text-muted small"><?= htmlspecialchars($p['gstin'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="small text-muted"><?= htmlspecialchars($p['state'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="text-end fw-bold fs-6 <?= $cBal > 0 ? 'text-success' : ($cBal < 0 ? 'text-danger' : 'text-muted') ?>">
+                <td class="text-xs text-[#5C5A54]"><?= htmlspecialchars($p['phone'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-mono text-xs text-[#5C5A54]"><?= htmlspecialchars($p['gstin'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="text-xs text-[#5C5A54]"><?= htmlspecialchars($p['state'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="text-right font-semibold tabular-nums <?= $cBal > 0 ? 'text-[#2E5A36]' : ($cBal < 0 ? 'text-[#8F2D2B]' : 'text-[#78746C]') ?>">
                   ₹ <?= number_format(abs($cBal), 2) ?>
-                  <small class="fs-7 fw-normal text-muted"><?= $cBal > 0 ? '(Receivable)' : ($cBal < 0 ? '(Payable)' : '(Settled)') ?></small>
+                  <span class="text-[11px] font-normal text-[#78746C]"><?= $cBal > 0 ? '(Receivable)' : ($cBal < 0 ? '(Payable)' : '(Settled)') ?></span>
                 </td>
-                <td class="text-end">
-                  <a href="/parties/ledger/<?= $p['id'] ?>" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-journal-text me-1"></i> Statement
+                <td class="text-right">
+                  <a href="/parties/ledger/<?= $p['id'] ?>" class="rf-btn rf-btn-secondary rf-btn-sm">
+                    <i class="bi bi-journal-text"></i> Statement
                   </a>
                 </td>
               </tr>
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="7" class="text-center py-4 text-muted">
-                No parties found.
-              </td>
+              <td colspan="7" class="text-center py-12 text-[#78746C]">No parties found.</td>
             </tr>
           <?php endif; ?>
         </tbody>

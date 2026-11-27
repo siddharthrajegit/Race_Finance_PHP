@@ -2,35 +2,33 @@
 $itemCount = !empty($items) ? count($items) : 0;
 $lowStock = $lowStockCount ?? 0;
 ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-  <div>
-    <h3 class="fw-bold mb-1">Items & Inventory</h3>
-    <p class="text-muted small mb-0">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight">Items &amp; Inventory</h1>
+      <p class="text-sm text-[#5C5A54] mt-1">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2.5">
+      <a href="/estimates/builder" class="rf-btn rf-btn-secondary">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Rate List &amp; Estimate
+      </a>
+      <a href="/items/create" class="rf-btn rf-btn-primary">
+        <i class="bi bi-plus-circle"></i> Add New Item
+      </a>
+    </div>
   </div>
-  <div class="d-flex gap-2">
-    <a href="/estimates/builder" class="btn btn-outline-primary shadow-sm">
-      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Rate List &amp; Estimate
-    </a>
-    <a href="/items/create" class="btn btn-primary shadow-sm">
-      <i class="bi bi-plus-circle me-1"></i> Add New Item
-    </a>
-  </div>
-</div>
 
-<!-- Search & Summary Bar -->
-<div class="card shadow-sm border-0 mb-3">
-  <div class="card-body p-2 p-md-3">
-    <div class="row g-2 align-items-center">
-      <div class="col-md-5">
-        <div class="input-group">
-          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" class="form-control border-start-0" placeholder="Quick search items by name, code, or HSN..." data-table-search="itemsTable">
-        </div>
+  <!-- Search & Summary Bar -->
+  <div class="rf-card p-4">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+      <div class="md:col-span-5 relative">
+        <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-[#87847C] text-xs"></i>
+        <input type="text" class="rf-input pl-9 py-2 text-xs" placeholder="Quick search items by name, code, or HSN..." data-table-search="itemsTable">
       </div>
-      <div class="col-md-3">
-        <select class="form-select" id="categoryFilter" onchange="window.location='/items' + (this.value ? '?category=' + encodeURIComponent(this.value) : '')">
+      <div class="md:col-span-3">
+        <select class="rf-select rf-select-sm" id="categoryFilter" onchange="window.location='/items' + (this.value ? '?category=' + encodeURIComponent(this.value) : '')">
           <option value="" <?= empty($selectedCategory) ? 'selected' : '' ?>>All Categories</option>
-          <option value="__none__" <?= ($selectedCategory === '__none__') ? 'selected' : '' ?>>-- Uncategorized (No Category) --</option>
+          <option value="__none__" <?= ($selectedCategory === '__none__') ? 'selected' : '' ?>>Uncategorized</option>
           <?php foreach (($categories ?? []) as $cat): ?>
             <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>" <?= ($selectedCategory === $cat) ? 'selected' : '' ?>>
               <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
@@ -38,35 +36,33 @@ $lowStock = $lowStockCount ?? 0;
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="col-md-4 text-md-end">
-        <span class="badge bg-light text-dark border p-2 me-2">
-          Total Products: <strong id="visibleRecordsCount_itemsTable"><?= $itemCount ?></strong>
+      <div class="md:col-span-4 flex flex-wrap items-center justify-start md:justify-end gap-2">
+        <span class="rf-badge rf-badge-neutral py-1.5 px-3 tabular-nums">
+          Total Products: <strong id="visibleRecordsCount_itemsTable" class="ml-1"><?= $itemCount ?></strong>
         </span>
         <?php if ($lowStock > 0): ?>
-          <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-2">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i> <?= (int)$lowStock ?> Low Stock
+          <span class="rf-badge rf-badge-rose py-1.5 px-3 tabular-nums">
+            <i class="bi bi-exclamation-triangle"></i> <?= (int)$lowStock ?> Low Stock
           </span>
         <?php endif; ?>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Items Table -->
-<div class="card shadow-sm border-0">
-  <div class="card-body p-0">
-    <div style="overflow-x: hidden;">
-      <table class="table table-hover align-middle mb-0 w-100" id="itemsTable" style="font-size: 0.85rem;">
-        <thead class="table-light">
+  <!-- Items Table -->
+  <div class="rf-card">
+    <div class="rf-table-wrap">
+      <table class="rf-table" id="itemsTable">
+        <thead>
           <tr>
-            <th style="padding: 0.5rem 0.65rem;">Item Name</th>
-            <th style="padding: 0.5rem 0.65rem;">Item Code</th>
-            <th style="padding: 0.5rem 0.65rem;">HSN/SAC</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Sale Price</th>
-            <th style="padding: 0.5rem 0.65rem;" class="text-end">Purchase Price</th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">GST Rate</th>
-            <th style="padding: 0.5rem 0.4rem;" class="text-center">Stock</th>
-            <th style="width: 36px; padding: 0.5rem 0.35rem;" class="text-center"></th>
+            <th>Item Name</th>
+            <th>Item Code</th>
+            <th>HSN/SAC</th>
+            <th class="text-right">Sale Price</th>
+            <th class="text-right">Purchase Price</th>
+            <th class="text-center">GST Rate</th>
+            <th class="text-center">Stock</th>
+            <th class="w-12 text-center"></th>
           </tr>
         </thead>
         <tbody>
@@ -74,97 +70,57 @@ $lowStock = $lowStockCount ?? 0;
             <?php foreach ($items as $it): ?>
               <?php $isLowStock = (float)($it['current_stock'] ?? 0) <= (float)($it['low_stock_threshold'] ?? 0); ?>
               <tr>
-                <td style="padding: 0.45rem 0.65rem;">
-                  <div class="fw-bold text-dark d-flex align-items-center gap-1 flex-wrap">
-                    <span><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                <td>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-[#1C1B18]"><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php if (!empty($it['category'])): ?>
-                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><?= htmlspecialchars($it['category'], ENT_QUOTES, 'UTF-8') ?></span>
+                      <span class="rf-badge rf-badge-neutral text-[10px]"><?= htmlspecialchars($it['category'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php endif; ?>
                   </div>
                   <?php if (!empty($it['sub_unit']) && !empty($it['sub_unit_qty'])): ?>
-                    <div class="text-primary small" style="font-size: 0.72rem;">
-                      <i class="bi bi-box me-1"></i>1 <?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?> = <?= (float)$it['sub_unit_qty'] ?> <?= htmlspecialchars($it['sub_unit'], ENT_QUOTES, 'UTF-8') ?>
+                    <div class="text-xs text-[#2B526E] mt-0.5">
+                      <i class="bi bi-box mr-1"></i>1 <?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?> = <?= (float)$it['sub_unit_qty'] ?> <?= htmlspecialchars($it['sub_unit'], ENT_QUOTES, 'UTF-8') ?>
                     </div>
                   <?php endif; ?>
                   <?php if (!empty($it['description'])): ?>
-                    <div class="small text-muted text-truncate" style="max-width: 220px;"><?= htmlspecialchars($it['description'], ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="text-xs text-[#78746C] truncate max-w-[230px] mt-0.5"><?= htmlspecialchars($it['description'], ENT_QUOTES, 'UTF-8') ?></div>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="font-monospace text-muted small"><?= htmlspecialchars($it['item_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td style="padding: 0.45rem 0.65rem;" class="font-monospace text-muted small"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end fw-semibold text-nowrap">₹ <?= number_format((float)($it['sale_price'] ?? 0), 2) ?></td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end text-muted text-nowrap">₹ <?= number_format((float)($it['purchase_price'] ?? 0), 2) ?></td>
-                <td style="padding: 0.45rem 0.4rem;" class="text-center">
+                <td class="font-mono text-xs text-[#5C5A54]"><?= htmlspecialchars($it['item_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="font-mono text-xs text-[#5C5A54]"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="text-right font-semibold tabular-nums whitespace-nowrap">₹ <?= number_format((float)($it['sale_price'] ?? 0), 2) ?></td>
+                <td class="text-right text-[#5C5A54] tabular-nums whitespace-nowrap">₹ <?= number_format((float)($it['purchase_price'] ?? 0), 2) ?></td>
+                <td class="text-center">
                   <?php if ((float)($it['tax_rate'] ?? 0) > 0): ?>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;"><?= htmlspecialchars((string)$it['tax_rate'], ENT_QUOTES, 'UTF-8') ?>%</span>
+                    <span class="rf-badge rf-badge-slate tabular-nums"><?= htmlspecialchars((string)$it['tax_rate'], ENT_QUOTES, 'UTF-8') ?>%</span>
                   <?php else: ?>
-                    <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">0%</span>
+                    <span class="rf-badge rf-badge-neutral tabular-nums">0%</span>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.4rem;" class="text-center">
-                  <span class="badge <?= $isLowStock ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle' ?> px-2 py-1 fw-bold" style="font-size: 0.75rem;">
+                <td class="text-center">
+                  <span class="rf-badge <?= $isLowStock ? 'rf-badge-rose' : 'rf-badge-sage' ?> tabular-nums">
                     <?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                   </span>
                 </td>
-                <!-- 3-Dot Action Menu -->
-                <td style="padding: 0.45rem 0.35rem;" class="text-center">
-                  <div class="dropdown">
-                    <button class="btn btn-light btn-sm p-1 border-0 rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions" style="width: 28px; height: 28px; line-height: 1;">
-                      <i class="bi bi-three-dots-vertical text-secondary"></i>
+                <td class="text-center">
+                  <div class="rf-dropdown" data-ui-dropdown>
+                    <button class="w-8 h-8 rounded-full hover:bg-[#EFECE6] inline-flex items-center justify-center text-[#5C5A54] bg-transparent border-0 cursor-pointer transition-colors" type="button" data-ui-dropdown-toggle aria-expanded="false" title="Actions">
+                      <i class="bi bi-three-dots-vertical"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1">
-                      <li>
-                        <button type="button" class="dropdown-item py-1 px-3 small d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#adjustStockModal<?= $it['id'] ?>">
-                          <i class="bi bi-sliders text-secondary me-2"></i> Adjust Stock
+                    <div class="rf-dropdown-menu" data-ui-dropdown-menu>
+                      <button type="button" class="rf-dropdown-item" data-ui-modal="#adjustStockModal<?= $it['id'] ?>">
+                        <i class="bi bi-sliders text-[#5C5A54]"></i> Adjust Stock
+                      </button>
+                      <a class="rf-dropdown-item" href="/items/edit/<?= $it['id'] ?>">
+                        <i class="bi bi-pencil text-[#2B526E]"></i> Edit Item
+                      </a>
+                      <div class="rf-dropdown-divider"></div>
+                      <form action="/items/delete/<?= $it['id'] ?>" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?>?">
+                        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                        <button type="submit" class="rf-dropdown-item text-[#8F2D2B]">
+                          <i class="bi bi-trash"></i> Delete Item
                         </button>
-                      </li>
-                      <li>
-                        <a class="dropdown-item py-1 px-3 small d-flex align-items-center" href="/items/edit/<?= $it['id'] ?>">
-                          <i class="bi bi-pencil text-primary me-2"></i> Edit Item
-                        </a>
-                      </li>
-                      <li><hr class="dropdown-divider my-1"></li>
-                      <li>
-                        <form action="/items/delete/<?= $it['id'] ?>" method="POST" class="m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?>?">
-                          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                          <button type="submit" class="dropdown-item py-1 px-3 small d-flex align-items-center text-danger border-0 bg-transparent w-100">
-                            <i class="bi bi-trash me-2"></i> Delete Item
-                          </button>
-                        </form>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Quick Stock Adjust Modal -->
-                  <div class="modal fade" id="adjustStockModal<?= $it['id'] ?>" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered modal-sm text-start">
-                      <div class="modal-content">
-                        <form action="/items/adjust/<?= $it['id'] ?>" method="POST">
-                          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                          <div class="modal-header py-2">
-                            <h6 class="modal-title fw-bold">Adjust Stock: <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></h6>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body py-3">
-                            <p class="small text-muted mb-2">Current Stock: <strong><?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></p>
-                            <div class="mb-3">
-                              <label class="form-label small">Action</label>
-                              <select name="action" class="form-select form-select-sm">
-                                <option value="add">Add (+ Increase Stock)</option>
-                                <option value="reduce">Reduce (- Damage / Return)</option>
-                              </select>
-                            </div>
-                            <div class="mb-2">
-                              <label class="form-label small">Quantity (<?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>)</label>
-                              <input type="number" name="adjustment" class="form-control form-control-sm" min="0.01" step="any" placeholder="e.g. 5" required>
-                            </div>
-                          </div>
-                          <div class="modal-footer py-2">
-                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Update Stock</button>
-                          </div>
-                        </form>
-                      </div>
+                      </form>
                     </div>
                   </div>
                 </td>
@@ -172,9 +128,9 @@ $lowStock = $lowStockCount ?? 0;
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="8" class="text-center py-5 text-muted">
-                <i class="bi bi-box-seam fs-2 d-block mb-2 text-secondary"></i>
-                No items added yet. Click <strong>"Add New Item"</strong> to create your product inventory.
+              <td colspan="8" class="text-center py-14 text-[#78746C]">
+                <i class="bi bi-box-seam text-3xl block mb-2 text-[#B5B0A6]"></i>
+                No items added yet. Click <strong class="text-[#1C1B18]">Add New Item</strong> to create your product inventory.
               </td>
             </tr>
           <?php endif; ?>
@@ -183,3 +139,38 @@ $lowStock = $lowStockCount ?? 0;
     </div>
   </div>
 </div>
+
+<!-- Quick Stock Adjust Modals (placed outside table overflow) -->
+<?php if (!empty($items)): ?>
+  <?php foreach ($items as $it): ?>
+    <div class="rf-modal hidden" id="adjustStockModal<?= $it['id'] ?>" tabindex="-1" aria-hidden="true">
+      <div class="rf-modal-dialog max-w-sm">
+        <form action="/items/adjust/<?= $it['id'] ?>" method="POST">
+          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          <div class="rf-modal-header">
+            <h3 class="rf-modal-title text-sm">Adjust Stock: <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></h3>
+            <button type="button" class="text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" data-ui-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="rf-modal-body space-y-4">
+            <p class="text-xs text-[#5C5A54]">Current Stock: <strong class="text-[#1C1B18] tabular-nums"><?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></p>
+            <div>
+              <label class="rf-label-plain text-xs">Action</label>
+              <select name="action" class="rf-select rf-select-sm">
+                <option value="add">Add (+ Increase Stock)</option>
+                <option value="reduce">Reduce (- Damage / Return)</option>
+              </select>
+            </div>
+            <div>
+              <label class="rf-label-plain text-xs">Quantity (<?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>)</label>
+              <input type="number" name="adjustment" class="rf-input rf-input-sm tabular-nums" min="0.01" step="any" placeholder="e.g. 5" required>
+            </div>
+          </div>
+          <div class="rf-modal-footer">
+            <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Cancel</button>
+            <button type="submit" class="rf-btn rf-btn-primary rf-btn-sm">Update Stock</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>

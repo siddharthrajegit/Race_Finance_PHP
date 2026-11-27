@@ -30,8 +30,8 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <!-- Bootstrap 5 CSS (Offline Local with CDN Fallback) -->
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
+  <!-- Compiled Tailwind CSS -->
+  <link rel="stylesheet" href="/css/tailwind.css">
   <!-- Bootstrap Icons (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
   <!-- html2pdf.js for instant PDF generation (Offline Local with CDN Fallback) -->
@@ -40,59 +40,57 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
 
   <style>
     :root {
-      --theme-primary: <?= $isPaymentIn ? '#065f46' : '#1e3a8a' ?>;
-      --theme-accent: <?= $isPaymentIn ? '#059669' : '#2563eb' ?>;
-      --theme-light: <?= $isPaymentIn ? '#ecfdf5' : '#eff6ff' ?>;
-      --theme-border: <?= $isPaymentIn ? '#a7f3d0' : '#bfdbfe' ?>;
+      --theme-primary: <?= $isPaymentIn ? '#2E5A36' : '#2B526E' ?>;
+      --theme-accent: <?= $isPaymentIn ? '#3B7045' : '#3C6B8D' ?>;
+      --theme-light: <?= $isPaymentIn ? '#EDF3EC' : '#EBF2F7' ?>;
+      --theme-border: <?= $isPaymentIn ? '#CBDCC8' : '#C9DBE8' ?>;
     }
 
     body {
-      background-color: #f1f5f9;
+      background-color: #F7F6F3;
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #1e293b;
+      color: #1C1B18;
       margin: 0;
       padding: 0;
       min-height: 100vh;
     }
 
-    /* Top Static Action Toolbar */
     .top-action-bar {
       position: relative;
-      background: #0f172a;
-      color: #fff;
+      background: #1C1B18;
+      color: #F7F6F3;
       padding: 0.75rem 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid #302E29;
     }
 
     .slip-container {
       max-width: 190mm;
-      margin: 1.5rem auto 3rem auto;
+      margin: 2rem auto 3.5rem auto;
       padding: 0 1rem;
     }
 
     .slip-paper {
-      background: #ffffff;
+      background: #FFFFFF;
       border-radius: 12px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 24px -8px rgba(28, 27, 24, 0.08);
+      border: 1px solid #E6E4DF;
       overflow: hidden;
       position: relative;
     }
 
     .slip-top-strip {
-      height: 8px;
-      background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
+      height: 6px;
+      background: var(--theme-primary);
     }
 
     .slip-inner {
-      padding: 2.2rem;
+      padding: 2.25rem;
     }
 
     .firm-name {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--theme-primary);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #1C1B18;
       letter-spacing: -0.02em;
     }
 
@@ -100,53 +98,53 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
       display: inline-block;
       background: var(--theme-light);
       color: var(--theme-primary);
-      border: 1.5px solid var(--theme-border);
-      padding: 0.35rem 1rem;
+      border: 1px solid var(--theme-border);
+      padding: 0.35rem 0.9rem;
       border-radius: 8px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
     .info-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #FAF9F6;
+      border: 1px solid #E6E4DF;
       border-radius: 10px;
-      padding: 1rem 1.15rem;
-      height: 100%;
+      padding: 1rem 1.2rem;
     }
 
     .info-card-header {
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: 0.7rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--theme-accent);
-      margin-bottom: 0.4rem;
+      letter-spacing: 0.06em;
+      color: var(--theme-primary);
+      margin-bottom: 0.45rem;
     }
 
     .amount-hero-box {
       background: var(--theme-light);
-      border: 2px dashed var(--theme-border);
+      border: 1.5px dashed var(--theme-border);
       border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1.4rem;
       text-align: center;
       margin: 1.5rem 0;
     }
 
     .amount-display {
-      font-size: 2.2rem;
-      font-weight: 800;
+      font-size: 2.1rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
       color: var(--theme-primary);
       letter-spacing: -0.02em;
     }
 
     .sign-box {
-      border-top: 1.5px solid #cbd5e1;
+      border-top: 1px solid #D4D0C7;
       min-width: 170px;
       text-align: center;
-      padding-top: 0.4rem;
+      padding-top: 0.45rem;
     }
 
     @media print {
@@ -154,7 +152,7 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
         background-color: #ffffff !important;
         padding: 0 !important;
       }
-      .no-print, .top-action-bar, .modal-backdrop, .modal {
+      .no-print, .top-action-bar, .rf-modal-backdrop, .rf-modal {
         display: none !important;
       }
       .slip-container {
@@ -175,53 +173,49 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
 </head>
 <body>
 
-  <!-- Top Sticky Action Toolbar -->
+  <!-- Top Action Toolbar -->
   <header class="top-action-bar no-print">
-    <div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <!-- Left: Back link and Slip Badge -->
-      <div class="d-flex align-items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
         <?php if (!empty($payment['party_id'])): ?>
-          <a href="/parties/ledger/<?= $payment['party_id'] ?>" class="btn btn-outline-light btn-sm d-flex align-items-center rounded-pill px-3">
-            <i class="bi bi-arrow-left me-1"></i> Back to Ledger
+          <a href="/parties/ledger/<?= $payment['party_id'] ?>" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 text-xs font-medium text-white/90 hover:bg-white/10 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back to Ledger
           </a>
         <?php else: ?>
-          <a href="/payments" class="btn btn-outline-light btn-sm d-flex align-items-center rounded-pill px-3">
-            <i class="bi bi-arrow-left me-1"></i> Back to Payments
+          <a href="/payments" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 text-xs font-medium text-white/90 hover:bg-white/10 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back to Payments
           </a>
         <?php endif; ?>
         <div>
-          <div class="fw-bold fs-6 d-flex align-items-center gap-2">
-            <span><?= $isPaymentIn ? 'Payment Receipt' : 'Payment Voucher' ?>: <span class="font-monospace text-warning"><?= htmlspecialchars($voucherNo, ENT_QUOTES, 'UTF-8') ?></span></span>
-            <span class="badge <?= $isPaymentIn ? 'bg-success' : 'bg-danger' ?> rounded-pill small">
+          <div class="font-semibold text-sm flex items-center gap-2">
+            <span><?= $isPaymentIn ? 'Payment Receipt' : 'Payment Voucher' ?>: <span class="font-mono text-amber-300"><?= htmlspecialchars($voucherNo, ENT_QUOTES, 'UTF-8') ?></span></span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-medium <?= $isPaymentIn ? 'bg-emerald-900/60 text-emerald-200 border border-emerald-700/50' : 'bg-rose-900/60 text-rose-200 border border-rose-700/50' ?>">
               <?= $isPaymentIn ? 'RECEIVED' : 'PAID' ?>
             </span>
           </div>
-          <small class="text-white-50"><?= htmlspecialchars($partyName, ENT_QUOTES, 'UTF-8') ?> | ₹ <?= $payAmount ?></small>
+          <div class="text-xs text-white/60"><?= htmlspecialchars($partyName, ENT_QUOTES, 'UTF-8') ?> | ₹ <?= $payAmount ?></div>
         </div>
       </div>
 
       <!-- Right: Actions -->
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <!-- 1. Download PDF Button -->
-        <button id="btnDownloadSlipPdf" class="btn btn-primary btn-sm fw-semibold rounded-pill px-3 shadow-sm d-flex align-items-center">
-          <i class="bi bi-download me-1"></i> Download Slip
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btnDownloadSlipPdf" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-ink text-xs font-semibold hover:bg-white/90 transition-colors cursor-pointer">
+          <i class="bi bi-download"></i> Download Slip
         </button>
 
-        <!-- 2. Print Button -->
-        <button onclick="window.print()" class="btn btn-secondary btn-sm fw-semibold rounded-pill px-3 shadow-sm d-flex align-items-center">
-          <i class="bi bi-printer me-1"></i> Print Slip
+        <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/15 text-white text-xs font-medium hover:bg-white/25 transition-colors cursor-pointer">
+          <i class="bi bi-printer"></i> Print Slip
         </button>
 
-        <!-- 3. Direct Send to WhatsApp Button -->
-        <a href="<?= htmlspecialchars($waUrl, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-sm fw-semibold rounded-pill px-3 shadow-sm d-flex align-items-center">
-          <i class="bi bi-whatsapp me-1"></i> WhatsApp Slip
+        <a href="<?= htmlspecialchars($waUrl, ENT_QUOTES, 'UTF-8') ?>" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#2E5A36] text-white text-xs font-semibold hover:bg-[#254A2C] transition-colors">
+          <i class="bi bi-whatsapp"></i> WhatsApp Slip
         </a>
 
-        <!-- Delete Payment -->
-        <form action="/payments/delete/<?= $payment['id'] ?>" method="POST" class="d-inline m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete this payment slip? Party balances will be adjusted automatically.">
+        <form action="/payments/delete/<?= $payment['id'] ?>" method="POST" class="inline m-0 form-delete-confirm" data-confirm-message="Are you sure you want to delete this payment slip? Party balances will be adjusted automatically.">
           <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-          <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-            <i class="bi bi-trash me-1"></i> Delete
+          <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-400/50 text-rose-200 text-xs font-medium hover:bg-rose-950/60 transition-colors cursor-pointer">
+            <i class="bi bi-trash"></i> Delete
           </button>
         </form>
       </div>
@@ -231,27 +225,26 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
   <!-- Main Slip Paper Area -->
   <div class="slip-container">
     <div class="slip-paper" id="paymentSlipArea">
-      <!-- Top Colored Accent Bar -->
       <div class="slip-top-strip"></div>
 
       <div class="slip-inner">
         <!-- 1. Header: Firm Profile & Receipt Meta -->
-        <div class="row align-items-start mb-4 pb-3 border-bottom">
-          <div class="col-7">
-            <div class="d-flex align-items-center mb-2">
+        <div class="grid grid-cols-12 gap-4 items-start mb-6 pb-4 border-b border-border">
+          <div class="col-span-7">
+            <div class="flex items-center gap-3 mb-2">
               <?php if (!empty($firm['logo_path'])): ?>
-                <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?>" class="rounded border p-1 me-3 bg-white" style="max-height: 48px; max-width: 85px; object-fit: contain;">
+                <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?>" class="rounded border border-border p-1 bg-white max-h-12 max-w-[85px] object-contain">
               <?php endif; ?>
               <div>
                 <h3 class="firm-name mb-0"><?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?></h3>
                 <?php if (!empty($firm['gstin'])): ?>
-                  <div class="small fw-semibold text-muted font-monospace mt-1">
-                    GSTIN: <span class="text-dark"><?= htmlspecialchars($firm['gstin'], ENT_QUOTES, 'UTF-8') ?></span>
+                  <div class="text-xs font-medium text-ink-muted font-mono mt-0.5">
+                    GSTIN: <span class="text-ink"><?= htmlspecialchars($firm['gstin'], ENT_QUOTES, 'UTF-8') ?></span>
                   </div>
                 <?php endif; ?>
               </div>
             </div>
-            <div class="small text-muted pe-3" style="font-size: 0.82rem; line-height: 1.45;">
+            <div class="text-xs text-ink-muted pr-3 leading-relaxed space-y-0.5">
               <?php if (!empty($firm['address'])): ?><div><?= htmlspecialchars($firm['address'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
               <?php 
                 $fLoc = array_filter([$firm['city'] ?? '', $firm['state'] ?? '']);
@@ -259,44 +252,47 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
               ?>
                 <div><?= htmlspecialchars(implode(', ', $fLoc), ENT_QUOTES, 'UTF-8') ?> - <?= htmlspecialchars($firm['pincode'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
               <?php endif; ?>
-              <?php if (!empty($firm['phone'])): ?><div><i class="bi bi-telephone text-secondary me-1"></i> <?= htmlspecialchars($firm['phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-              <?php if (!empty($firm['email'])): ?><div><i class="bi bi-envelope text-secondary me-1"></i> <?= htmlspecialchars($firm['email'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+              <?php if (!empty($firm['phone'])): ?><div><i class="bi bi-telephone text-ink-subtle mr-1"></i> <?= htmlspecialchars($firm['phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+              <?php if (!empty($firm['email'])): ?><div><i class="bi bi-envelope text-ink-subtle mr-1"></i> <?= htmlspecialchars($firm['email'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
             </div>
           </div>
 
-          <div class="col-5 text-end">
+          <div class="col-span-5 text-right">
             <div class="slip-title-badge mb-2">
               <?= $isPaymentIn ? 'PAYMENT RECEIPT' : 'PAYMENT VOUCHER' ?>
             </div>
-            <div class="small text-muted" style="font-size: 0.84rem;">
-              <div><strong>Voucher No:</strong> <span class="font-monospace fw-bold text-dark"><?= htmlspecialchars($voucherNo, ENT_QUOTES, 'UTF-8') ?></span></div>
-              <div><strong>Date:</strong> <span class="text-dark"><?= htmlspecialchars($payDate, ENT_QUOTES, 'UTF-8') ?></span></div>
-              <div><strong>Payment Mode:</strong> <span class="badge bg-light text-dark border text-uppercase fw-semibold"><?= htmlspecialchars($payment['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8') ?></span></div>
+            <div class="text-xs text-ink-muted space-y-1">
+              <div><strong class="text-ink">Voucher No:</strong> <span class="font-mono font-semibold text-ink"><?= htmlspecialchars($voucherNo, ENT_QUOTES, 'UTF-8') ?></span></div>
+              <div><strong class="text-ink">Date:</strong> <span class="text-ink"><?= htmlspecialchars($payDate, ENT_QUOTES, 'UTF-8') ?></span></div>
+              <div>
+                <strong class="text-ink">Payment Mode:</strong>
+                <span class="rf-badge rf-badge-neutral uppercase font-medium"><?= htmlspecialchars($payment['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8') ?></span>
+              </div>
               <?php if (!empty($payment['reference_no'])): ?>
-                <div><strong>Ref / Txn ID:</strong> <span class="font-monospace text-dark"><?= htmlspecialchars($payment['reference_no'], ENT_QUOTES, 'UTF-8') ?></span></div>
+                <div><strong class="text-ink">Ref / Txn ID:</strong> <span class="font-mono text-ink"><?= htmlspecialchars($payment['reference_no'], ENT_QUOTES, 'UTF-8') ?></span></div>
               <?php endif; ?>
             </div>
           </div>
         </div>
 
         <!-- 2. Party Information Card -->
-        <div class="info-card mb-3">
+        <div class="info-card mb-4">
           <div class="info-card-header">
-            <i class="bi bi-person-check me-1"></i> <?= $isPaymentIn ? 'Received From (Customer)' : 'Paid To (Supplier / Vendor)' ?>
+            <i class="bi bi-person-check mr-1"></i> <?= $isPaymentIn ? 'Received From (Customer)' : 'Paid To (Supplier / Vendor)' ?>
           </div>
-          <div class="d-flex justify-content-between align-items-start">
+          <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div class="fw-bold text-dark fs-5"><?= htmlspecialchars($partyName, ENT_QUOTES, 'UTF-8') ?></div>
-              <div class="small text-muted mt-1" style="font-size: 0.82rem; line-height: 1.45;">
-                <?php if (!empty($payment['party_phone'])): ?><div><strong>Phone:</strong> <?= htmlspecialchars($payment['party_phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-                <?php if (!empty($payment['party_gstin'])): ?><div><strong>GSTIN:</strong> <span class="font-monospace fw-medium text-dark"><?= htmlspecialchars($payment['party_gstin'], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
-                <?php if (!empty($payment['party_address'])): ?><div><strong>Address:</strong> <?= htmlspecialchars($payment['party_address'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-                <?php if (!empty($payment['party_state'])): ?><div><strong>State:</strong> <?= htmlspecialchars($payment['party_state'], ENT_QUOTES, 'UTF-8') ?> <?php if (!empty($payment['party_state_code'])): ?>(Code: <?= htmlspecialchars($payment['party_state_code'], ENT_QUOTES, 'UTF-8') ?>)<?php endif; ?></div><?php endif; ?>
+              <div class="font-semibold text-ink text-lg"><?= htmlspecialchars($partyName, ENT_QUOTES, 'UTF-8') ?></div>
+              <div class="text-xs text-ink-muted mt-1 leading-relaxed space-y-0.5">
+                <?php if (!empty($payment['party_phone'])): ?><div><strong class="text-ink">Phone:</strong> <?= htmlspecialchars($payment['party_phone'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+                <?php if (!empty($payment['party_gstin'])): ?><div><strong class="text-ink">GSTIN:</strong> <span class="font-mono font-medium text-ink"><?= htmlspecialchars($payment['party_gstin'], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
+                <?php if (!empty($payment['party_address'])): ?><div><strong class="text-ink">Address:</strong> <?= htmlspecialchars($payment['party_address'], ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+                <?php if (!empty($payment['party_state'])): ?><div><strong class="text-ink">State:</strong> <?= htmlspecialchars($payment['party_state'], ENT_QUOTES, 'UTF-8') ?> <?php if (!empty($payment['party_state_code'])): ?>(Code: <?= htmlspecialchars($payment['party_state_code'], ENT_QUOTES, 'UTF-8') ?>)<?php endif; ?></div><?php endif; ?>
               </div>
             </div>
             <?php if (!empty($payment['party_id'])): ?>
-              <a href="/parties/ledger/<?= $payment['party_id'] ?>" class="btn btn-outline-primary btn-sm no-print">
-                <i class="bi bi-journal-text me-1"></i> View Full Ledger
+              <a href="/parties/ledger/<?= $payment['party_id'] ?>" class="rf-btn rf-btn-secondary rf-btn-sm no-print">
+                <i class="bi bi-journal-text"></i> View Full Ledger
               </a>
             <?php endif; ?>
           </div>
@@ -304,49 +300,49 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
 
         <!-- 3. Amount Hero Display -->
         <div class="amount-hero-box">
-          <div class="small text-uppercase fw-bold text-muted mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+          <div class="text-[11px] uppercase font-semibold tracking-wider text-ink-muted mb-1">
             <?= $isPaymentIn ? 'Total Amount Received' : 'Total Amount Paid' ?>
           </div>
           <div class="amount-display">
             ₹ <?= $payAmount ?>
           </div>
-          <div class="small text-muted mt-1 font-monospace">
-            Payment Mode: <strong class="text-uppercase text-dark"><?= htmlspecialchars($payment['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8') ?></strong>
-            <?php if (!empty($payment['reference_no'])): ?> | Ref: <strong class="text-dark"><?= htmlspecialchars($payment['reference_no'], ENT_QUOTES, 'UTF-8') ?></strong><?php endif; ?>
+          <div class="text-xs text-ink-muted mt-1.5 font-mono">
+            Payment Mode: <strong class="uppercase text-ink"><?= htmlspecialchars($payment['payment_mode'] ?? 'Cash', ENT_QUOTES, 'UTF-8') ?></strong>
+            <?php if (!empty($payment['reference_no'])): ?> | Ref: <strong class="text-ink"><?= htmlspecialchars($payment['reference_no'], ENT_QUOTES, 'UTF-8') ?></strong><?php endif; ?>
           </div>
         </div>
 
         <!-- 4. Notes & Linked Settlement Details -->
-        <div class="row g-3 mb-4">
-          <div class="col-md-7">
-            <div class="p-3 border rounded bg-light h-100">
-              <div class="text-uppercase fw-bold text-muted mb-1" style="font-size: 0.72rem;">Transaction Notes / Description:</div>
-              <div class="small text-dark" style="font-size: 0.82rem;">
+        <div class="grid grid-cols-12 gap-4">
+          <div class="col-span-7">
+            <div class="p-4 rounded-lg border border-border bg-canvas/70 h-full">
+              <div class="text-[11px] uppercase font-semibold tracking-wider text-ink-muted mb-1.5">Transaction Notes / Description</div>
+              <div class="text-xs text-ink leading-relaxed">
                 <?= htmlspecialchars($payment['notes'] ?? 'Payment recorded and allocated against account ledger balance.', ENT_QUOTES, 'UTF-8') ?>
               </div>
               <?php if (!empty($payment['linked_invoice_number'])): ?>
-                <div class="mt-2 pt-2 border-top small text-primary">
+                <div class="mt-3 pt-2 border-t border-border-subtle text-xs text-slate font-medium">
                   <i class="bi bi-link-45deg"></i> Linked to Bill: <strong><?= htmlspecialchars($payment['linked_invoice_number'], ENT_QUOTES, 'UTF-8') ?></strong>
                 </div>
               <?php endif; ?>
             </div>
           </div>
 
-          <div class="col-md-5">
-            <div class="p-3 border rounded bg-white h-100 text-center d-flex flex-column justify-content-between">
-              <div class="small text-muted" style="font-size: 0.75rem;">
+          <div class="col-span-5">
+            <div class="p-4 rounded-lg border border-border bg-white h-full text-center flex flex-col justify-between">
+              <div class="text-[11px] text-ink-muted leading-relaxed">
                 Digitally generated transaction receipt.<br>
                 Valid without physical signature.
               </div>
-              <div class="mt-3">
+              <div class="mt-4">
                 <?php if (!empty($firm['signature_path'])): ?>
-                  <img src="<?= htmlspecialchars($firm['signature_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Signature" style="max-height: 38px; max-width: 120px;" class="mb-1">
+                  <img src="<?= htmlspecialchars($firm['signature_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Signature" class="max-h-10 max-w-[120px] mx-auto mb-1 object-contain">
                 <?php else: ?>
-                  <div style="height: 32px;"></div>
+                  <div class="h-8"></div>
                 <?php endif; ?>
                 <div class="sign-box">
-                  <small class="fw-bold text-dark d-block" style="font-size: 0.78rem;">For <?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?></small>
-                  <small class="text-muted" style="font-size: 0.7rem;">Authorized Signatory</small>
+                  <div class="font-semibold text-ink text-xs">For <?= htmlspecialchars($firm['name'], ENT_QUOTES, 'UTF-8') ?></div>
+                  <div class="text-ink-muted text-[11px]">Authorized Signatory</div>
                 </div>
               </div>
             </div>
@@ -357,17 +353,24 @@ $waUrl = "whatsapp://send?phone={$waPhone}&text={$waText}";
     </div>
   </div>
 
-  <!-- Bootstrap 5 Bundle JS (Offline Local with CDN Fallback) -->
-  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script>if(typeof bootstrap==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>');}</script>
+  <script src="/js/ui.js"></script>
   <script>
+    document.querySelectorAll('.form-delete-confirm').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        const msg = this.getAttribute('data-confirm-message') || 'Are you sure?';
+        if (!window.confirm(msg)) {
+          e.preventDefault();
+        }
+      });
+    });
+
     document.getElementById('btnDownloadSlipPdf').addEventListener('click', function () {
       const element = document.getElementById('paymentSlipArea');
       const voucherNo = '<?= htmlspecialchars($voucherNo, ENT_QUOTES, 'UTF-8') ?>';
       const btn = this;
       const originalText = btn.innerHTML;
 
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generating PDF...';
+      btn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-1"></i> Generating PDF...';
       btn.disabled = true;
 
       const opt = {

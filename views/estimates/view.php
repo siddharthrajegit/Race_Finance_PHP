@@ -8,138 +8,139 @@ $items = $estimate['items'] ?? [];
 $firmName = $firm['name'] ?? 'RACE FINANCE';
 ?>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-  <div>
-    <div class="d-flex align-items-center gap-2">
-      <h3 class="fw-bold mb-0">Estimate #<?= htmlspecialchars($estimate['estimate_number'], ENT_QUOTES, 'UTF-8') ?></h3>
-      <?php if (($estimate['status'] ?? 'draft') === 'converted'): ?>
-        <span class="badge bg-success-subtle text-success border border-success-subtle">Converted to Invoice</span>
-      <?php else: ?>
-        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Draft Estimate</span>
-      <?php endif; ?>
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight font-mono">Estimate #<?= htmlspecialchars($estimate['estimate_number'], ENT_QUOTES, 'UTF-8') ?></h1>
+        <?php if (($estimate['status'] ?? 'draft') === 'converted'): ?>
+          <span class="rf-badge rf-badge-sage">Converted to Invoice</span>
+        <?php else: ?>
+          <span class="rf-badge rf-badge-neutral">Draft Estimate</span>
+        <?php endif; ?>
+      </div>
+      <p class="text-xs text-[#78746C] mt-1">Created on <?= htmlspecialchars(formatDate($estimate['estimate_date']), ENT_QUOTES, 'UTF-8') ?></p>
     </div>
-    <p class="text-muted small mb-0">Created on <?= htmlspecialchars(formatDate($estimate['estimate_date']), ENT_QUOTES, 'UTF-8') ?></p>
-  </div>
-  <div class="d-flex flex-wrap gap-2">
-    <a href="/estimates" class="btn btn-outline-secondary btn-sm">
-      <i class="bi bi-arrow-left me-1"></i> Back to List
-    </a>
-    <a href="/estimates/print/<?= $estimate['id'] ?>?mode=estimate" target="_blank" class="btn btn-outline-primary btn-sm">
-      <i class="bi bi-printer me-1"></i> Print Estimate
-    </a>
-    <a href="/estimates/print/<?= $estimate['id'] ?>?mode=ratelist" target="_blank" class="btn btn-outline-info btn-sm">
-      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Print Rate List
-    </a>
-    <a href="/sales/create?estimate_id=<?= $estimate['id'] ?>" class="btn btn-success btn-sm shadow-sm fw-semibold">
-      <i class="bi bi-receipt me-1"></i> Convert to Invoice
-    </a>
-  </div>
-</div>
 
-<div class="card shadow-sm border-0 mb-3">
-  <div class="card-body p-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/estimates" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </a>
+      <a href="/estimates/print/<?= $estimate['id'] ?>?mode=estimate" target="_blank" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-printer"></i> Print Estimate
+      </a>
+      <a href="/estimates/print/<?= $estimate['id'] ?>?mode=ratelist" target="_blank" class="rf-btn rf-btn-secondary rf-btn-sm">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Print Rate List
+      </a>
+      <a href="/sales/create?estimate_id=<?= $estimate['id'] ?>" class="rf-btn rf-btn-sage-solid rf-btn-sm">
+        <i class="bi bi-receipt"></i> Convert to Invoice
+      </a>
+    </div>
+  </div>
+
+  <div class="rf-card p-6 sm:p-8 space-y-7">
     <!-- Meta Header -->
-    <div class="row g-3 mb-4 pb-3 border-bottom">
-      <div class="col-md-6">
-        <div class="text-muted small mb-1">From Business / Firm:</div>
-        <h5 class="fw-bold text-dark mb-1"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></h5>
-        <div class="small text-muted">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-[#ECEAE4]">
+      <div>
+        <div class="text-xs text-[#78746C] mb-1">From Business / Firm</div>
+        <div class="text-base font-semibold text-[#1C1B18]"><?= htmlspecialchars($firmName, ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="text-xs text-[#5C5A54] mt-1">
           <?php if (!empty($firm['gstin'])): ?>GSTIN: <?= htmlspecialchars($firm['gstin'], ENT_QUOTES, 'UTF-8') ?> | <?php endif; ?>
           <?php if (!empty($firm['phone'])): ?>Ph: <?= htmlspecialchars($firm['phone'], ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
         </div>
       </div>
-      <div class="col-md-6 text-md-end">
-        <div class="text-muted small mb-1">Customer / Recipient Firm:</div>
+      <div class="md:text-right">
+        <div class="text-xs text-[#78746C] mb-1">Customer / Recipient Firm</div>
         <?php if (!empty($estimate['customer_name'])): ?>
-          <h5 class="fw-bold text-dark mb-1"><?= htmlspecialchars($estimate['customer_name'], ENT_QUOTES, 'UTF-8') ?></h5>
+          <div class="text-base font-semibold text-[#1C1B18]"><?= htmlspecialchars($estimate['customer_name'], ENT_QUOTES, 'UTF-8') ?></div>
         <?php else: ?>
-          <div class="fst-italic text-muted">-- No Customer Specified (General Rate Card) --</div>
+          <div class="text-xs italic text-[#78746C]">-- No Customer Specified (General Rate Card) --</div>
         <?php endif; ?>
       </div>
     </div>
 
     <!-- Items Table -->
-    <div class="table-responsive mb-4">
-      <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-        <thead class="table-light">
-          <tr>
-            <th style="width: 30px;" class="text-center">#</th>
-            <th>Item Details</th>
-            <th style="width: 75px;" class="text-center">HSN/SAC</th>
-            <th style="width: 70px;" class="text-center">Qty</th>
-            <th style="width: 90px;" class="text-center">Unit</th>
-            <th style="width: 90px;" class="text-end">Rate (₹)</th>
-            <th style="width: 70px;" class="text-end">Disc %</th>
-            <th style="width: 95px;" class="text-end">Taxable</th>
-            <th style="width: 80px;" class="text-center">GST</th>
-            <th style="width: 110px;" class="text-end">Total (₹)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php if (!empty($items)): ?>
-            <?php foreach ($items as $idx => $it): 
-              $subQtyStr = '';
-              if (!empty($it['sub_unit']) && !empty($it['sub_unit_qty'])) {
-                  $totSub = (float)$it['sub_unit_qty'] * (float)$it['quantity'];
-                  $subQtyStr = "= {$totSub} " . $it['sub_unit'];
-              }
-            ?>
-              <tr>
-                <td class="text-center text-muted font-monospace"><?= $idx + 1 ?></td>
-                <td>
-                  <div class="fw-bold text-dark"><?= htmlspecialchars($it['item_name'], ENT_QUOTES, 'UTF-8') ?></div>
-                  <?php if (!empty($subQtyStr)): ?>
-                    <div class="text-primary small" style="font-size: 0.72rem;">(<?= htmlspecialchars($subQtyStr, ENT_QUOTES, 'UTF-8') ?>)</div>
-                  <?php endif; ?>
-                </td>
-                <td class="text-center font-monospace text-muted small"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="text-center fw-bold"><?= (float)$it['quantity'] ?></td>
-                <td class="text-center"><?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="text-end font-monospace">₹ <?= number_format((float)$it['rate'], 2) ?></td>
-                <td class="text-end text-muted"><?= (float)($it['discount_percent'] ?? 0) > 0 ? (float)$it['discount_percent'] . '%' : '--' ?></td>
-                <td class="text-end font-monospace">₹ <?= number_format((float)$it['taxable_amount'], 2) ?></td>
-                <td class="text-center">
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">
-                    <?= (float)$it['tax_rate'] ?>%
-                  </span>
-                </td>
-                <td class="text-end fw-bold font-monospace text-dark">₹ <?= number_format((float)$it['total_amount'], 2) ?></td>
-              </tr>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </tbody>
-      </table>
+    <div class="border border-[#E6E4DF] rounded-xl overflow-hidden">
+      <div class="rf-table-wrap">
+        <table class="rf-table">
+          <thead>
+            <tr>
+              <th class="w-10 text-center">#</th>
+              <th>Item Details</th>
+              <th class="text-center">HSN/SAC</th>
+              <th class="text-center">Qty</th>
+              <th class="text-center">Unit</th>
+              <th class="text-right">Rate (₹)</th>
+              <th class="text-right">Disc %</th>
+              <th class="text-right">Taxable</th>
+              <th class="text-center">GST</th>
+              <th class="text-right">Total (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (!empty($items)): ?>
+              <?php foreach ($items as $idx => $it):
+                $subQtyStr = '';
+                if (!empty($it['sub_unit']) && !empty($it['sub_unit_qty'])) {
+                    $totSub = (float)$it['sub_unit_qty'] * (float)$it['quantity'];
+                    $subQtyStr = "= {$totSub} " . $it['sub_unit'];
+                }
+              ?>
+                <tr>
+                  <td class="text-center text-xs text-[#78746C] font-mono tabular-nums"><?= $idx + 1 ?></td>
+                  <td>
+                    <div class="font-medium text-[#1C1B18]"><?= htmlspecialchars($it['item_name'], ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php if (!empty($subQtyStr)): ?>
+                      <div class="text-xs text-[#2B526E]">(<?= htmlspecialchars($subQtyStr, ENT_QUOTES, 'UTF-8') ?>)</div>
+                    <?php endif; ?>
+                  </td>
+                  <td class="text-center font-mono text-xs text-[#5C5A54]"><?= htmlspecialchars($it['hsn_code'] ?? '--', ENT_QUOTES, 'UTF-8') ?></td>
+                  <td class="text-center font-semibold tabular-nums"><?= (float)$it['quantity'] ?></td>
+                  <td class="text-center text-xs"><?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?></td>
+                  <td class="text-right font-mono tabular-nums">₹ <?= number_format((float)$it['rate'], 2) ?></td>
+                  <td class="text-right text-xs text-[#5C5A54] tabular-nums"><?= (float)($it['discount_percent'] ?? 0) > 0 ? (float)$it['discount_percent'] . '%' : '--' ?></td>
+                  <td class="text-right font-mono tabular-nums">₹ <?= number_format((float)$it['taxable_amount'], 2) ?></td>
+                  <td class="text-center">
+                    <span class="rf-badge rf-badge-slate tabular-nums"><?= (float)$it['tax_rate'] ?>%</span>
+                  </td>
+                  <td class="text-right font-mono font-semibold text-[#1C1B18] tabular-nums">₹ <?= number_format((float)$it['total_amount'], 2) ?></td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Summary Box -->
-    <div class="row g-3 justify-content-between align-items-start">
-      <div class="col-md-6">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div class="md:col-span-6">
         <?php if (!empty($estimate['notes'])): ?>
-          <div class="p-3 bg-light rounded border">
-            <h6 class="fw-bold small mb-1">Notes / Terms:</h6>
-            <div class="text-muted small" style="white-space: pre-line;"><?= htmlspecialchars($estimate['notes'], ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="rf-card-muted p-4">
+            <div class="rf-label">Notes / Terms</div>
+            <div class="text-xs text-[#5C5A54] whitespace-pre-line leading-relaxed"><?= htmlspecialchars($estimate['notes'], ENT_QUOTES, 'UTF-8') ?></div>
           </div>
         <?php endif; ?>
       </div>
-      <div class="col-md-5">
-        <div class="p-3 bg-light rounded border">
-          <div class="d-flex justify-content-between text-muted small mb-1">
-            <span>Subtotal (Pre-GST):</span>
-            <span class="font-monospace fw-semibold">₹ <?= number_format((float)($estimate['subtotal'] ?? 0), 2) ?></span>
+      <div class="md:col-span-6">
+        <div class="rf-card-muted p-5 space-y-2.5">
+          <div class="flex justify-between text-xs text-[#5C5A54]">
+            <span>Subtotal (Pre-GST)</span>
+            <span class="font-mono font-medium tabular-nums text-[#1C1B18]">₹ <?= number_format((float)($estimate['subtotal'] ?? 0), 2) ?></span>
           </div>
           <?php if ((float)($estimate['discount_amount'] ?? 0) > 0): ?>
-            <div class="d-flex justify-content-between text-danger small mb-1">
-              <span>Total Discount:</span>
-              <span class="font-monospace">- ₹ <?= number_format((float)$estimate['discount_amount'], 2) ?></span>
+            <div class="flex justify-between text-xs text-[#8F2D2B]">
+              <span>Total Discount</span>
+              <span class="font-mono tabular-nums">- ₹ <?= number_format((float)$estimate['discount_amount'], 2) ?></span>
             </div>
           <?php endif; ?>
-          <div class="d-flex justify-content-between text-muted small mb-1">
-            <span>Estimated GST Amount:</span>
-            <span class="font-monospace fw-semibold text-primary">₹ <?= number_format((float)($estimate['tax_amount'] ?? 0), 2) ?></span>
+          <div class="flex justify-between text-xs text-[#5C5A54]">
+            <span>Estimated GST Amount</span>
+            <span class="font-mono font-medium tabular-nums text-[#2B526E]">₹ <?= number_format((float)($estimate['tax_amount'] ?? 0), 2) ?></span>
           </div>
-          <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-2 mt-2 text-dark">
-            <span>Grand Total:</span>
-            <span class="font-monospace text-success">₹ <?= number_format((float)($estimate['grand_total'] ?? 0), 2) ?></span>
+          <div class="flex justify-between items-center pt-3 border-t border-[#E2DFD7]">
+            <span class="text-sm font-semibold text-[#1C1B18]">Grand Total</span>
+            <span class="text-lg font-mono font-semibold text-[#2E5A36] tabular-nums">₹ <?= number_format((float)($estimate['grand_total'] ?? 0), 2) ?></span>
           </div>
         </div>
       </div>

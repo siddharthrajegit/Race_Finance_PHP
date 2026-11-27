@@ -39,148 +39,123 @@ if (!empty($preloadedEstimate)) {
 }
 ?>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-  <div>
-    <h3 class="fw-bold mb-1">
-      <i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Rate List &amp; Estimate Builder
-    </h3>
-    <p class="text-muted small mb-0">Select items category-wise, generate instant customer rate lists or switch to full estimates.</p>
-  </div>
-  <div class="d-flex align-items-center gap-2">
-    <a href="/estimates" class="btn btn-outline-secondary shadow-sm">
-      <i class="bi bi-journal-text me-1"></i> Saved Estimates
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight">Rate List &amp; Estimate Builder</h1>
+      <p class="text-sm text-[#5C5A54] mt-1">Select items category-wise, generate customer rate lists or switch to full estimates.</p>
+    </div>
+    <a href="/estimates" class="rf-btn rf-btn-secondary">
+      <i class="bi bi-journal-text"></i> Saved Estimates
     </a>
   </div>
-</div>
 
-<!-- Mode Switcher Banner -->
-<div class="card shadow-sm border-0 mb-3 bg-white">
-  <div class="card-body p-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <!-- Toggle Segmented Control -->
-      <div class="d-flex align-items-center gap-2">
-        <span class="fw-bold text-secondary text-uppercase small" style="font-size: 0.75rem; letter-spacing: 0.5px;">Mode:</span>
-        <div class="builder-mode-toggle shadow-sm" role="group" aria-label="Builder Mode">
-          <input type="radio" class="btn-check" name="builder_mode" id="modeRateList" value="ratelist" checked autocomplete="off">
-          <label class="btn btn-ratelist d-flex align-items-center gap-2" for="modeRateList">
-            <i class="bi bi-list-check"></i>
-            <span>Rate List</span>
+  <!-- Mode Switcher Card -->
+  <div class="rf-card p-5 space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-xs font-semibold uppercase tracking-wider text-[#78746C]">Mode</span>
+        <div class="builder-mode-toggle" role="group" aria-label="Builder Mode">
+          <input type="radio" name="builder_mode" id="modeRateList" value="ratelist" checked autocomplete="off">
+          <label class="btn-ratelist inline-flex items-center gap-2" for="modeRateList">
+            <i class="bi bi-list-check"></i><span>Rate List</span>
           </label>
-
-          <input type="radio" class="btn-check" name="builder_mode" id="modeEstimate" value="estimate" autocomplete="off">
-          <label class="btn btn-estimate d-flex align-items-center gap-2" for="modeEstimate">
-            <i class="bi bi-calculator"></i>
-            <span>Estimate (Quotation)</span>
+          <input type="radio" name="builder_mode" id="modeEstimate" value="estimate" autocomplete="off">
+          <label class="btn-estimate inline-flex items-center gap-2" for="modeEstimate">
+            <i class="bi bi-calculator"></i><span>Estimate (Quotation)</span>
           </label>
         </div>
       </div>
 
-      <!-- Quick Action Buttons -->
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-outline-dark shadow-sm" id="btnPrintCurrent">
-          <i class="bi bi-printer me-1"></i> <span id="printBtnLabel">Print Rate List</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" id="btnPrintCurrent">
+          <i class="bi bi-printer"></i> <span id="printBtnLabel">Print Rate List</span>
         </button>
-        <button type="button" class="btn btn-success shadow-sm d-none" id="btnSaveEstimateModal">
-          <i class="bi bi-check2-circle me-1"></i> Save Estimate
+        <button type="button" class="rf-btn rf-btn-sage-solid rf-btn-sm hidden" id="btnSaveEstimateModal">
+          <i class="bi bi-check2-circle"></i> Save Estimate
         </button>
       </div>
     </div>
 
-    <!-- Estimate Mode Metadata Row (Revealed in Estimate Mode) -->
-    <div id="estimateMetaBox" class="mt-3 pt-3 border-top d-none">
-      <div class="row g-3 align-items-center">
-        <div class="col-md-3">
-          <label class="form-label small fw-bold mb-1" for="metaEstimateNumber">Estimate Number</label>
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light text-muted font-monospace">#</span>
-            <input type="text" class="form-control font-monospace fw-bold" id="metaEstimateNumber" value="<?= htmlspecialchars($preloadedNumber, ENT_QUOTES, 'UTF-8') ?>" placeholder="001">
+    <!-- Estimate Metadata Row -->
+    <div id="estimateMetaBox" class="pt-4 border-t border-[#ECEAE4] hidden">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+        <div class="md:col-span-3">
+          <label class="rf-label-plain text-xs" for="metaEstimateNumber">Estimate Number</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-[#78746C]">#</span>
+            <input type="text" class="rf-input rf-input-sm pl-7 font-mono font-semibold" id="metaEstimateNumber" value="<?= htmlspecialchars($preloadedNumber, ENT_QUOTES, 'UTF-8') ?>" placeholder="001">
           </div>
-          <div class="form-text small text-muted" style="font-size: 0.72rem;">Separate sequence starting from 001</div>
+          <p class="rf-help">Separate sequence starting from 001</p>
         </div>
-        <div class="col-md-3">
-          <label class="form-label small fw-bold mb-1" for="metaEstimateDate">Estimate Date</label>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control form-control-sm date-picker" id="metaEstimateDate" value="<?= htmlspecialchars($formattedEstimateDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" autocomplete="off">
-            <span class="input-group-text bg-light text-muted" style="cursor: pointer;" onclick="const el = document.getElementById('metaEstimateDate'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }" title="Open calendar">
-              <i class="bi bi-calendar3"></i>
-            </span>
+
+        <div class="md:col-span-3">
+          <label class="rf-label-plain text-xs" for="metaEstimateDate">Estimate Date</label>
+          <div class="relative">
+            <input type="text" class="rf-input rf-input-sm pr-9 date-picker" id="metaEstimateDate" value="<?= htmlspecialchars($formattedEstimateDate, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" data-date-format="<?= htmlspecialchars($activeDateFormat, ENT_QUOTES, 'UTF-8') ?>" maxlength="10" autocomplete="off">
+            <button type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#78746C] bg-transparent border-0 cursor-pointer p-0" onclick="const el = document.getElementById('metaEstimateDate'); if (el._flatpickr) { el._flatpickr.open(); } else { el.focus(); }" title="Open calendar">
+              <i class="bi bi-calendar3 text-xs"></i>
+            </button>
           </div>
-          <div class="form-text small text-muted" style="font-size: 0.72rem;">Click icon to open calendar</div>
+          <p class="rf-help">Click icon to open calendar</p>
         </div>
-        <div class="col-md-6">
-          <label class="form-label small fw-bold mb-1 d-flex justify-content-between align-items-center" for="metaCustomerName">
-            <span>Customer / Party Name</span>
-            <span class="badge bg-light text-muted border fw-normal" style="font-size: 0.7rem;">Search or Type</span>
-          </label>
-          <div class="position-relative">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control form-control-sm" id="metaCustomerName" value="<?= htmlspecialchars($preloadedCustomer, ENT_QUOTES, 'UTF-8') ?>" placeholder="Type name, phone or GSTIN to search party..." autocomplete="off">
-              <button class="btn btn-outline-secondary" type="button" id="btnClearCustomerName" title="Clear customer name" style="<?= !empty($preloadedCustomer) ? 'display: block;' : 'display: none;' ?>">
-                <i class="bi bi-x-lg"></i>
+
+        <div class="md:col-span-6">
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-xs font-medium text-[#2C2B27]" for="metaCustomerName">Customer / Party Name</label>
+            <span class="rf-badge rf-badge-neutral text-[10px]">Search or Type</span>
+          </div>
+          <div class="relative">
+            <div class="relative flex items-center">
+              <i class="bi bi-search absolute left-3 text-[#87847C] text-xs pointer-events-none"></i>
+              <input type="text" class="rf-input rf-input-sm pl-8 pr-8" id="metaCustomerName" value="<?= htmlspecialchars($preloadedCustomer, ENT_QUOTES, 'UTF-8') ?>" placeholder="Type name, phone or GSTIN to search party..." autocomplete="off">
+              <button class="absolute right-2 text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" type="button" id="btnClearCustomerName" title="Clear customer name" style="<?= !empty($preloadedCustomer) ? 'display: block;' : 'display: none;' ?>">
+                <i class="bi bi-x-lg text-xs"></i>
               </button>
             </div>
-            <!-- Live Party Search Results Dropdown -->
-            <div id="customerSearchResults" class="list-group shadow position-absolute w-100 mt-1 d-none" style="max-height: 250px; overflow-y: auto; z-index: 1060; border-radius: 6px; font-size: 0.85rem;">
-            </div>
+            <div id="customerSearchResults" class="hidden absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto z-50 bg-white border border-[#E2DFD7] rounded-xl shadow-lg"></div>
           </div>
-          <div class="form-text small text-muted" style="font-size: 0.72rem;">Select an existing party or type custom customer name. Optional.</div>
+          <p class="rf-help">Select an existing party or type custom customer name (optional).</p>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="row g-3">
-  <!-- Left Side: Category & Item Picker (Step 1) -->
-  <div class="col-lg-5">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-header bg-white py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
-        <div class="fw-bold text-dark d-flex align-items-center gap-2">
-          <span class="badge bg-primary text-white rounded-circle p-1" style="width: 22px; height: 22px; line-height: 14px; text-align: center;">1</span>
+  <!-- Split Builder Workspace -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Left: Category & Item Picker -->
+    <div class="lg:col-span-5 rf-card">
+      <div class="rf-card-header py-3">
+        <div class="flex items-center gap-2 text-sm font-semibold text-[#1C1B18]">
+          <span class="w-5 h-5 rounded-full bg-[#1C1B18] text-white text-[11px] font-mono flex items-center justify-center">1</span>
           <span>Select Items from Category</span>
         </div>
-        <span class="badge bg-light text-muted border small" id="itemsAvailableBadge">
-          <?= count($allItems) ?> Available
-        </span>
+        <span class="rf-badge rf-badge-neutral tabular-nums" id="itemsAvailableBadge"><?= count($allItems) ?> Available</span>
       </div>
 
-      <div class="card-body p-3">
-        <!-- Category Dropdown Selector -->
-        <div class="mb-3">
-          <label for="categorySelector" class="form-label small fw-bold text-muted mb-1">
-            <i class="bi bi-tags me-1"></i>Select Category
-          </label>
-          <select class="form-select form-select-sm" id="categorySelector">
+      <div class="p-4 space-y-3">
+        <div>
+          <label for="categorySelector" class="rf-label-plain text-xs"><i class="bi bi-tags mr-1 text-[#78746C]"></i>Select Category</label>
+          <select class="rf-select rf-select-sm" id="categorySelector">
             <option value="all">All Categories</option>
-            <option value="__none__">-- Uncategorized (No Category) --</option>
+            <option value="__none__">-- Uncategorized --</option>
             <?php foreach ($categories as $cat): ?>
-              <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>">
-                📁 <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
-              </option>
+              <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?></option>
             <?php endforeach; ?>
           </select>
         </div>
 
-        <!-- Live Search Box & Select All -->
-        <div class="row g-2 mb-2 align-items-center">
-          <div class="col-8">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-              <input type="text" class="form-control border-start-0" id="itemPickerSearch" placeholder="Filter category items...">
-            </div>
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#87847C] text-xs"></i>
+            <input type="text" class="rf-input rf-input-sm pl-8" id="itemPickerSearch" placeholder="Filter category items...">
           </div>
-          <div class="col-4 text-end">
-            <button type="button" class="btn btn-outline-primary btn-sm w-100 py-1" id="btnSelectAllVisible" style="font-size: 0.75rem;">
-              Select All
-            </button>
-          </div>
+          <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm shrink-0" id="btnSelectAllVisible">Select All</button>
         </div>
 
-        <!-- Scrollable Items Checklist Container -->
-        <div class="border rounded p-1 bg-light" style="max-height: 480px; overflow-y: auto;" id="itemsChecklistContainer">
+        <div class="border border-[#E6E4DF] rounded-xl p-2 bg-[#FAF9F6] max-h-[480px] overflow-y-auto space-y-1.5" id="itemsChecklistContainer">
           <?php if (!empty($allItems)): ?>
-            <?php foreach ($allItems as $it): 
+            <?php foreach ($allItems as $it):
               $taxRate = (float)($it['tax_rate'] ?? 0);
               $salePrice = (float)($it['sale_price'] ?? 0);
               $salePriceWithTax = round($salePrice * (1 + ($taxRate / 100)), 2);
@@ -190,7 +165,7 @@ if (!empty($preloadedEstimate)) {
                   $subUnitStr = "1 " . $it['unit'] . " = " . (float)$it['sub_unit_qty'] . " " . $it['sub_unit'];
               }
             ?>
-              <div class="item-checkbox-row p-2 mb-1 bg-white rounded border d-flex align-items-center justify-content-between"
+              <div class="item-checkbox-row p-2.5 bg-white rounded-lg flex items-center justify-between gap-2"
                    data-item-id="<?= $it['id'] ?>"
                    data-category="<?= htmlspecialchars($catVal, ENT_QUOTES, 'UTF-8') ?>"
                    data-name="<?= htmlspecialchars(strtolower($it['name']), ENT_QUOTES, 'UTF-8') ?>"
@@ -201,128 +176,113 @@ if (!empty($preloadedEstimate)) {
                    data-pre-gst="<?= $salePrice ?>"
                    data-tax-rate="<?= $taxRate ?>"
                    data-post-gst="<?= $salePriceWithTax ?>">
-                
-                <div class="d-flex align-items-center me-2 text-truncate">
-                  <div class="form-check me-2 mb-0">
-                    <input class="form-check-input item-check-input" type="checkbox" id="chkItem<?= $it['id'] ?>" value="<?= $it['id'] ?>">
-                  </div>
-                  <label class="form-check-label text-truncate mb-0" for="chkItem<?= $it['id'] ?>" style="cursor: pointer;">
-                    <div class="fw-bold text-dark text-truncate small"><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></div>
-                    <div class="text-muted" style="font-size: 0.72rem;">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <input class="rf-checkbox item-check-input shrink-0" type="checkbox" id="chkItem<?= $it['id'] ?>" value="<?= $it['id'] ?>">
+                  <label class="min-w-0 cursor-pointer" for="chkItem<?= $it['id'] ?>">
+                    <div class="item-name-label text-xs font-semibold text-[#1C1B18] truncate"><?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="text-[11px] text-[#78746C] flex flex-wrap items-center gap-1.5 mt-0.5">
                       <?php if (!empty($catVal)): ?>
-                        <span class="badge bg-secondary-subtle text-secondary me-1"><?= htmlspecialchars($catVal, ENT_QUOTES, 'UTF-8') ?></span>
+                        <span class="rf-badge rf-badge-neutral text-[10px] py-0"><?= htmlspecialchars($catVal, ENT_QUOTES, 'UTF-8') ?></span>
                       <?php endif; ?>
                       <span><?= htmlspecialchars($it['unit'] ?? 'PCS', ENT_QUOTES, 'UTF-8') ?></span>
                       <?php if (!empty($subUnitStr)): ?>
-                        <span class="text-primary ms-1">(<?= htmlspecialchars($subUnitStr, ENT_QUOTES, 'UTF-8') ?>)</span>
+                        <span class="text-[#2B526E]">(<?= htmlspecialchars($subUnitStr, ENT_QUOTES, 'UTF-8') ?>)</span>
                       <?php endif; ?>
                     </div>
                   </label>
                 </div>
 
-                <div class="text-end text-nowrap">
-                  <div class="fw-bold text-dark" style="font-size: 0.85rem;">₹ <?= number_format($salePriceWithTax, 2) ?></div>
-                  <div class="text-muted" style="font-size: 0.7rem;">Pre: ₹ <?= number_format($salePrice, 2) ?> (+<?= $taxRate ?>%)</div>
+                <div class="text-right whitespace-nowrap shrink-0 tabular-nums">
+                  <div class="text-xs font-semibold text-[#1C1B18]">₹ <?= number_format($salePriceWithTax, 2) ?></div>
+                  <div class="text-[10px] text-[#78746C]">Pre: ₹ <?= number_format($salePrice, 2) ?> (+<?= $taxRate ?>%)</div>
                 </div>
               </div>
             <?php endforeach; ?>
           <?php else: ?>
-            <div class="p-4 text-center text-muted small">
-              <i class="bi bi-box-seam fs-3 d-block mb-1 text-secondary"></i>
+            <div class="p-8 text-center text-xs text-[#78746C]">
+              <i class="bi bi-box-seam text-2xl block mb-2 text-[#B5B0A6]"></i>
               No products found in inventory.
-              <div class="mt-2"><a href="/items/create" class="btn btn-sm btn-primary">Add Products First</a></div>
+              <div class="mt-3"><a href="/items/create" class="rf-btn rf-btn-primary rf-btn-sm">Add Products First</a></div>
             </div>
           <?php endif; ?>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Right Side: Live Rate List & Estimate Preview Table (Step 2) -->
-  <div class="col-lg-7">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-header bg-white py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
-        <div class="fw-bold text-dark d-flex align-items-center gap-2">
-          <span class="badge bg-success text-white rounded-circle p-1" style="width: 22px; height: 22px; line-height: 14px; text-align: center;">2</span>
+    <!-- Right: Live Selected Table & Totals -->
+    <div class="lg:col-span-7 rf-card flex flex-col">
+      <div class="rf-card-header py-3">
+        <div class="flex items-center gap-2 text-sm font-semibold text-[#1C1B18]">
+          <span class="w-5 h-5 rounded-full bg-[#2E5A36] text-white text-[11px] font-mono flex items-center justify-center">2</span>
           <span id="previewSectionTitle">Rate List Items</span>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" id="selectedCountBadge">0 selected</span>
+          <span class="rf-badge rf-badge-slate tabular-nums" id="selectedCountBadge">0 selected</span>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" id="btnClearAllSelected" style="font-size: 0.75rem;" title="Clear all selected items">
-            <i class="bi bi-trash me-1"></i>Clear
-          </button>
+        <button type="button" class="rf-btn rf-btn-danger rf-btn-sm py-1 px-2.5" id="btnClearAllSelected" title="Clear all selected items">
+          <i class="bi bi-trash"></i> Clear
+        </button>
+      </div>
+
+      <div class="rf-table-wrap flex-1 min-h-[320px] max-h-[520px]">
+        <table class="rf-table text-xs" id="selectedItemsTable">
+          <thead class="sticky top-0 z-10">
+            <tr>
+              <th class="w-8 text-center">#</th>
+              <th class="min-w-[160px]">Item Details</th>
+              <th class="w-28 text-right">Rate (₹)</th>
+              <th class="w-16 text-center col-estimate-only hidden">Qty</th>
+              <th class="w-20 text-right">Disc %</th>
+              <th class="w-24 text-right col-estimate-only hidden">Total (₹)</th>
+              <th class="w-8 text-center"></th>
+            </tr>
+          </thead>
+          <tbody id="selectedItemsTbody">
+            <tr id="emptyTablePlaceholder">
+              <td colspan="7" class="text-center py-16 text-[#78746C]">
+                <i class="bi bi-hand-index-thumb text-3xl block mb-2 text-[#C8C4BA]"></i>
+                <span>No items selected yet. Select items from the category list on the left.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Estimate Summary -->
+      <div id="estimateSummaryBox" class="p-4 bg-[#FAF9F6] border-t border-[#ECEAE4] hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <div class="space-y-1.5">
+            <div class="text-[11px] text-[#78746C]"><i class="bi bi-info-circle mr-1"></i> Estimates can be converted to Sales records anytime.</div>
+            <input type="text" class="rf-input rf-input-sm" id="metaNotes" placeholder="Optional notes (e.g. Valid for 7 days...)">
+          </div>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between text-[#5C5A54]">
+              <span>Taxable Amount (Pre-GST)</span>
+              <span class="font-mono font-medium tabular-nums" id="calcSubtotal">₹ 0.00</span>
+            </div>
+            <div class="flex justify-between text-[#5C5A54]">
+              <span>GST Tax Total</span>
+              <span class="font-mono font-medium text-[#2B526E] tabular-nums" id="calcTaxTotal">₹ 0.00</span>
+            </div>
+            <div class="flex justify-between items-center pt-1.5 border-t border-[#E2DFD7] text-sm font-semibold text-[#1C1B18]">
+              <span>Grand Total</span>
+              <span class="font-mono text-[#2E5A36] text-base tabular-nums" id="calcGrandTotal">₹ 0.00</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="card-body p-0 d-flex flex-column justify-content-between">
-        <!-- Selected Items Table -->
-        <div class="table-responsive flex-grow-1" style="min-height: 320px; max-height: 520px;">
-          <table class="table table-hover align-middle mb-0" id="selectedItemsTable" style="font-size: 0.82rem;">
-            <thead class="table-light sticky-top">
-              <tr>
-                <th style="width: 25px;" class="text-center">#</th>
-                <th style="min-width: 170px;">Item Details</th>
-                <th style="width: 100px;" class="text-end">Rate (₹)</th>
-                <!-- Estimate Only Columns -->
-                <th style="width: 55px;" class="text-center col-estimate-only d-none">Qty</th>
-                <th style="width: 72px;" class="text-end">Disc %</th>
-                <th style="width: 85px;" class="text-end col-estimate-only d-none">Total (₹)</th>
-                <th style="width: 28px;" class="text-center"></th>
-              </tr>
-            </thead>
-            <tbody id="selectedItemsTbody">
-              <tr id="emptyTablePlaceholder">
-                <td colspan="7" class="text-center py-5 text-muted">
-                  <i class="bi bi-hand-index-thumb fs-2 d-block mb-2 text-secondary opacity-50"></i>
-                  <span>No items selected yet. Select items from the category list on the left.</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Estimate Mode Live Calculation Summary Box -->
-        <div id="estimateSummaryBox" class="p-3 bg-light border-top d-none">
-          <div class="row align-items-center">
-            <div class="col-md-6 mb-2 mb-md-0">
-              <div class="small text-muted mb-1">
-                <i class="bi bi-info-circle me-1"></i> Estimates can be converted to official Sales records anytime.
-              </div>
-              <input type="text" class="form-control form-control-sm" id="metaNotes" placeholder="Optional notes (e.g. Valid for 7 days, payment terms...)">
-            </div>
-            <div class="col-md-6 text-md-end">
-              <div class="d-flex justify-content-between text-muted small mb-1">
-                <span>Taxable Amount (Pre-GST):</span>
-                <span class="fw-semibold font-monospace" id="calcSubtotal">₹ 0.00</span>
-              </div>
-              <div class="d-flex justify-content-between text-muted small mb-1">
-                <span>GST Tax Total:</span>
-                <span class="fw-semibold font-monospace text-primary" id="calcTaxTotal">₹ 0.00</span>
-              </div>
-              <div class="d-flex justify-content-between fs-6 fw-bold border-top pt-1 mt-1 text-dark">
-                <span>Grand Total:</span>
-                <span class="text-success font-monospace fs-5" id="calcGrandTotal">₹ 0.00</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Actions Bar -->
-        <div class="p-3 bg-white border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div class="small text-muted" id="footerHint">
-            Select items to preview rate list.
-          </div>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-dark" id="btnBottomPrint">
-              <i class="bi bi-printer me-1"></i> Print / Download
-            </button>
-            <button type="button" class="btn btn-success d-none" id="btnBottomSave">
-              <i class="bi bi-check2-circle me-1"></i> Save Estimate
-            </button>
-            <button type="button" class="btn btn-primary d-none" id="btnConvertToInvoice">
-              <i class="bi bi-receipt me-1"></i> Convert to Invoice
-            </button>
-          </div>
+      <!-- Footer Actions -->
+      <div class="rf-card-footer">
+        <div class="text-xs text-[#78746C]" id="footerHint">Select items to preview rate list.</div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" id="btnBottomPrint">
+            <i class="bi bi-printer"></i> Print / Download
+          </button>
+          <button type="button" class="rf-btn rf-btn-sage-solid rf-btn-sm hidden" id="btnBottomSave">
+            <i class="bi bi-check2-circle"></i> Save Estimate
+          </button>
+          <button type="button" class="rf-btn rf-btn-primary rf-btn-sm hidden" id="btnConvertToInvoice">
+            <i class="bi bi-receipt"></i> Convert to Invoice
+          </button>
         </div>
       </div>
     </div>
@@ -330,7 +290,7 @@ if (!empty($preloadedEstimate)) {
 </div>
 
 <!-- Hidden Form for Direct Printing -->
-<form id="directPrintForm" action="/estimates/print-direct" method="POST" target="_blank" class="d-none">
+<form id="directPrintForm" action="/estimates/print-direct" method="POST" target="_blank" class="hidden">
   <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
   <input type="hidden" name="mode" id="directPrintMode" value="ratelist">
   <input type="hidden" name="estimate_number" id="directPrintNumber" value="">
@@ -341,7 +301,7 @@ if (!empty($preloadedEstimate)) {
 </form>
 
 <!-- Hidden Form for Saving Estimate -->
-<form id="saveEstimateForm" action="/estimates/save" method="POST" class="d-none">
+<form id="saveEstimateForm" action="/estimates/save" method="POST" class="hidden">
   <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
   <input type="hidden" name="estimate_number" id="saveEstimateNumber" value="">
   <input type="hidden" name="estimate_date" id="saveEstimateDate" value="">
@@ -350,7 +310,6 @@ if (!empty($preloadedEstimate)) {
   <input type="hidden" name="items_json" id="saveEstimateItemsJson" value="">
 </form>
 
-<!-- Preloaded Parties Data for Live Autocomplete -->
 <script id="partiesData" type="application/json">
   <?= json_encode(array_map(function($p) {
       return [
@@ -381,21 +340,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnSelectAllVisible = document.getElementById('btnSelectAllVisible');
   const btnClearAllSelected = document.getElementById('btnClearAllSelected');
   const selectedItemsTbody = document.getElementById('selectedItemsTbody');
-  const emptyTablePlaceholder = document.getElementById('emptyTablePlaceholder');
   const selectedCountBadge = document.getElementById('selectedCountBadge');
   const itemsChecklistContainer = document.getElementById('itemsChecklistContainer');
   const allCheckboxRows = Array.from(itemsChecklistContainer.querySelectorAll('.item-checkbox-row'));
 
-  let currentMode = 'ratelist'; // 'ratelist' | 'estimate'
-  let selectedItemsMap = new Map(); // id -> itemObject
+  let currentMode = 'ratelist';
+  let selectedItemsMap = new Map();
 
-  // Preloaded data if any
   const preloadedItems = <?= $preloadedItemsJson ?>;
   if (Array.isArray(preloadedItems) && preloadedItems.length > 0) {
     preloadedItems.forEach(it => {
       selectedItemsMap.set(String(it.id || it.name), it);
     });
-    // Switch to estimate mode if preloaded
     modeEstimateRadio.checked = true;
     currentMode = 'estimate';
   }
@@ -403,26 +359,26 @@ document.addEventListener('DOMContentLoaded', function() {
   function syncModeUI() {
     const isEstimate = (currentMode === 'estimate');
     if (isEstimate) {
-      estimateMetaBox.classList.remove('d-none');
-      estimateSummaryBox.classList.remove('d-none');
-      btnSaveEstimateModal.classList.remove('d-none');
-      btnBottomSave.classList.remove('d-none');
-      btnConvertToInvoice.classList.remove('d-none');
+      estimateMetaBox.classList.remove('hidden');
+      estimateSummaryBox.classList.remove('hidden');
+      btnSaveEstimateModal.classList.remove('hidden');
+      btnBottomSave.classList.remove('hidden');
+      btnConvertToInvoice.classList.remove('hidden');
       previewSectionTitle.textContent = 'Estimate Items & Quantities';
       printBtnLabel.textContent = 'Print Estimate';
       footerHint.textContent = 'Adjust quantities and discount, then save or print estimate.';
-      document.querySelectorAll('.col-estimate-only').forEach(el => el.classList.remove('d-none'));
+      document.querySelectorAll('.col-estimate-only').forEach(el => el.classList.remove('hidden'));
       initDatePickerIfNeeded();
     } else {
-      estimateMetaBox.classList.add('d-none');
-      estimateSummaryBox.classList.add('d-none');
-      btnSaveEstimateModal.classList.add('d-none');
-      btnBottomSave.classList.add('d-none');
-      btnConvertToInvoice.classList.add('d-none');
+      estimateMetaBox.classList.add('hidden');
+      estimateSummaryBox.classList.add('hidden');
+      btnSaveEstimateModal.classList.add('hidden');
+      btnBottomSave.classList.add('hidden');
+      btnConvertToInvoice.classList.add('hidden');
       previewSectionTitle.textContent = 'Rate List Items';
       printBtnLabel.textContent = 'Print Rate List';
       footerHint.textContent = 'Select items, set discounts, preview and print a clean product rate list.';
-      document.querySelectorAll('.col-estimate-only').forEach(el => el.classList.add('d-none'));
+      document.querySelectorAll('.col-estimate-only').forEach(el => el.classList.add('hidden'));
     }
     renderSelectedItemsTable();
   }
@@ -437,7 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
     syncModeUI();
   });
 
-  // Filter items in the left panel based on Category and Search
   function filterItemsList() {
     const selectedCat = categorySelector.value;
     const query = (itemPickerSearch.value || '').trim().toLowerCase();
@@ -448,24 +403,15 @@ document.addEventListener('DOMContentLoaded', function() {
       const hsn = (row.dataset.hsn || '').trim();
 
       let matchCat = false;
-      if (selectedCat === 'all') {
-        matchCat = true;
-      } else if (selectedCat === '__none__') {
-        matchCat = (cat === '');
-      } else {
-        matchCat = (cat.toLowerCase() === selectedCat.toLowerCase());
-      }
+      if (selectedCat === 'all') matchCat = true;
+      else if (selectedCat === '__none__') matchCat = (cat === '');
+      else matchCat = (cat.toLowerCase() === selectedCat.toLowerCase());
 
       let matchQuery = true;
-      if (query !== '') {
-        matchQuery = name.includes(query) || hsn.includes(query);
-      }
+      if (query !== '') matchQuery = name.includes(query) || hsn.includes(query);
 
-      if (matchCat && matchQuery) {
-        row.classList.remove('d-none');
-      } else {
-        row.classList.add('d-none');
-      }
+      if (matchCat && matchQuery) row.classList.remove('hidden');
+      else row.classList.add('hidden');
     });
 
     updateVisibleCheckboxStates();
@@ -474,38 +420,38 @@ document.addEventListener('DOMContentLoaded', function() {
   categorySelector.addEventListener('change', filterItemsList);
   itemPickerSearch.addEventListener('input', filterItemsList);
 
-  // Sync checkboxes on left panel with selectedItemsMap
   function updateVisibleCheckboxStates() {
     allCheckboxRows.forEach(row => {
       const id = row.dataset.itemId;
       const chk = row.querySelector('.item-check-input');
       const isChecked = selectedItemsMap.has(String(id));
-      if (chk) {
-        chk.checked = isChecked;
-      }
+      if (chk) chk.checked = isChecked;
       row.classList.toggle('is-selected', isChecked);
     });
   }
 
-  // Handle individual checkbox changes
+  function extractItemFromRow(row) {
+    return {
+      id: parseInt(row.dataset.itemId),
+      name: row.querySelector('.item-name-label').textContent.trim(),
+      hsn_code: row.dataset.hsn || '',
+      unit: row.dataset.unit || 'PCS',
+      sub_unit: row.dataset.subUnit || '',
+      sub_unit_qty: row.dataset.subUnitQty ? parseFloat(row.dataset.subUnitQty) : null,
+      sale_price: parseFloat(row.dataset.preGst) || 0,
+      tax_rate: parseFloat(row.dataset.taxRate) || 0,
+      quantity: 1,
+      discount_percent: 0
+    };
+  }
+
   itemsChecklistContainer.addEventListener('change', (e) => {
     if (e.target && e.target.classList.contains('item-check-input')) {
       const row = e.target.closest('.item-checkbox-row');
       const id = row.dataset.itemId;
       if (e.target.checked) {
         row.classList.add('is-selected');
-        selectedItemsMap.set(String(id), {
-          id: parseInt(id),
-          name: row.querySelector('.fw-bold').textContent.trim(),
-          hsn_code: row.dataset.hsn || '',
-          unit: row.dataset.unit || 'PCS',
-          sub_unit: row.dataset.subUnit || '',
-          sub_unit_qty: row.dataset.subUnitQty ? parseFloat(row.dataset.subUnitQty) : null,
-          sale_price: parseFloat(row.dataset.preGst) || 0,
-          tax_rate: parseFloat(row.dataset.taxRate) || 0,
-          quantity: 1,
-          discount_percent: 0
-        });
+        selectedItemsMap.set(String(id), extractItemFromRow(row));
       } else {
         row.classList.remove('is-selected');
         selectedItemsMap.delete(String(id));
@@ -514,7 +460,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Clicking anywhere on the item row toggles its selection
   itemsChecklistContainer.addEventListener('click', (e) => {
     if (e.target.closest('input[type="checkbox"]') || e.target.closest('label')) return;
     const row = e.target.closest('.item-checkbox-row');
@@ -527,9 +472,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Select all currently visible items
   btnSelectAllVisible.addEventListener('click', () => {
-    const visibleRows = allCheckboxRows.filter(r => !r.classList.contains('d-none'));
+    const visibleRows = allCheckboxRows.filter(r => !r.classList.contains('hidden'));
     const allChecked = visibleRows.every(r => {
       const chk = r.querySelector('.item-check-input');
       return chk && chk.checked;
@@ -539,24 +483,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const id = row.dataset.itemId;
       const chk = row.querySelector('.item-check-input');
       if (allChecked) {
-        // Deselect all visible
         selectedItemsMap.delete(String(id));
         if (chk) chk.checked = false;
         row.classList.remove('is-selected');
       } else {
-        // Select all visible
-        selectedItemsMap.set(String(id), {
-          id: parseInt(id),
-          name: row.querySelector('.fw-bold').textContent.trim(),
-          hsn_code: row.dataset.hsn || '',
-          unit: row.dataset.unit || 'PCS',
-          sub_unit: row.dataset.subUnit || '',
-          sub_unit_qty: row.dataset.subUnitQty ? parseFloat(row.dataset.subUnitQty) : null,
-          sale_price: parseFloat(row.dataset.preGst) || 0,
-          tax_rate: parseFloat(row.dataset.taxRate) || 0,
-          quantity: 1,
-          discount_percent: 0
-        });
+        selectedItemsMap.set(String(id), extractItemFromRow(row));
         if (chk) chk.checked = true;
         row.classList.add('is-selected');
       }
@@ -565,7 +496,6 @@ document.addEventListener('DOMContentLoaded', function() {
     renderSelectedItemsTable();
   });
 
-  // Clear all selected items
   btnClearAllSelected.addEventListener('click', () => {
     if (selectedItemsMap.size === 0) return;
     if (confirm('Are you sure you want to clear all selected items?')) {
@@ -575,7 +505,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Render the Selected Items Table & recalculate totals
   function renderSelectedItemsTable() {
     const isEstimate = (currentMode === 'estimate');
     const items = Array.from(selectedItemsMap.values());
@@ -584,8 +513,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (items.length === 0) {
       selectedItemsTbody.innerHTML = `
         <tr id="emptyTablePlaceholder">
-          <td colspan="7" class="text-center py-5 text-muted">
-            <i class="bi bi-hand-index-thumb fs-2 d-block mb-2 text-secondary opacity-50"></i>
+          <td colspan="7" class="text-center py-16 text-[#78746C]">
+            <i class="bi bi-hand-index-thumb text-3xl block mb-2 text-[#C8C4BA]"></i>
             <span>No items selected yet. Select items from the category list on the left.</span>
           </td>
         </tr>
@@ -600,8 +529,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const taxRate = item.tax_rate;
       const qty = item.quantity || 1;
       const disc = item.discount_percent || 0;
-      const netPreGst = disc > 0 ? (preGst * (1 - (disc / 100))) : preGst;
-      const postGst = netPreGst * (1 + (taxRate / 100));
 
       const lineBase = qty * preGst;
       const lineDisc = lineBase * (disc / 100);
@@ -609,51 +536,42 @@ document.addEventListener('DOMContentLoaded', function() {
       const lineTax = lineTaxable * (taxRate / 100);
       const lineTotal = lineTaxable + lineTax;
 
-      // Sub-unit representation
       let subUnitDisplay = '';
       if (item.sub_unit && item.sub_unit_qty) {
         const totalSubUnits = (qty * item.sub_unit_qty).toFixed(1).replace(/\.0$/, '');
-        subUnitDisplay = `<div class="text-primary small" style="font-size: 0.72rem;">= ${totalSubUnits} ${item.sub_unit} (${item.sub_unit_qty} / ${item.unit})</div>`;
+        subUnitDisplay = `<div class="text-[11px] text-[#2B526E]">= ${totalSubUnits} ${item.sub_unit} (${item.sub_unit_qty} / ${item.unit})</div>`;
       }
 
       html += `
         <tr data-item-id="${item.id}">
-          <td class="text-center text-muted font-monospace">${index + 1}</td>
+          <td class="text-center text-[#78746C] font-mono tabular-nums">${index + 1}</td>
           <td>
-            <div class="fw-bold text-dark">${escapeHtml(item.name)}</div>
-            <div class="small text-muted font-monospace" style="font-size: 0.72rem;">
+            <div class="font-semibold text-[#1C1B18]">${escapeHtml(item.name)}</div>
+            <div class="text-[11px] text-[#78746C] font-mono">
               Unit: ${escapeHtml(item.unit)} ${item.hsn_code ? '| HSN: ' + escapeHtml(item.hsn_code) : ''}
             </div>
             ${subUnitDisplay}
           </td>
-          <td class="text-end row-rate-cell">
+          <td class="text-right row-rate-cell tabular-nums">
             ${getRateCellHtml(item)}
           </td>
-          
-          <!-- Estimate Mode Inputs -->
-          <td class="text-center col-estimate-only ${isEstimate ? '' : 'd-none'} px-1">
-            <input type="number" class="form-control form-control-sm text-center fw-bold row-qty-input selected-table-input" 
-                   min="0.01" step="any" value="${qty}" data-item-id="${item.id}"
-                   style="width: 48px; height: 28px; font-size: 0.82rem; margin: 0 auto; padding: 2px 3px;">
+          <td class="text-center col-estimate-only ${isEstimate ? '' : 'hidden'} px-1">
+            <input type="number" class="rf-input rf-input-sm text-center font-semibold row-qty-input selected-table-input w-14 mx-auto px-1 tabular-nums"
+                   min="0.01" step="any" value="${qty}" data-item-id="${item.id}">
           </td>
-          <!-- Discount Input (Visible for both Estimate and Rate List) -->
-          <td class="text-end px-1">
-            <div class="input-group input-group-sm flex-nowrap ms-auto" style="width: 66px;">
-              <input type="number" class="form-control form-control-sm text-end row-disc-input selected-table-input" 
-                     min="0" max="100" step="any" value="${disc}" data-item-id="${item.id}"
-                     style="height: 28px; font-size: 0.78rem; border-top-right-radius: 0; border-bottom-right-radius: 0; padding: 2px 3px;">
-              <span class="input-group-text px-1 text-muted bg-light border-start-0" 
-                    style="font-size: 0.72rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 2px 4px; height: 28px;">%</span>
+          <td class="text-right px-1">
+            <div class="inline-flex items-center w-16">
+              <input type="number" class="rf-input rf-input-sm text-right rounded-r-none row-disc-input selected-table-input px-1 tabular-nums"
+                     min="0" max="100" step="any" value="${disc}" data-item-id="${item.id}">
+              <span class="px-1.5 py-1.5 text-[11px] bg-[#F3F1EC] border border-l-0 border-[#D9D6CE] rounded-r-md text-[#78746C]">%</span>
             </div>
           </td>
-          <td class="text-end fw-bold text-success col-estimate-only ${isEstimate ? '' : 'd-none'} row-total-display">
+          <td class="text-right font-semibold text-[#2E5A36] col-estimate-only ${isEstimate ? '' : 'hidden'} row-total-display tabular-nums">
             ₹ ${lineTotal.toFixed(2)}
           </td>
-
-          <!-- Remove Action -->
           <td class="text-center">
-            <button type="button" class="btn btn-link text-danger p-0 border-0 btn-remove-item" data-item-id="${item.id}" title="Remove item">
-              <i class="bi bi-x-circle-fill"></i>
+            <button type="button" class="text-[#87847C] hover:text-[#8F2D2B] bg-transparent border-0 p-1 cursor-pointer btn-remove-item" data-item-id="${item.id}" title="Remove item">
+              <i class="bi bi-x-circle"></i>
             </button>
           </td>
         </tr>
@@ -664,7 +582,6 @@ document.addEventListener('DOMContentLoaded', function() {
     calcTotals();
   }
 
-  // Generate HTML for the merged rate cell (post-GST rate with pre-GST rate and GST% in brackets)
   function getRateCellHtml(item) {
     const preGst = item.sale_price;
     const taxRate = item.tax_rate;
@@ -675,25 +592,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (disc > 0) {
       return `
-        <div class="fw-bold text-dark">₹ ${postGst.toFixed(2)}</div>
-        <div class="text-muted" style="font-size: 0.72rem;"><s>₹ ${origPostGst.toFixed(2)}</s> Pre: ₹ ${netPreGst.toFixed(2)} (${taxRate}%)</div>
-      `;
-    } else {
-      return `
-        <div class="fw-bold text-dark">₹ ${postGst.toFixed(2)}</div>
-        <div class="text-muted" style="font-size: 0.72rem;">Pre: ₹ ${preGst.toFixed(2)} (${taxRate}%)</div>
+        <div class="font-semibold text-[#1C1B18]">₹ ${postGst.toFixed(2)}</div>
+        <div class="text-[11px] text-[#78746C]"><s>₹ ${origPostGst.toFixed(2)}</s> Pre: ₹ ${netPreGst.toFixed(2)} (${taxRate}%)</div>
       `;
     }
+    return `
+      <div class="font-semibold text-[#1C1B18]">₹ ${postGst.toFixed(2)}</div>
+      <div class="text-[11px] text-[#78746C]">Pre: ₹ ${preGst.toFixed(2)} (${taxRate}%)</div>
+    `;
   }
 
-  // Live update single row rate without re-rendering entire table
   function updateRowRate(tr, item) {
     if (!tr || !item) return;
     const cell = tr.querySelector('.row-rate-cell');
     if (cell) cell.innerHTML = getRateCellHtml(item);
   }
 
-  // Live update single row total without re-rendering entire table
   function updateRowTotal(tr, item) {
     if (!tr || !item) return;
     const preGst = item.sale_price;
@@ -709,7 +623,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cell) cell.textContent = `₹ ${lineTotal.toFixed(2)}`;
   }
 
-  // Handle table row input changes (Qty and Disc)
   selectedItemsTbody.addEventListener('input', (e) => {
     if (e.target.classList.contains('row-qty-input')) {
       const id = String(e.target.dataset.itemId);
@@ -732,7 +645,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Handle table row remove
   selectedItemsTbody.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-remove-item');
     if (btn) {
@@ -743,20 +655,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Clicking anywhere on the item row toggles its selection
-  itemsChecklistContainer.addEventListener('click', (e) => {
-    if (e.target.closest('input[type="checkbox"]') || e.target.closest('label')) return;
-    const row = e.target.closest('.item-checkbox-row');
-    if (row) {
-      const chk = row.querySelector('.item-check-input');
-      if (chk) {
-        chk.checked = !chk.checked;
-        chk.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    }
-  });
-
-  // Calculate Subtotals and Grand Total
   function calcTotals() {
     let subtotal = 0;
     let taxTotal = 0;
@@ -784,7 +682,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('calcGrandTotal').textContent = `₹ ${grandTotal.toFixed(2)}`;
   }
 
-  // Print Handling (Rate list or Estimate)
   function handlePrint() {
     if (selectedItemsMap.size === 0) {
       alert('Please select at least one item to print.');
@@ -818,7 +715,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btnPrintCurrent').addEventListener('click', handlePrint);
   document.getElementById('btnBottomPrint').addEventListener('click', handlePrint);
 
-  // Save Estimate Handling
   async function handleSaveEstimate() {
     if (selectedItemsMap.size === 0) {
       alert('Please select at least one item before saving.');
@@ -851,7 +747,6 @@ document.addEventListener('DOMContentLoaded', function() {
   btnSaveEstimateModal.addEventListener('click', handleSaveEstimate);
   btnBottomSave.addEventListener('click', handleSaveEstimate);
 
-  // Convert to Sales Invoice handling
   btnConvertToInvoice.addEventListener('click', async () => {
     if (selectedItemsMap.size === 0) {
       alert('Please select at least one item.');
@@ -859,7 +754,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (confirm('Would you like to save this Estimate first and then convert to a Sales Record?')) {
-      // First save via AJAX, then redirect to /sales/create?estimate_id=...
       const itemsArr = Array.from(selectedItemsMap.values()).map(it => ({
         item_id: it.id,
         item_name: it.name,
@@ -911,7 +805,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return div.innerHTML;
   }
 
-  // Flatpickr initialization helper
   function initDatePickerIfNeeded() {
     const dateInput = document.getElementById('metaEstimateDate');
     if (dateInput && typeof flatpickr !== 'undefined' && !dateInput._flatpickr) {
@@ -939,7 +832,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Party Live Search & Autocomplete
   const partiesDataEl = document.getElementById('partiesData');
   let partiesList = [];
   try {
@@ -970,38 +862,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (matches.length === 0) {
       const emptyItem = document.createElement('div');
-      emptyItem.className = 'list-group-item text-muted small p-2 text-center';
+      emptyItem.className = 'px-3 py-2.5 text-xs text-[#78746C] text-center';
       emptyItem.textContent = query ? `No existing party found matching "${query}".` : 'No registered parties found.';
       customerSearchResults.appendChild(emptyItem);
 
       if (query) {
         const useBtn = document.createElement('button');
         useBtn.type = 'button';
-        useBtn.className = 'list-group-item list-group-item-action p-2 text-primary small fw-semibold bg-light border-top';
-        useBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i> Use "<strong>${escapeHtml(query)}</strong>" as customer name`;
+        useBtn.className = 'w-full px-3 py-2.5 text-left text-xs font-semibold text-[#2B526E] bg-[#FAF9F6] hover:bg-[#F3F1EC] border-t border-[#E6E4DF] cursor-pointer';
+        useBtn.innerHTML = `<i class="bi bi-check-circle mr-1"></i> Use "<strong>${escapeHtml(query)}</strong>" as customer name`;
         useBtn.addEventListener('click', () => {
-          customerSearchResults.classList.add('d-none');
+          customerSearchResults.classList.add('hidden');
           if (btnClearCustomerName) btnClearCustomerName.style.display = 'block';
         });
         customerSearchResults.appendChild(useBtn);
       }
-      customerSearchResults.classList.remove('d-none');
+      customerSearchResults.classList.remove('hidden');
       return;
     }
 
     matches.slice(0, 15).forEach(p => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'list-group-item list-group-item-action p-2 text-start';
+      btn.className = 'w-full px-3.5 py-2.5 text-left hover:bg-[#FAF9F6] border-b border-[#F0EEE9] last:border-b-0 transition-colors cursor-pointer bg-white';
       btn.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-          <strong class="text-dark">${escapeHtml(p.name)}</strong>
-          ${p.phone ? `<span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="bi bi-telephone me-1"></i>${escapeHtml(p.phone)}</span>` : ''}
+        <div class="flex justify-between items-center gap-2">
+          <strong class="text-xs font-semibold text-[#1C1B18]">${escapeHtml(p.name)}</strong>
+          ${p.phone ? `<span class="rf-badge rf-badge-neutral font-mono text-[10px]"><i class="bi bi-telephone"></i>${escapeHtml(p.phone)}</span>` : ''}
         </div>
         ${(p.gstin || p.state || p.address) ? `
-          <div class="small text-muted d-flex justify-content-between mt-1" style="font-size: 0.72rem;">
-            <span>${p.gstin ? `<span class="text-primary font-monospace">GSTIN: ${escapeHtml(p.gstin)}</span>` : escapeHtml(p.address || '')}</span>
-            ${p.state ? `<span class="text-secondary">${escapeHtml(p.state)}</span>` : ''}
+          <div class="text-[11px] text-[#78746C] flex justify-between mt-1 gap-2">
+            <span>${p.gstin ? `<span class="text-[#2B526E] font-mono">GSTIN: ${escapeHtml(p.gstin)}</span>` : escapeHtml(p.address || '')}</span>
+            ${p.state ? `<span class="text-[#5C5A54]">${escapeHtml(p.state)}</span>` : ''}
           </div>
         ` : ''}
       `;
@@ -1010,34 +902,30 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         e.stopPropagation();
         metaCustomerNameInput.value = p.name;
-        customerSearchResults.classList.add('d-none');
+        customerSearchResults.classList.add('hidden');
         if (btnClearCustomerName) btnClearCustomerName.style.display = 'block';
       });
 
       customerSearchResults.appendChild(btn);
     });
 
-    customerSearchResults.classList.remove('d-none');
+    customerSearchResults.classList.remove('hidden');
   }
 
   if (metaCustomerNameInput) {
     metaCustomerNameInput.addEventListener('focus', () => {
-      const matches = getPartyMatches(metaCustomerNameInput.value);
-      renderCustomerResults(matches);
+      renderCustomerResults(getPartyMatches(metaCustomerNameInput.value));
     });
 
     metaCustomerNameInput.addEventListener('input', () => {
       const val = metaCustomerNameInput.value;
-      if (btnClearCustomerName) {
-        btnClearCustomerName.style.display = val.trim() ? 'block' : 'none';
-      }
-      const matches = getPartyMatches(val);
-      renderCustomerResults(matches);
+      if (btnClearCustomerName) btnClearCustomerName.style.display = val.trim() ? 'block' : 'none';
+      renderCustomerResults(getPartyMatches(val));
     });
 
     metaCustomerNameInput.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && customerSearchResults) {
-        customerSearchResults.classList.add('d-none');
+        customerSearchResults.classList.add('hidden');
       }
     });
   }
@@ -1049,22 +937,18 @@ document.addEventListener('DOMContentLoaded', function() {
         metaCustomerNameInput.focus();
       }
       btnClearCustomerName.style.display = 'none';
-      if (customerSearchResults) {
-        customerSearchResults.classList.add('d-none');
-      }
+      if (customerSearchResults) customerSearchResults.classList.add('hidden');
     });
   }
 
-  // Close search results on outside click
   document.addEventListener('click', (e) => {
     if (customerSearchResults && !customerSearchResults.contains(e.target) &&
         metaCustomerNameInput && !metaCustomerNameInput.contains(e.target) &&
         btnClearCustomerName && !btnClearCustomerName.contains(e.target)) {
-      customerSearchResults.classList.add('d-none');
+      customerSearchResults.classList.add('hidden');
     }
   });
 
-  // Initial trigger
   initDatePickerIfNeeded();
   syncModeUI();
   filterItemsList();

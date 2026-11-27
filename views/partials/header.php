@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0d6efd">
+  <meta name="theme-color" content="#F7F6F3">
   <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
   <title><?= htmlspecialchars(!empty($title) ? (str_contains($title, 'RACE FINANCE') ? $title : $title . ' - RACE FINANCE') : 'RACE FINANCE - Smart Small Business Management, Billing & Inventory', ENT_QUOTES, 'UTF-8') ?></title>
-  
+
   <!-- Favicon & PWA Manifest -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/logo.png">
   <link rel="manifest" href="/manifest.json">
-  
+
   <!-- Primary SEO Meta Tags -->
   <meta name="description" content="<?= htmlspecialchars($metaDescription ?? 'RACE FINANCE is a modern business management, billing and inventory utility for traders and small businesses. Features dual-firm management, FIFO party ledgers, and GST registers.', ENT_QUOTES, 'UTF-8') ?>">
   <meta name="keywords" content="RACE FINANCE, <?= htmlspecialchars($appDomain ?? 'racefinance.site', ENT_QUOTES, 'UTF-8') ?>, small business billing, inventory management, bookkeeping utility, digital sales records, FIFO ledgers, GST tax utility, India small business management">
   <meta name="author" content="RACE FINANCE">
   <meta name="robots" content="<?= !empty($user) ? 'noindex, nofollow' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' ?>">
-  
+
   <?php
     $canonicalPath = '/';
     if (!empty($activeTab)) {
@@ -37,7 +37,6 @@
     }
     $pageCanonicalUrl = rtrim($appUrl ?? 'https://racefinance.site', '/') . ($canonicalPath === '/' ? '' : $canonicalPath);
   ?>
-  <!-- Canonical URL -->
   <link rel="canonical" href="<?= htmlspecialchars($pageCanonicalUrl, ENT_QUOTES, 'UTF-8') ?>">
 
   <!-- Open Graph / Facebook -->
@@ -58,7 +57,7 @@
   <meta name="twitter:description" content="<?= htmlspecialchars($metaDescription ?? 'Modern small business billing, inventory tracking, and bookkeeping utility.', ENT_QUOTES, 'UTF-8') ?>">
   <meta name="twitter:image" content="<?= htmlspecialchars($appUrl ?? 'https://racefinance.site', ENT_QUOTES, 'UTF-8') ?>/uploads/logo-1787158589640-807857696.png">
 
-  <!-- Schema.org Structured Data (JSON-LD) for Google Rich Snippets & Sitelinks -->
+  <!-- Schema.org Structured Data (JSON-LD) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -108,294 +107,262 @@
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/uploads/logo-1787158589640-807857696.png">
   <link rel="apple-touch-icon" href="/uploads/logo-1787158589640-807857696.png">
-  
-  <!-- Bootstrap 5 CSS (Offline Local with CDN Fallback) -->
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
-  <!-- Bootstrap Icons (Offline Local with CDN Fallback) -->
+
+  <!-- Icons & Datepicker (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
-  <!-- Flatpickr CSS (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/flatpickr/flatpickr.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="/css/style.css">
+  <!-- Compiled Tailwind CSS -->
+  <link rel="stylesheet" href="/css/tailwind.css">
 </head>
-<body>
+<body class="bg-[#F7F6F3] text-[#1C1B18] min-h-screen flex flex-col">
 
 <?php if (!empty($user)): ?>
-<div class="app-layout">
-  <!-- Mobile Sidebar Backdrop Overlay -->
+<div class="flex min-h-screen w-full">
+  <!-- Mobile Sidebar Backdrop -->
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-  <!-- Vertical Sidebar Navigation -->
-  <aside class="app-sidebar p-3 text-white" id="appSidebar">
-    <!-- Sidebar Header & Brand Logo -->
-    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-      <a class="text-decoration-none text-white d-flex align-items-center fw-bold fs-5" href="<?= !empty($isAdmin) ? '/admin' : '/dashboard' ?>">
-        <img src="/uploads/logo-1787158589640-807857696.png" alt="RACE FINANCE Logo" class="rounded-2 me-2 shadow-sm" width="34" height="34" style="object-fit: contain; background: #ffffff; padding: 2px; border: 1px solid rgba(255,255,255,0.2);">
-        <span>RACE <span class="text-primary-light">FINANCE</span></span>
+  <!-- Calm Warm-Stone Sidebar Navigation -->
+  <aside class="app-sidebar w-[264px] shrink-0 bg-[#F2F0EB] border-r border-[#E5E2DC] lg:sticky lg:top-0 lg:h-screen overflow-y-auto flex flex-col p-4 z-40" id="appSidebar">
+    <!-- Brand Header -->
+    <div class="flex items-center justify-between pb-4 mb-4 border-b border-[#E2DFD7]">
+      <a class="flex items-center gap-2.5 text-[#1C1B18] no-underline font-semibold tracking-tight text-base" href="<?= !empty($isAdmin) ? '/admin' : '/dashboard' ?>">
+        <img src="/uploads/logo-1787158589640-807857696.png" alt="RACE FINANCE Logo" class="w-8 h-8 rounded-lg object-contain bg-white p-0.5 border border-[#E2DFD7]">
+        <span>RACE <span class="text-[#5C5A54] font-medium">FINANCE</span></span>
       </a>
-      <button type="button" class="btn-close btn-close-white d-lg-none btn-sidebar-toggle" aria-label="Close Sidebar"></button>
+      <button type="button" class="lg:hidden btn-sidebar-toggle p-1.5 rounded-lg text-[#5C5A54] hover:text-[#1C1B18] hover:bg-[#E7E4DC] bg-transparent border-0 cursor-pointer" aria-label="Close Sidebar">
+        <i class="bi bi-x-lg text-base"></i>
+      </button>
     </div>
 
     <?php if (!empty($isAdmin)): ?>
-      <!-- Admin Mode Badge -->
-      <div class="card bg-dark border border-warning border-opacity-50 p-2 mb-3 shadow-sm rounded-3">
-        <div class="d-flex align-items-center">
-          <div class="bg-warning text-dark rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-            <i class="bi bi-shield-lock-fill fs-6"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-white small">Platform Admin</div>
-            <div class="text-warning small" style="font-size: 0.7rem;">Control & Governance</div>
-          </div>
+      <!-- Admin Mode Identity -->
+      <div class="bg-white border border-[#E2DFD7] rounded-xl p-3 mb-4 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-[#FBF3DB] text-[#8A5A00] border border-[#EAE0B8] flex items-center justify-center shrink-0">
+          <i class="bi bi-shield-lock text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="text-xs font-semibold text-[#1C1B18] truncate">Platform Admin</div>
+          <div class="text-[11px] text-[#78746C] truncate">Control & Governance</div>
         </div>
       </div>
 
-      <!-- Navigation Menu Items for Admin -->
-      <div class="sidebar-nav flex-grow-1">
-        <ul class="nav flex-column mb-auto">
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'admin-dashboard') ? 'active' : '' ?>" href="/admin">
-              <i class="bi bi-speedometer2"></i> Command Center
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'admin-users') ? 'active' : '' ?>" href="/admin/users">
-              <i class="bi bi-people-fill"></i> Subscribers & Users
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'admin-firms') ? 'active' : '' ?>" href="/admin/firms">
-              <i class="bi bi-buildings-fill"></i> Business Firms
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'admin-invoices') ? 'active' : '' ?>" href="/admin/invoices">
-              <i class="bi bi-receipt"></i> Platform Records
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'admin-system') ? 'active' : '' ?>" href="/admin/system">
-              <i class="bi bi-hdd-network-fill"></i> System & Storage
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'admin-settings') ? 'active' : '' ?>" href="/admin/settings">
-              <i class="bi bi-sliders"></i> Platform Settings
-            </a>
-          </li>
-        </ul>
-      </div>
+      <nav class="flex-1 space-y-1">
+        <a class="rf-nav-link <?= ($activeMenu === 'admin-dashboard') ? 'active' : '' ?>" href="/admin">
+          <i class="bi bi-speedometer2 text-base"></i><span>Command Center</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'admin-users') ? 'active' : '' ?>" href="/admin/users">
+          <i class="bi bi-people text-base"></i><span>Subscribers & Users</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'admin-firms') ? 'active' : '' ?>" href="/admin/firms">
+          <i class="bi bi-buildings text-base"></i><span>Business Firms</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'admin-invoices') ? 'active' : '' ?>" href="/admin/invoices">
+          <i class="bi bi-receipt text-base"></i><span>Platform Records</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'admin-system') ? 'active' : '' ?>" href="/admin/system">
+          <i class="bi bi-hdd-network text-base"></i><span>System & Storage</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'admin-settings') ? 'active' : '' ?>" href="/admin/settings">
+          <i class="bi bi-sliders text-base"></i><span>Platform Settings</span>
+        </a>
+      </nav>
     <?php else: ?>
-      <!-- Active Firm Switcher Card for Regular Users -->
+      <!-- Active Firm Switcher -->
       <?php if (!empty($userFirms)): ?>
-        <div class="dropdown mb-3">
-          <div class="sidebar-firm-card dropdown-toggle d-flex align-items-center justify-content-between" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="d-flex align-items-center text-truncate me-2">
-              <i class="bi bi-buildings fs-5 text-warning me-2"></i>
-              <div class="text-truncate">
-                <div class="fw-bold text-white small text-truncate"><?= htmlspecialchars($activeFirm['name'] ?? 'Select Firm', ENT_QUOTES, 'UTF-8') ?></div>
-                <div class="firm-sub-text text-truncate" style="font-size: 0.73rem; color: #94a3b8;"><?= htmlspecialchars(!empty($activeFirm['gstin']) ? $activeFirm['gstin'] : (!empty($activeFirm['state']) ? $activeFirm['state'] : 'Switch Business'), ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="rf-dropdown w-full mb-3.5" data-ui-dropdown>
+          <button type="button" class="w-full bg-white border border-[#E2DFD7] hover:border-[#C8C4BA] rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer" data-ui-dropdown-toggle aria-expanded="false">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-7 h-7 rounded-lg bg-[#F3F1EC] text-[#5C5A54] flex items-center justify-center shrink-0">
+                <i class="bi bi-buildings text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-[#1C1B18] truncate"><?= htmlspecialchars($activeFirm['name'] ?? 'Select Firm', ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="text-[11px] text-[#78746C] truncate font-mono"><?= htmlspecialchars(!empty($activeFirm['gstin']) ? $activeFirm['gstin'] : (!empty($activeFirm['state']) ? $activeFirm['state'] : 'Switch Business'), ENT_QUOTES, 'UTF-8') ?></div>
               </div>
             </div>
-            <i class="bi bi-chevron-expand small" style="color: #94a3b8;"></i>
-          </div>
+            <i class="bi bi-chevron-expand text-xs text-[#87847C] shrink-0"></i>
+          </button>
 
-          <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary w-100">
-            <li class="dropdown-header text-uppercase text-secondary small fw-bold">Switch Business Firm</li>
+          <div class="rf-dropdown-menu w-full left-0 right-0" data-ui-dropdown-menu>
+            <div class="px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#87847C]">Switch Business Firm</div>
             <?php foreach ($userFirms as $firmOption): ?>
-              <li>
-                <form action="/firms/switch/<?= $firmOption['id'] ?>" method="POST" class="m-0">
-                  <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                  <button type="submit" class="dropdown-item py-2 d-flex align-items-center justify-content-between <?= (!empty($activeFirm) && $activeFirm['id'] == $firmOption['id']) ? 'active bg-primary' : '' ?>">
-                    <span class="text-truncate me-2"><?= htmlspecialchars($firmOption['name'], ENT_QUOTES, 'UTF-8') ?></span>
-                    <?php if (!empty($firmOption['is_default'])): ?>
-                      <span class="badge bg-secondary ms-1 small">Default</span>
-                    <?php endif; ?>
-                  </button>
-                </form>
-              </li>
+              <form action="/firms/switch/<?= $firmOption['id'] ?>" method="POST" class="m-0">
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                <button type="submit" class="rf-dropdown-item justify-between <?= (!empty($activeFirm) && $activeFirm['id'] == $firmOption['id']) ? 'bg-[#F3F1EC] font-semibold text-[#1C1B18]' : '' ?>">
+                  <span class="truncate"><?= htmlspecialchars($firmOption['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                  <?php if (!empty($firmOption['is_default'])): ?>
+                    <span class="rf-badge rf-badge-neutral text-[10px]">Default</span>
+                  <?php endif; ?>
+                </button>
+              </form>
             <?php endforeach; ?>
-            <li><hr class="dropdown-divider border-secondary"></li>
-            <li>
-              <a class="dropdown-item text-primary-light d-flex align-items-center py-2" href="/firms/create">
-                <i class="bi bi-plus-circle me-2"></i> Register New Firm
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item d-flex align-items-center py-2" href="/firms">
-                <i class="bi bi-gear me-2"></i> Manage All Firms
-              </a>
-            </li>
-          </ul>
+            <div class="rf-dropdown-divider"></div>
+            <a class="rf-dropdown-item text-[#2E5A36]" href="/firms/create">
+              <i class="bi bi-plus-circle"></i> Register New Firm
+            </a>
+            <a class="rf-dropdown-item" href="/firms">
+              <i class="bi bi-gear"></i> Manage All Firms
+            </a>
+          </div>
         </div>
       <?php endif; ?>
 
-      <!-- Quick CTA Button -->
-      <a href="/sales/create" class="btn btn-success btn-sm w-100 mb-3 shadow-sm d-flex align-items-center justify-content-center py-2 fw-semibold">
-        <i class="bi bi-plus-circle-fill me-1"></i> New Sales Record
+      <!-- Primary CTA -->
+      <a href="/sales/create" class="rf-btn rf-btn-primary w-full mb-4 py-2.5 text-xs">
+        <i class="bi bi-plus-lg"></i> New Sales Record
       </a>
 
-      <!-- Navigation Menu Items for Users -->
-      <div class="sidebar-nav flex-grow-1">
-        <ul class="nav flex-column mb-auto">
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'dashboard') ? 'active' : '' ?>" href="/dashboard">
-              <i class="bi bi-grid"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'sales') ? 'active' : '' ?>" href="/sales">
-              <i class="bi bi-cart-check"></i> Sales Records
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'purchases') ? 'active' : '' ?>" href="/purchases">
-              <i class="bi bi-bag-plus"></i> Purchase Records
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'items') ? 'active' : '' ?>" href="/items">
-              <i class="bi bi-box-seam"></i> Items & Inventory
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
-              <i class="bi bi-file-earmark-spreadsheet"></i> Rate List &amp; Estimate
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
-              <i class="bi bi-people"></i> Parties & Customers
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
-              <i class="bi bi-cash-stack"></i> Payments
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
-              <i class="bi bi-bar-chart-line"></i> Reports & GST
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
-              <i class="bi bi-cloud-arrow-up"></i> Backup & Cloud
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
-              <i class="bi bi-gear"></i> Settings
-            </a>
-          </li>
-        </ul>
-      </div>
+      <!-- Sidebar Navigation -->
+      <nav class="flex-1 space-y-1">
+        <a class="rf-nav-link <?= ($activeMenu === 'dashboard') ? 'active' : '' ?>" href="/dashboard">
+          <i class="bi bi-grid text-base"></i><span>Dashboard</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'sales') ? 'active' : '' ?>" href="/sales">
+          <i class="bi bi-receipt text-base"></i><span>Sales Records</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'purchases') ? 'active' : '' ?>" href="/purchases">
+          <i class="bi bi-bag text-base"></i><span>Purchase Records</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'items') ? 'active' : '' ?>" href="/items">
+          <i class="bi bi-box-seam text-base"></i><span>Items & Inventory</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
+          <i class="bi bi-file-earmark-spreadsheet text-base"></i><span>Rate List &amp; Estimate</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
+          <i class="bi bi-people text-base"></i><span>Parties & Customers</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
+          <i class="bi bi-cash-stack text-base"></i><span>Payments</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
+          <i class="bi bi-bar-chart text-base"></i><span>Reports & GST</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
+          <i class="bi bi-cloud-arrow-up text-base"></i><span>Backup & Cloud</span>
+        </a>
+        <a class="rf-nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
+          <i class="bi bi-gear text-base"></i><span>Settings</span>
+        </a>
+      </nav>
     <?php endif; ?>
 
-    <!-- User Profile & Footer Section inside Sidebar -->
-    <div class="mt-auto pt-3 border-top border-secondary border-opacity-25">
-      <div class="dropdown">
-        <div class="d-flex align-items-center justify-content-between p-2 rounded sidebar-nav" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-          <div class="d-flex align-items-center text-truncate me-2">
+    <!-- Account Footer Menu -->
+    <div class="mt-auto pt-4 border-t border-[#E2DFD7]">
+      <div class="rf-dropdown w-full" data-ui-dropdown>
+        <button type="button" class="w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl hover:bg-[#E7E4DC]/70 transition-colors text-left cursor-pointer bg-transparent border-0" data-ui-dropdown-toggle aria-expanded="false">
+          <div class="flex items-center gap-2.5 min-w-0">
             <?php if (!empty($user['avatar'])): ?>
-              <img src="<?= htmlspecialchars($user['avatar'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" class="rounded-circle me-2" width="28" height="28">
+              <img src="<?= htmlspecialchars($user['avatar'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" class="w-7 h-7 rounded-full object-cover border border-[#D4D1C9]">
             <?php else: ?>
-              <i class="bi bi-person-circle fs-5 text-secondary me-2"></i>
+              <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#5C5A54] flex items-center justify-center shrink-0">
+                <i class="bi bi-person text-sm"></i>
+              </div>
             <?php endif; ?>
-            <div class="text-truncate">
-              <div class="fw-semibold text-white small text-truncate d-flex align-items-center gap-1">
-                <span><?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-[#1C1B18] truncate flex items-center gap-1.5">
+                <span class="truncate"><?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                 <?php if (!empty($isAdmin)): ?>
-                  <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">ADMIN</span>
+                  <span class="rf-badge rf-badge-amber text-[9px] px-1.5 py-0">ADMIN</span>
                 <?php endif; ?>
               </div>
-              <div class="text-muted" style="font-size: 0.7rem;"><?= htmlspecialchars($user['email'] ?? ($user['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+              <div class="text-[11px] text-[#78746C] truncate"><?= htmlspecialchars($user['email'] ?? ($user['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
           </div>
-          <i class="bi bi-three-dots-vertical text-muted"></i>
-        </div>
-        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow border-secondary w-100">
+          <i class="bi bi-three-dots-vertical text-xs text-[#87847C] shrink-0"></i>
+        </button>
+
+        <div class="rf-dropdown-menu w-full left-0 right-0" data-ui-dropdown-menu>
           <?php if (!empty($isAdmin)): ?>
-            <li><a class="dropdown-item py-2 text-warning fw-bold" href="/admin"><i class="bi bi-shield-lock-fill me-2"></i> Admin Command Center</a></li>
+            <a class="rf-dropdown-item font-semibold text-[#8A5A00]" href="/admin"><i class="bi bi-shield-lock"></i> Admin Command Center</a>
           <?php else: ?>
-            <li><a class="dropdown-item py-2" href="/settings"><i class="bi bi-gear me-2"></i> Settings</a></li>
-            <li><a class="dropdown-item py-2" href="/firms"><i class="bi bi-buildings me-2"></i> Business Firms</a></li>
-            <li><a class="dropdown-item py-2" href="/backup"><i class="bi bi-cloud-arrow-up me-2"></i> Data Backup</a></li>
+            <a class="rf-dropdown-item" href="/settings"><i class="bi bi-gear"></i> Settings</a>
+            <a class="rf-dropdown-item" href="/firms"><i class="bi bi-buildings"></i> Business Firms</a>
+            <a class="rf-dropdown-item" href="/backup"><i class="bi bi-cloud-arrow-up"></i> Data Backup</a>
           <?php endif; ?>
-          <li>
-            <form action="/auth/logout" method="POST" class="m-0 p-0">
-              <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-              <button type="submit" class="dropdown-item py-2 text-danger border-0 bg-transparent w-100 text-start d-flex align-items-center">
-                <i class="bi bi-box-arrow-right me-2"></i> Sign Out
-              </button>
-            </form>
-          </li>
-        </ul>
+          <div class="rf-dropdown-divider"></div>
+          <form action="/auth/logout" method="POST" class="m-0">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <button type="submit" class="rf-dropdown-item text-[#8F2D2B]">
+              <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content Layout Area -->
-  <div class="app-main-wrapper">
-    <!-- Top Mobile Navbar Header -->
-    <header class="d-lg-none bg-dark text-white p-2 px-3 d-flex align-items-center justify-content-between sticky-top shadow-sm">
-      <button class="btn btn-outline-light btn-sm btn-sidebar-toggle me-2" type="button" aria-label="Toggle navigation">
-        <i class="bi bi-list fs-5"></i>
+  <!-- Main Workspace Area -->
+  <div class="flex-1 min-w-0 flex flex-col bg-[#F7F6F3]">
+    <!-- Mobile Top Header -->
+    <header class="lg:hidden sticky top-0 z-30 bg-[#FAF9F6]/95 backdrop-blur-sm border-b border-[#E6E4DF] px-4 py-3 flex items-center justify-between gap-3">
+      <button class="btn-sidebar-toggle rf-btn rf-btn-secondary rf-btn-sm px-2.5 py-2" type="button" aria-label="Toggle navigation">
+        <i class="bi bi-list text-base"></i>
       </button>
-      <div class="fw-bold d-flex align-items-center">
-        <img src="/uploads/logo-1787158589640-807857696.png" alt="Logo" class="rounded-1 me-2 shadow-sm" width="26" height="26" style="object-fit: contain; background: #ffffff; padding: 1px;">
-        <span><?= !empty($isAdmin) ? 'RACE FINANCE Admin' : (!empty($activeFirm) ? htmlspecialchars($activeFirm['name'], ENT_QUOTES, 'UTF-8') : 'RACE FINANCE') ?></span>
+      <div class="flex items-center gap-2 font-semibold text-sm text-[#1C1B18] truncate">
+        <img src="/uploads/logo-1787158589640-807857696.png" alt="Logo" class="w-6 h-6 rounded object-contain bg-white p-0.5 border border-[#E2DFD7]">
+        <span class="truncate"><?= !empty($isAdmin) ? 'RACE FINANCE Admin' : (!empty($activeFirm) ? htmlspecialchars($activeFirm['name'], ENT_QUOTES, 'UTF-8') : 'RACE FINANCE') ?></span>
       </div>
       <?php if (empty($isAdmin)): ?>
-        <a href="/sales/create" class="btn btn-success btn-sm">
+        <a href="/sales/create" class="rf-btn rf-btn-primary rf-btn-sm">
           <i class="bi bi-plus-lg"></i> Record
         </a>
       <?php else: ?>
-        <div></div>
+        <div class="w-8"></div>
       <?php endif; ?>
     </header>
 
-    <main class="py-4 flex-grow-1">
-      <div class="container-fluid px-lg-4">
+    <main class="flex-1 py-7 px-4 sm:px-7 lg:px-10">
+      <div class="max-w-7xl mx-auto">
         <?php if (!empty($platformSettings['enable_announcement']) && $platformSettings['enable_announcement'] === '1' && !empty($platformSettings['platform_announcement'])): ?>
-          <div class="alert alert-<?= htmlspecialchars($platformSettings['platform_announcement_type'] ?? 'info', ENT_QUOTES, 'UTF-8') ?> alert-dismissible fade show shadow-sm mb-4 border-0 d-flex align-items-center" role="alert">
-            <i class="bi bi-megaphone-fill me-2 fs-5"></i>
-            <div><?= htmlspecialchars($platformSettings['platform_announcement'], ENT_QUOTES, 'UTF-8') ?></div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          <?php
+            $annType = $platformSettings['platform_announcement_type'] ?? 'info';
+            $annClass = match ($annType) {
+              'success' => 'rf-alert-success',
+              'danger' => 'rf-alert-danger',
+              'warning' => 'rf-alert-warning',
+              default => 'rf-alert-info',
+            };
+          ?>
+          <div class="rf-alert <?= $annClass ?>" role="alert" data-ui-alert>
+            <i class="bi bi-megaphone text-base mt-0.5 shrink-0"></i>
+            <div class="flex-1"><?= htmlspecialchars($platformSettings['platform_announcement'], ENT_QUOTES, 'UTF-8') ?></div>
+            <button type="button" class="bg-transparent border-0 text-current opacity-60 hover:opacity-100 cursor-pointer p-0.5" data-ui-dismiss="alert" aria-label="Close">
+              <i class="bi bi-x-lg text-xs"></i>
+            </button>
           </div>
         <?php endif; ?>
         <?php require __DIR__ . '/alerts.php'; ?>
 <?php else: ?>
-<!-- Public / Guest Simple Transparent Navigation Header -->
-<nav class="navbar navbar-expand-lg bg-transparent border-0 py-3">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center text-dark text-decoration-none fw-bold" href="/">
-      <img src="/uploads/logo-1787158589640-807857696.png" alt="RACE FINANCE Logo" class="rounded-2 me-2" width="28" height="28" style="object-fit: contain;">
+<!-- Guest Navigation Header -->
+<header class="sticky top-0 z-30 bg-[#F7F6F3]/90 backdrop-blur-md border-b border-[#E6E4DF]">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <a class="flex items-center gap-2.5 text-[#1C1B18] no-underline font-semibold tracking-tight text-base" href="/">
+      <img src="/uploads/logo-1787158589640-807857696.png" alt="RACE FINANCE Logo" class="w-7 h-7 rounded-lg object-contain bg-white p-0.5 border border-[#E2DFD7]">
       <span>RACE FINANCE</span>
     </a>
-    <button class="navbar-toggler border-0 shadow-none p-1" type="button" data-bs-toggle="collapse" data-bs-target="#guestNavbarNav" aria-controls="guestNavbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <i class="bi bi-list fs-3"></i>
+
+    <button class="lg:hidden rf-btn rf-btn-secondary rf-btn-sm px-2.5 py-1.5" type="button" data-ui-collapse="#guestNavbarNav" aria-controls="guestNavbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="bi bi-list text-lg"></i>
     </button>
-    <div class="collapse navbar-collapse justify-content-end" id="guestNavbarNav">
-      <div class="navbar-nav align-items-lg-center gap-3 gap-lg-4 mt-2 mt-lg-0 small">
-        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'home') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/">Home</a>
-        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'about') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/about">About</a>
-        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'pricing') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/pricing">Pricing</a>
-        <a class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold <?= (!empty($activeTab) && $activeTab === 'free-trial') ? 'active' : '' ?>" href="/free-trial">
-          <i class="bi bi-gift-fill me-1"></i> 1-Month Free Trial
-        </a>
-        <a class="text-decoration-none <?= (!empty($activeTab) && $activeTab === 'contact') ? 'text-dark fw-bold' : 'text-secondary' ?>" href="/contact">Contact</a>
-        <a class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 fw-semibold" href="/auth/login">Sign In</a>
-      </div>
+
+    <div class="hidden lg:flex w-full lg:w-auto flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#E6E4DF] text-sm" id="guestNavbarNav" data-ui-collapse-panel>
+      <a class="no-underline transition-colors <?= (!empty($activeTab) && $activeTab === 'home') ? 'text-[#1C1B18] font-semibold' : 'text-[#5C5A54] hover:text-[#1C1B18]' ?>" href="/">Home</a>
+      <a class="no-underline transition-colors <?= (!empty($activeTab) && $activeTab === 'about') ? 'text-[#1C1B18] font-semibold' : 'text-[#5C5A54] hover:text-[#1C1B18]' ?>" href="/about">About</a>
+      <a class="no-underline transition-colors <?= (!empty($activeTab) && $activeTab === 'pricing') ? 'text-[#1C1B18] font-semibold' : 'text-[#5C5A54] hover:text-[#1C1B18]' ?>" href="/pricing">Pricing</a>
+      <a class="rf-btn rf-btn-sage rf-btn-sm rounded-full px-3.5" href="/free-trial">
+        <i class="bi bi-gift"></i> 1-Month Free Trial
+      </a>
+      <a class="no-underline transition-colors <?= (!empty($activeTab) && $activeTab === 'contact') ? 'text-[#1C1B18] font-semibold' : 'text-[#5C5A54] hover:text-[#1C1B18]' ?>" href="/contact">Contact</a>
+      <a class="rf-btn rf-btn-secondary rf-btn-sm px-4" href="/auth/login">Sign In</a>
     </div>
   </div>
-</nav>
+</header>
 
-<!-- Non-Logged In Container (Login, Legal, About, Error Pages) -->
-<main class="py-3">
-  <div class="container">
+<main class="flex-1 py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
     <?php require __DIR__ . '/alerts.php'; ?>
 <?php endif; ?>

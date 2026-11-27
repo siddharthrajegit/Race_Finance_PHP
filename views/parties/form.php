@@ -1,108 +1,101 @@
 <?php
 $defType = $defaultType ?? 'customer';
 ?>
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h4 class="fw-bold mb-0 text-dark">
-          <i class="bi bi-person-lines-fill me-2 text-primary"></i>
-          <?= !empty($party) ? 'Edit Party Details' : 'Add New Customer / Supplier' ?>
-        </h4>
-        <a href="/parties" class="btn btn-outline-secondary btn-sm">Cancel</a>
-      </div>
+<div class="max-w-3xl mx-auto">
+  <div class="rf-card">
+    <div class="rf-card-header">
+      <h1 class="text-lg font-semibold text-[#1C1B18] flex items-center gap-2">
+        <i class="bi bi-person-lines-fill text-[#5C5A54]"></i>
+        <?= !empty($party) ? 'Edit Party Details' : 'Add New Customer / Supplier' ?>
+      </h1>
+      <a href="/parties" class="rf-btn rf-btn-secondary rf-btn-sm">Cancel</a>
+    </div>
 
-      <div class="card-body p-4">
-        <form action="<?= !empty($party) ? '/parties/edit/' . $party['id'] : '/parties/create' ?>" method="POST">
-          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-          <!-- Type & Name -->
-          <div class="row g-3 mb-3">
-            <div class="col-md-4">
-              <label for="type" class="form-label">Party Type <span class="text-danger">*</span></label>
-              <select class="form-select" id="type" name="type" required>
-                <option value="customer" <?= (!empty($party) ? ($party['type'] === 'customer') : ($defType === 'customer')) ? 'selected' : '' ?>>Customer (Buyer)</option>
-                <option value="supplier" <?= (!empty($party) ? ($party['type'] === 'supplier') : ($defType === 'supplier')) ? 'selected' : '' ?>>Supplier (Vendor)</option>
-                <option value="both" <?= (!empty($party) && $party['type'] === 'both') ? 'selected' : '' ?>>Both (Customer & Supplier)</option>
-              </select>
-            </div>
-            <div class="col-md-8">
-              <label for="name" class="form-label">Party / Customer Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Acme Corporation or Rajesh Gupta" value="<?= htmlspecialchars($party['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required autofocus>
-            </div>
-          </div>
+    <div class="rf-card-body">
+      <form action="<?= !empty($party) ? '/parties/edit/' . $party['id'] : '/parties/create' ?>" method="POST" class="space-y-6">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
-          <!-- Contact & Tax Info -->
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <label for="phone" class="form-label">Mobile / Phone (10 Digits)</label>
-              <input type="tel" class="form-control font-monospace" id="phone" name="phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= htmlspecialchars($party['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-              <div class="form-text small" style="font-size: 0.75rem;">Exact 10 numeric digits</div>
-            </div>
-            <div class="col-md-6">
-              <label for="email" class="form-label">Email Address</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="e.g. party@example.com" value="<?= htmlspecialchars($party['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            </div>
-            <div class="col-md-6">
-              <label for="gstin" class="form-label">GSTIN (15 Characters)</label>
-              <input type="text" class="form-control font-monospace text-uppercase" id="gstin" name="gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= htmlspecialchars($party['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
-              <div class="form-text small" style="font-size: 0.75rem;">Exact 15 letters & numbers</div>
-            </div>
-            <div class="col-md-6">
-              <label for="pan" class="form-label">PAN Number (Optional)</label>
-              <input type="text" class="form-control font-monospace text-uppercase" id="pan" name="pan" placeholder="e.g. ABCDE1234F" maxlength="10" value="<?= htmlspecialchars($party['pan'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-4">
+            <label for="type" class="rf-label-plain">Party Type <span class="text-[#8F2D2B]">*</span></label>
+            <select class="rf-select" id="type" name="type" required>
+              <option value="customer" <?= (!empty($party) ? ($party['type'] === 'customer') : ($defType === 'customer')) ? 'selected' : '' ?>>Customer (Buyer)</option>
+              <option value="supplier" <?= (!empty($party) ? ($party['type'] === 'supplier') : ($defType === 'supplier')) ? 'selected' : '' ?>>Supplier (Vendor)</option>
+              <option value="both" <?= (!empty($party) && $party['type'] === 'both') ? 'selected' : '' ?>>Both (Customer &amp; Supplier)</option>
+            </select>
           </div>
+          <div class="md:col-span-8">
+            <label for="name" class="rf-label-plain">Party / Customer Name <span class="text-[#8F2D2B]">*</span></label>
+            <input type="text" class="rf-input" id="name" name="name" placeholder="e.g. Rajesh Gupta Traders" value="<?= htmlspecialchars($party['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required autofocus>
+          </div>
+        </div>
 
-          <!-- Address & State -->
-          <div class="row g-3 mb-3">
-            <div class="col-12">
-              <label for="billing_address" class="form-label">Billing Address</label>
-              <textarea class="form-control" id="billing_address" name="billing_address" rows="2" placeholder="Street address, building, locality..."><?= htmlspecialchars($party['billing_address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-            </div>
-            <div class="col-md-4">
-              <label for="city" class="form-label">City</label>
-              <input type="text" class="form-control" id="city" name="city" placeholder="e.g. Pune" value="<?= htmlspecialchars($party['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            </div>
-            <div class="col-md-4">
-              <label for="partyStateSelect" class="form-label">State / UT</label>
-              <select class="form-select" id="partyStateSelect" name="state">
-                <option value="">-- Select State --</option>
-                <?php if (!empty($gstStates)): ?>
-                  <?php foreach ($gstStates as $st): ?>
-                    <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= (!empty($party) && (($party['state'] ?? '') === $st['name'] || ($party['state_code'] ?? '') === $st['code'])) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label for="partyStateCodeInput" class="form-label">State Code</label>
-              <input type="text" class="form-control font-monospace bg-light fw-bold text-center text-primary" id="partyStateCodeInput" name="state_code" placeholder="00" value="<?= htmlspecialchars($party['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly title="Auto-filled from state">
-            </div>
-            <div class="col-md-2">
-              <label for="pincode" class="form-label">Pincode</label>
-              <input type="text" class="form-control" id="pincode" name="pincode" placeholder="e.g. 411001" maxlength="6" value="<?= htmlspecialchars($party['pincode'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="phone" class="rf-label-plain">Mobile / Phone (10 Digits)</label>
+            <input type="tel" class="rf-input font-mono" id="phone" name="phone" placeholder="10-digit mobile number" maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric" value="<?= htmlspecialchars($party['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <p class="rf-help">Exact 10 numeric digits</p>
           </div>
+          <div>
+            <label for="email" class="rf-label-plain">Email Address</label>
+            <input type="email" class="rf-input" id="email" name="email" placeholder="e.g. party@example.com" value="<?= htmlspecialchars($party['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+          <div>
+            <label for="gstin" class="rf-label-plain">GSTIN (15 Characters)</label>
+            <input type="text" class="rf-input font-mono uppercase" id="gstin" name="gstin" placeholder="15-character GSTIN" maxlength="15" minlength="15" pattern="[0-9A-Z]{15}" value="<?= htmlspecialchars($party['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+            <p class="rf-help">Exact 15 letters &amp; numbers</p>
+          </div>
+          <div>
+            <label for="pan" class="rf-label-plain">PAN Number (Optional)</label>
+            <input type="text" class="rf-input font-mono uppercase" id="pan" name="pan" placeholder="e.g. ABCDE1234F" maxlength="10" value="<?= htmlspecialchars($party['pan'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '')">
+          </div>
+        </div>
 
-          <!-- Opening Balance -->
-          <div class="row g-3 mb-4">
-            <div class="col-md-6">
-              <label for="opening_balance" class="form-label">Opening Balance (₹)</label>
-              <input type="number" class="form-control" id="opening_balance" name="opening_balance" step="any" placeholder="0.00" value="<?= htmlspecialchars((string)($party['opening_balance'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
-              <div class="form-text">Positive for amount to receive (Debit), negative for amount to pay (Credit).</div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-12">
+            <label for="billing_address" class="rf-label-plain">Billing Address</label>
+            <textarea class="rf-textarea" id="billing_address" name="billing_address" rows="2" placeholder="Street address, building, locality..."><?= htmlspecialchars($party['billing_address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
           </div>
+          <div class="md:col-span-4">
+            <label for="city" class="rf-label-plain">City</label>
+            <input type="text" class="rf-input" id="city" name="city" placeholder="e.g. Pune" value="<?= htmlspecialchars($party['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+          <div class="md:col-span-4">
+            <label for="partyStateSelect" class="rf-label-plain">State / UT</label>
+            <select class="rf-select" id="partyStateSelect" name="state">
+              <option value="">-- Select State --</option>
+              <?php if (!empty($gstStates)): ?>
+                <?php foreach ($gstStates as $st): ?>
+                  <option value="<?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>" data-code="<?= htmlspecialchars($st['code'], ENT_QUOTES, 'UTF-8') ?>" <?= (!empty($party) && (($party['state'] ?? '') === $st['name'] || ($party['state_code'] ?? '') === $st['code'])) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($st['name'], ENT_QUOTES, 'UTF-8') ?>
+                  </option>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label for="partyStateCodeInput" class="rf-label-plain">State Code</label>
+            <input type="text" class="rf-input font-mono bg-[#F3F1EC] font-semibold text-center" id="partyStateCodeInput" name="state_code" placeholder="00" value="<?= htmlspecialchars($party['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly title="Auto-filled from state">
+          </div>
+          <div class="md:col-span-2">
+            <label for="pincode" class="rf-label-plain">Pincode</label>
+            <input type="text" class="rf-input font-mono" id="pincode" name="pincode" placeholder="411001" maxlength="6" value="<?= htmlspecialchars($party['pincode'] ?? '', ENT_QUOTES, 'UTF-8') ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          </div>
+        </div>
 
-          <div class="d-flex justify-content-end gap-2">
-            <a href="/parties" class="btn btn-light px-4">Cancel</a>
-            <button type="submit" class="btn btn-primary px-4 shadow-sm">
-              <i class="bi bi-check2-circle me-1"></i> <?= !empty($party) ? 'Update Party' : 'Save Party' ?>
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="max-w-xs">
+          <label for="opening_balance" class="rf-label-plain">Opening Balance (₹)</label>
+          <input type="number" class="rf-input tabular-nums" id="opening_balance" name="opening_balance" step="any" placeholder="0.00" value="<?= htmlspecialchars((string)($party['opening_balance'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+          <p class="rf-help">Positive to receive (Debit), negative to pay (Credit).</p>
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-[#ECEAE4]">
+          <a href="/parties" class="rf-btn rf-btn-secondary">Cancel</a>
+          <button type="submit" class="rf-btn rf-btn-primary">
+            <i class="bi bi-check2-circle"></i> <?= !empty($party) ? 'Update Party' : 'Save Party' ?>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

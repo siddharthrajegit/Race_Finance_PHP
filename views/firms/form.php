@@ -1,77 +1,80 @@
-<div class="row justify-content-center">
-  <div class="col-lg-10">
-    <div class="card shadow-sm border-0">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h4 class="fw-bold mb-0 text-dark">
-          <i class="bi bi-building-gear me-2 text-primary"></i>
-          <?= !empty($firm) ? 'Edit Business Firm' : 'Register New Business Firm' ?>
-        </h4>
-        <a href="/firms" class="btn btn-outline-secondary btn-sm">Cancel</a>
-      </div>
+<div class="max-w-4xl mx-auto">
+  <div class="rf-card">
+    <div class="rf-card-header">
+      <h1 class="text-lg font-semibold text-[#1C1B18] flex items-center gap-2">
+        <i class="bi bi-building-gear text-[#5C5A54]"></i>
+        <?= !empty($firm) ? 'Edit Business Firm' : 'Register New Business Firm' ?>
+      </h1>
+      <a href="/firms" class="rf-btn rf-btn-secondary rf-btn-sm">Cancel</a>
+    </div>
 
-      <div class="card-body p-4">
-        <form action="<?= !empty($firm) ? '/firms/edit/' . $firm['id'] : '/firms/create' ?>?_csrf=<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>" method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-          <!-- Section 1: Basic Information -->
-          <h5 class="fw-semibold text-primary border-bottom pb-2 mb-3">1. Business Profile</h5>
-          <div class="row g-3 mb-4">
-            <div class="col-md-6">
-              <label for="name" class="form-label">Business / Firm Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Sharma Enterprises" value="<?= htmlspecialchars($firm['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+    <div class="rf-card-body">
+      <form action="<?= !empty($firm) ? '/firms/edit/' . $firm['id'] : '/firms/create' ?>?_csrf=<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>" method="POST" enctype="multipart/form-data" class="space-y-8">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
+        <!-- Section 1: Business Profile -->
+        <section class="space-y-4">
+          <h2 class="text-sm font-semibold text-[#1C1B18] pb-2 border-b border-[#ECEAE4]">1. Business Profile</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="name" class="rf-label-plain">Business / Firm Name <span class="text-[#8F2D2B]">*</span></label>
+              <input type="text" class="rf-input" id="name" name="name" placeholder="e.g. Sharma Enterprises" value="<?= htmlspecialchars($firm['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
             </div>
-            <div class="col-md-6">
-              <label for="phone" class="form-label">Business Phone / Mobile</label>
-              <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g. 9876543210" value="<?= htmlspecialchars($firm['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div>
+              <label for="phone" class="rf-label-plain">Business Phone / Mobile</label>
+              <input type="tel" class="rf-input" id="phone" name="phone" placeholder="e.g. 9876543210" value="<?= htmlspecialchars($firm['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-6">
-              <label for="email" class="form-label">Business Email</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="e.g. info@sharmaenterprises.com" value="<?= htmlspecialchars($firm['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div>
+              <label for="email" class="rf-label-plain">Business Email</label>
+              <input type="email" class="rf-input" id="email" name="email" placeholder="e.g. info@sharmaenterprises.com" value="<?= htmlspecialchars($firm['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-6">
-              <label for="gstin" class="form-label">GSTIN (Optional)</label>
-              <input type="text" class="form-control font-monospace text-uppercase" id="gstin" name="gstin" placeholder="e.g. 27AAAAA0000A1Z5" maxlength="15" value="<?= htmlspecialchars($firm['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-              <div class="form-text">Leave blank if non-GST / unregistered.</div>
+            <div>
+              <label for="gstin" class="rf-label-plain">GSTIN (Optional)</label>
+              <input type="text" class="rf-input font-mono uppercase" id="gstin" name="gstin" placeholder="e.g. 27AAAAA0000A1Z5" maxlength="15" value="<?= htmlspecialchars($firm['gstin'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+              <p class="rf-help">Leave blank if non-GST / unregistered.</p>
             </div>
-            <div class="col-md-6">
-              <label for="pan" class="form-label">PAN Number (Optional)</label>
-              <input type="text" class="form-control font-monospace text-uppercase" id="pan" name="pan" placeholder="e.g. ABCDE1234F" maxlength="10" value="<?= htmlspecialchars($firm['pan'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div>
+              <label for="pan" class="rf-label-plain">PAN Number (Optional)</label>
+              <input type="text" class="rf-input font-mono uppercase" id="pan" name="pan" placeholder="e.g. ABCDE1234F" maxlength="10" value="<?= htmlspecialchars($firm['pan'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Business Logo <small class="text-muted">(JPG/PNG/WebP, Max 2MB)</small></label>
-              <input type="file" class="form-control" name="logo" accept=".jpg,.jpeg,.png,.webp">
+            <div>
+              <label class="rf-label-plain">Business Logo <span class="text-xs text-[#78746C] font-normal">(JPG/PNG/WebP, Max 2MB)</span></label>
+              <input type="file" class="rf-input py-2 text-xs" name="logo" accept=".jpg,.jpeg,.png,.webp">
               <?php if (!empty($firm['logo_path'])): ?>
-                <div class="mt-2 d-flex align-items-center">
-                  <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current Logo" class="rounded border me-2" height="36">
-                  <span class="text-muted small">Current logo uploaded</span>
+                <div class="mt-2 flex items-center gap-2.5">
+                  <img src="<?= htmlspecialchars($firm['logo_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current Logo" class="h-9 rounded border border-[#E6E4DF] p-0.5 bg-white">
+                  <span class="text-xs text-[#78746C]">Current logo uploaded</span>
                 </div>
               <?php endif; ?>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Authorized Signature / Stamp <small class="text-muted">(JPG/PNG, Max 2MB)</small></label>
-              <input type="file" class="form-control" name="signature" accept=".jpg,.jpeg,.png,.webp">
+            <div>
+              <label class="rf-label-plain">Authorized Signature / Stamp <span class="text-xs text-[#78746C] font-normal">(JPG/PNG, Max 2MB)</span></label>
+              <input type="file" class="rf-input py-2 text-xs" name="signature" accept=".jpg,.jpeg,.png,.webp">
               <?php if (!empty($firm['signature_path'])): ?>
-                <div class="mt-2 d-flex align-items-center">
-                  <img src="<?= htmlspecialchars($firm['signature_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current Signature" class="rounded border me-2" height="36">
-                  <span class="text-muted small">Current signature uploaded</span>
+                <div class="mt-2 flex items-center gap-2.5">
+                  <img src="<?= htmlspecialchars($firm['signature_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current Signature" class="h-9 rounded border border-[#E6E4DF] p-0.5 bg-white">
+                  <span class="text-xs text-[#78746C]">Current signature uploaded</span>
                 </div>
               <?php endif; ?>
             </div>
           </div>
+        </section>
 
-          <!-- Section 2: Address & State Details -->
-          <h5 class="fw-semibold text-primary border-bottom pb-2 mb-3">2. Address & Place of Supply</h5>
-          <div class="row g-3 mb-4">
-            <div class="col-12">
-              <label for="address" class="form-label">Street Address</label>
-              <textarea class="form-control" id="address" name="address" rows="2" placeholder="e.g. Shop No. 4, MG Road, Market Area"><?= htmlspecialchars($firm['address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+        <!-- Section 2: Address -->
+        <section class="space-y-4">
+          <h2 class="text-sm font-semibold text-[#1C1B18] pb-2 border-b border-[#ECEAE4]">2. Address &amp; Place of Supply</h2>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-12">
+              <label for="address" class="rf-label-plain">Street Address</label>
+              <textarea class="rf-textarea" id="address" name="address" rows="2" placeholder="e.g. Shop No. 4, MG Road, Market Area"><?= htmlspecialchars($firm['address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
             </div>
-            <div class="col-md-4">
-              <label for="city" class="form-label">City / Town</label>
-              <input type="text" class="form-control" id="city" name="city" placeholder="e.g. Mumbai" value="<?= htmlspecialchars($firm['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="md:col-span-4">
+              <label for="city" class="rf-label-plain">City / Town</label>
+              <input type="text" class="rf-input" id="city" name="city" placeholder="e.g. Mumbai" value="<?= htmlspecialchars($firm['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-4">
-              <label for="stateSelect" class="form-label">State</label>
-              <select class="form-select" id="stateSelect" name="state">
+            <div class="md:col-span-4">
+              <label for="stateSelect" class="rf-label-plain">State</label>
+              <select class="rf-select" id="stateSelect" name="state">
                 <option value="">-- Select State --</option>
                 <?php if (!empty($gstStates)): ?>
                   <?php foreach ($gstStates as $st): ?>
@@ -82,93 +85,89 @@
                 <?php endif; ?>
               </select>
             </div>
-            <div class="col-md-2">
-              <label for="stateCodeInput" class="form-label">State Code</label>
-              <input type="text" class="form-control font-monospace" id="stateCodeInput" name="state_code" placeholder="e.g. 27" value="<?= htmlspecialchars($firm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly>
+            <div class="md:col-span-2">
+              <label for="stateCodeInput" class="rf-label-plain">State Code</label>
+              <input type="text" class="rf-input font-mono" id="stateCodeInput" name="state_code" placeholder="27" value="<?= htmlspecialchars($firm['state_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" readonly>
             </div>
-            <div class="col-md-2">
-              <label for="pincode" class="form-label">Pincode</label>
-              <input type="text" class="form-control" id="pincode" name="pincode" placeholder="e.g. 400001" value="<?= htmlspecialchars($firm['pincode'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="md:col-span-2">
+              <label for="pincode" class="rf-label-plain">Pincode</label>
+              <input type="text" class="rf-input" id="pincode" name="pincode" placeholder="400001" value="<?= htmlspecialchars($firm['pincode'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
           </div>
+        </section>
 
-          <!-- Section 3: Bank Details & UPI (For Invoices) -->
-          <h5 class="fw-semibold text-primary border-bottom pb-2 mb-3">3. Bank Account & UPI Details (Printed on Invoices)</h5>
-          <div class="row g-3 mb-4">
-            <div class="col-md-4">
-              <label for="bank_name" class="form-label">Bank Name</label>
-              <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="e.g. State Bank of India" value="<?= htmlspecialchars($firm['bank_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <!-- Section 3: Bank & UPI -->
+        <section class="space-y-4">
+          <h2 class="text-sm font-semibold text-[#1C1B18] pb-2 border-b border-[#ECEAE4]">3. Bank Account &amp; UPI Details (Printed on Invoices)</h2>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-4">
+              <label for="bank_name" class="rf-label-plain">Bank Name</label>
+              <input type="text" class="rf-input" id="bank_name" name="bank_name" placeholder="e.g. State Bank of India" value="<?= htmlspecialchars($firm['bank_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-4">
-              <label for="bank_account_no" class="form-label">Bank Account Number</label>
-              <input type="text" class="form-control font-monospace" id="bank_account_no" name="bank_account_no" placeholder="e.g. 987654321098" value="<?= htmlspecialchars($firm['bank_account_no'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="md:col-span-4">
+              <label for="bank_account_no" class="rf-label-plain">Bank Account Number</label>
+              <input type="text" class="rf-input font-mono" id="bank_account_no" name="bank_account_no" placeholder="e.g. 987654321098" value="<?= htmlspecialchars($firm['bank_account_no'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-4">
-              <label for="bank_ifsc" class="form-label">IFSC Code</label>
-              <input type="text" class="form-control font-monospace text-uppercase" id="bank_ifsc" name="bank_ifsc" placeholder="e.g. SBIN0001234" value="<?= htmlspecialchars($firm['bank_ifsc'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="md:col-span-4">
+              <label for="bank_ifsc" class="rf-label-plain">IFSC Code</label>
+              <input type="text" class="rf-input font-mono uppercase" id="bank_ifsc" name="bank_ifsc" placeholder="e.g. SBIN0001234" value="<?= htmlspecialchars($firm['bank_ifsc'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-6">
-              <label for="bank_branch" class="form-label">Branch Name</label>
-              <input type="text" class="form-control" id="bank_branch" name="bank_branch" placeholder="e.g. Main Branch, Mumbai" value="<?= htmlspecialchars($firm['bank_branch'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="md:col-span-6">
+              <label for="bank_branch" class="rf-label-plain">Branch Name</label>
+              <input type="text" class="rf-input" id="bank_branch" name="bank_branch" placeholder="e.g. Main Branch, Mumbai" value="<?= htmlspecialchars($firm['bank_branch'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-md-6">
-              <label for="upi_id" class="form-label">UPI ID / VPA</label>
-              <input type="text" class="form-control font-monospace" id="upi_id" name="upi_id" placeholder="e.g. business@okaxis" value="<?= htmlspecialchars($firm['upi_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="md:col-span-6">
+              <label for="upi_id" class="rf-label-plain">UPI ID / VPA</label>
+              <input type="text" class="rf-input font-mono" id="upi_id" name="upi_id" placeholder="e.g. business@okaxis" value="<?= htmlspecialchars($firm['upi_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <div class="col-12">
-              <label class="form-label fw-medium text-dark">Payment QR Code (UPI / Bank QR Code) <small class="text-muted">(JPG/PNG/WebP, Max 2MB)</small></label>
-              <div class="row align-items-center g-2">
-                <div class="col-md-7">
-                  <input type="file" class="form-control" name="qr_code" accept=".jpg,.jpeg,.png,.webp">
-                  <div class="form-text">Upload your Google Pay, PhonePe, Paytm, or Bank UPI QR code to display on all invoice formats.</div>
+            <div class="md:col-span-12">
+              <label class="rf-label-plain">Payment QR Code (UPI / Bank QR) <span class="text-xs text-[#78746C] font-normal">(JPG/PNG/WebP, Max 2MB)</span></label>
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div class="<?= !empty($firm['qr_code_path']) ? 'md:col-span-7' : 'md:col-span-12' ?>">
+                  <input type="file" class="rf-input py-2 text-xs" name="qr_code" accept=".jpg,.jpeg,.png,.webp">
+                  <p class="rf-help">Upload your Google Pay, PhonePe, Paytm, or Bank UPI QR code to show on invoices.</p>
                 </div>
                 <?php if (!empty($firm['qr_code_path'])): ?>
-                  <div class="col-md-5">
-                    <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-between">
-                      <div class="d-flex align-items-center">
-                        <img src="<?= htmlspecialchars($firm['qr_code_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current QR Code" class="rounded border p-1 me-2 bg-white" height="42" style="max-width: 60px; object-fit: contain;">
-                        <span class="text-muted small">Current QR uploaded</span>
+                  <div class="md:col-span-5">
+                    <div class="p-3 border border-[#E6E4DF] rounded-xl bg-[#FAF9F6] flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2.5">
+                        <img src="<?= htmlspecialchars($firm['qr_code_path'], ENT_QUOTES, 'UTF-8') ?>" alt="Current QR Code" class="h-10 max-w-[60px] rounded border border-[#E6E4DF] p-0.5 bg-white object-contain">
+                        <span class="text-xs text-[#78746C]">Current QR</span>
                       </div>
-                      <div class="form-check form-check-inline m-0">
-                        <input class="form-check-input" type="checkbox" id="remove_qr_code" name="remove_qr_code" value="1">
-                        <label class="form-check-label text-danger small fw-medium" for="remove_qr_code">Remove</label>
-                      </div>
+                      <label class="inline-flex items-center gap-1.5 text-xs text-[#8F2D2B] font-medium cursor-pointer">
+                        <input class="rf-checkbox" type="checkbox" id="remove_qr_code" name="remove_qr_code" value="1">
+                        <span>Remove</span>
+                      </label>
                     </div>
                   </div>
                 <?php endif; ?>
               </div>
             </div>
           </div>
+        </section>
 
-          <!-- Section 4: Invoice Terms -->
-          <h5 class="fw-semibold text-primary border-bottom pb-2 mb-3">4. Default Invoice Terms & Conditions</h5>
-          <div class="row g-3 mb-4">
-            <div class="col-12">
-              <textarea class="form-control" id="terms" name="terms" rows="2" placeholder="e.g. 1. Goods once sold will not be taken back. 2. Interest @ 18% p.a. will be charged if payment is delayed."><?= htmlspecialchars($firm['terms'] ?? '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
-            </div>
-          </div>
+        <!-- Section 4: Terms -->
+        <section class="space-y-4">
+          <h2 class="text-sm font-semibold text-[#1C1B18] pb-2 border-b border-[#ECEAE4]">4. Default Invoice Terms &amp; Conditions</h2>
+          <textarea class="rf-textarea" id="terms" name="terms" rows="2" placeholder="e.g. 1. Goods once sold will not be taken back."><?= htmlspecialchars($firm['terms'] ?? '1. Goods once sold will not be taken back. 2. Subject to local jurisdiction.', ENT_QUOTES, 'UTF-8') ?></textarea>
+          <label class="inline-flex items-center gap-2.5 text-sm font-medium text-[#1C1B18] cursor-pointer pt-1">
+            <input class="rf-checkbox" type="checkbox" id="is_default" name="is_default" value="1" <?= (!empty($firm['is_default'])) ? 'checked' : '' ?>>
+            <span>Set as primary / default business firm</span>
+          </label>
+        </section>
 
-          <div class="form-check mb-4">
-            <input class="form-check-input" type="checkbox" id="is_default" name="is_default" value="1" <?= (!empty($firm['is_default'])) ? 'checked' : '' ?>>
-            <label class="form-check-label fw-medium" for="is_default">
-              Set as primary / default business firm
-            </label>
-          </div>
-
-          <div class="d-flex justify-content-end gap-2">
-            <a href="/firms" class="btn btn-light px-4">Cancel</a>
-            <button type="submit" class="btn btn-primary px-4 shadow-sm">
-              <i class="bi bi-check2-circle me-1"></i> <?= !empty($firm) ? 'Save Changes' : 'Create Firm' ?>
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="flex justify-end gap-2.5 pt-4 border-t border-[#ECEAE4]">
+          <a href="/firms" class="rf-btn rf-btn-secondary">Cancel</a>
+          <button type="submit" class="rf-btn rf-btn-primary">
+            <i class="bi bi-check2-circle"></i> <?= !empty($firm) ? 'Save Changes' : 'Create Firm' ?>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
 
 <script>
-  // Sync state select with state code input
   const stateSelect = document.getElementById('stateSelect');
   const stateCodeInput = document.getElementById('stateCodeInput');
   if (stateSelect && stateCodeInput) {
