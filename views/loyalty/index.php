@@ -32,7 +32,7 @@
           </div>
           <div class="col-4">
             <label class="form-label small fw-semibold">Point Value (₹)</label>
-            <input type="number" name="point_value" class="form-control form-control-sm" step="0.1" min="0.01" value="<?= htmlspecialchars((string)$program['point_value'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="number" name="point_value" class="form-control form-control-sm" step="0.01" min="0.01" value="<?= htmlspecialchars((string)$program['point_value'], ENT_QUOTES, 'UTF-8') ?>">
           </div>
           <div class="col-4">
             <label class="form-label small fw-semibold">Min Redeem Pts</label>

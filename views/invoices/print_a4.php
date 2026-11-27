@@ -18,7 +18,7 @@ $invNum = $invoice['invoice_number'] ?? '';
   <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
   <!-- Bootstrap Icons (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=2">
   <style>
     body {
       background-color: #f1f5f9;
@@ -255,6 +255,7 @@ $invNum = $invoice['invoice_number'] ?? '';
 
           <?php 
             $termsText = !empty($invoice['terms']) ? $invoice['terms'] : ($firm['terms'] ?? '');
+            $footerNote = trim((string)($firmSettings['print']['footer_notes'] ?? ''));
             if (!empty($termsText)): 
           ?>
             <div class="mt-2 text-muted" style="font-size: 10px;">
@@ -262,19 +263,33 @@ $invNum = $invoice['invoice_number'] ?? '';
               <div style="white-space: pre-line;"><?= htmlspecialchars($termsText, ENT_QUOTES, 'UTF-8') ?></div>
             </div>
           <?php endif; ?>
+          <?php if ($footerNote !== ''): ?>
+            <div class="mt-2 text-muted" style="font-size: 10px;">
+              <div style="white-space: pre-line;"><?= htmlspecialchars($footerNote, ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+          <?php endif; ?>
         </div>
 
         <!-- Right: Summary Totals -->
         <div class="col-5 p-2" style="font-size: 11px;">
           <table class="table table-borderless table-sm mb-0">
-            <tr>
-              <td class="p-1">Taxable Amount:</td>
-              <td class="p-1 text-end fw-semibold">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></td>
-            </tr>
             <?php if ((float)($invoice['discount_amount'] ?? 0) > 0): ?>
+              <tr>
+                <td class="p-1">Subtotal:</td>
+                <td class="p-1 text-end fw-semibold">₹ <?= number_format((float)($invoice['subtotal'] ?? 0), 2) ?></td>
+              </tr>
               <tr>
                 <td class="p-1 text-danger">Discount:</td>
                 <td class="p-1 text-end text-danger">- ₹ <?= number_format((float)$invoice['discount_amount'], 2) ?></td>
+              </tr>
+              <tr>
+                <td class="p-1">Taxable Amount:</td>
+                <td class="p-1 text-end fw-semibold">₹ <?= number_format((float)($invoice['taxable_amount'] ?? 0), 2) ?></td>
+              </tr>
+            <?php else: ?>
+              <tr>
+                <td class="p-1">Taxable Amount:</td>
+                <td class="p-1 text-end fw-semibold">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></td>
               </tr>
             <?php endif; ?>
             <?php if ($isGst && (float)($invoice['tax_amount'] ?? 0) > 0): ?>

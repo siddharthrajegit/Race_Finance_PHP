@@ -19,7 +19,7 @@ $partyList = !empty($parties) ? $parties : [];
 <!-- Balance KPI Cards -->
 <div class="row g-3 mb-4">
   <div class="col-md-6">
-    <div class="card kpi-card kpi-receivable shadow-sm p-3">
+    <div class="card kpi-card kpi-receivable shadow-sm p-3" data-balance-filter="receivable" role="button" title="Click to filter Receivable accounts">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <div class="text-muted small text-uppercase fw-semibold">Total Receivables (To Collect)</div>
@@ -33,7 +33,7 @@ $partyList = !empty($parties) ? $parties : [];
   </div>
 
   <div class="col-md-6">
-    <div class="card kpi-card kpi-payable shadow-sm p-3">
+    <div class="card kpi-card kpi-payable shadow-sm p-3" data-balance-filter="payable" role="button" title="Click to filter Payable accounts">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <div class="text-muted small text-uppercase fw-semibold">Total Payables (To Pay)</div>
@@ -81,8 +81,9 @@ $partyList = !empty($parties) ? $parties : [];
           <?php if (!empty($partyList)): ?>
             <?php foreach ($partyList as $p): 
               $cBal = (float)($p['closing_balance'] ?? 0);
+              $balType = $cBal > 0 ? 'receivable' : ($cBal < 0 ? 'payable' : 'settled');
             ?>
-              <tr>
+              <tr data-balance-type="<?= $balType ?>">
                 <td class="fw-bold">
                   <a href="/parties/ledger/<?= $p['id'] ?>" class="text-decoration-none text-dark">
                     <?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?>
@@ -123,3 +124,21 @@ $partyList = !empty($parties) ? $parties : [];
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cards = document.querySelectorAll('[data-balance-filter]');
+  const rows = document.querySelectorAll('#partyReportTable tbody tr[data-balance-type]');
+  let activeFilter = '';
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const target = card.dataset.balanceFilter || '';
+      activeFilter = (activeFilter === target) ? '' : target;
+      cards.forEach(c => c.classList.toggle('border-primary', c.dataset.balanceFilter === activeFilter && activeFilter !== ''));
+      rows.forEach(row => {
+        row.style.display = (!activeFilter || row.dataset.balanceType === activeFilter) ? '' : 'none';
+      });
+    });
+  });
+});
+</script>

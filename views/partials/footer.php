@@ -79,7 +79,7 @@
 </div>
 <script src="/js/offline.js"></script>
 <?php endif; ?>
-<script src="/js/app.js"></script>
+<script src="/js/app.js?v=2"></script>
 <?php if (!defined('ENABLE_PWA') || ENABLE_PWA): ?>
 <script>
 if ('serviceWorker' in navigator) {

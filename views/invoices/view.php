@@ -188,11 +188,19 @@ $due = (float)($invoice['balance_due'] ?? 0);
 
         <?php 
           $termsText = !empty($invoice['terms']) ? $invoice['terms'] : ($firm['terms'] ?? '');
+          $footerNote = trim((string)($firmSettings['print']['footer_notes'] ?? ''));
           if (!empty($termsText)): 
         ?>
           <div class="mb-3">
             <h6 class="fw-bold small text-uppercase text-muted mb-1">Terms & Conditions</h6>
             <div class="small text-muted" style="white-space: pre-line;"><?= htmlspecialchars($termsText, ENT_QUOTES, 'UTF-8') ?></div>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($footerNote !== ''): ?>
+          <div class="mb-3">
+            <h6 class="fw-bold small text-uppercase text-muted mb-1">Footer Note</h6>
+            <div class="small text-muted" style="white-space: pre-line;"><?= htmlspecialchars($footerNote, ENT_QUOTES, 'UTF-8') ?></div>
           </div>
         <?php endif; ?>
 
@@ -205,15 +213,23 @@ $due = (float)($invoice['balance_due'] ?? 0);
 
       <div class="col-md-6">
         <div class="card bg-light border-0 p-3">
-          <div class="d-flex justify-content-between py-1 border-bottom">
-            <span class="text-muted small">Taxable Subtotal:</span>
-            <span class="fw-medium">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></span>
-          </div>
-
           <?php if ((float)($invoice['discount_amount'] ?? 0) > 0): ?>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+              <span class="text-muted small">Subtotal:</span>
+              <span class="fw-medium">₹ <?= number_format((float)($invoice['subtotal'] ?? 0), 2) ?></span>
+            </div>
             <div class="d-flex justify-content-between py-1 border-bottom text-danger">
               <span class="small">Discount:</span>
               <span>- ₹ <?= number_format((float)$invoice['discount_amount'], 2) ?></span>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+              <span class="text-muted small">Taxable Subtotal:</span>
+              <span class="fw-medium">₹ <?= number_format((float)($invoice['taxable_amount'] ?? 0), 2) ?></span>
+            </div>
+          <?php else: ?>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+              <span class="text-muted small">Taxable Subtotal:</span>
+              <span class="fw-medium">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></span>
             </div>
           <?php endif; ?>
 
@@ -233,6 +249,13 @@ $due = (float)($invoice['balance_due'] ?? 0);
                 <span>₹ <?= number_format((float)($invoice['sgst_amount'] ?? 0), 2) ?></span>
               </div>
             <?php endif; ?>
+          <?php endif; ?>
+
+          <?php if ((float)($invoice['round_off'] ?? 0) != 0.0): ?>
+            <div class="d-flex justify-content-between py-1 border-bottom text-muted small">
+              <span>Round Off:</span>
+              <span>₹ <?= number_format((float)$invoice['round_off'], 2) ?></span>
+            </div>
           <?php endif; ?>
 
           <div class="d-flex justify-content-between py-2 border-bottom">

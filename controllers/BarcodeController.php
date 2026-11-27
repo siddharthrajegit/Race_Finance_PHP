@@ -56,7 +56,7 @@ class BarcodeController {
             'previewLabels' => $previewLabels,
             'firm' => $firm,
             'settings' => Setting::get($firmId),
-            'activeMenu' => 'items'
+            'activeMenu' => 'barcodes'
         ]);
     }
 

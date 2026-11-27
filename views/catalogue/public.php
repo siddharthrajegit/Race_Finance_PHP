@@ -4,10 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
+  <link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
 </head>
 <body class="bg-light">
+  <?php
+    $formatWaNumber = static function (?string $raw): string {
+        $digits = preg_replace('/\D+/', '', (string)$raw);
+        if (strlen($digits) === 11 && str_starts_with($digits, '0')) {
+            $digits = substr($digits, 1);
+        }
+        return strlen($digits) === 10 ? ('91' . $digits) : $digits;
+    };
+    $waNumber = !empty($settings['whatsapp_number']) ? $formatWaNumber((string)$settings['whatsapp_number']) : '';
+  ?>
   <nav class="navbar bg-dark navbar-dark py-3 shadow-sm">
     <div class="container">
       <div>
@@ -16,9 +26,8 @@
           <span class="text-secondary small ms-2"><?= htmlspecialchars(trim(($settings['city'] ?? '') . ' ' . ($settings['state'] ?? '')), ENT_QUOTES, 'UTF-8') ?></span>
         <?php endif; ?>
       </div>
-      <?php if (!empty($settings['whatsapp_number'])): ?>
-        <?php $wa = strlen($settings['whatsapp_number']) === 10 ? '91' . $settings['whatsapp_number'] : $settings['whatsapp_number']; ?>
-        <a href="https://wa.me/<?= htmlspecialchars($wa, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm fw-semibold">
+      <?php if ($waNumber !== ''): ?>
+        <a href="https://wa.me/<?= htmlspecialchars($waNumber, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm fw-semibold">
           <i class="bi bi-whatsapp me-1"></i> Chat on WhatsApp
         </a>
       <?php endif; ?>
@@ -75,9 +84,8 @@
                 <?php else: ?>
                   <span class="small text-muted">Price on request</span>
                 <?php endif; ?>
-                <?php if (!empty($settings['whatsapp_number'])): ?>
-                  <?php $wa = strlen($settings['whatsapp_number']) === 10 ? '91' . $settings['whatsapp_number'] : $settings['whatsapp_number']; ?>
-                  <a href="https://wa.me/<?= htmlspecialchars($wa, ENT_QUOTES, 'UTF-8') ?>?text=<?= rawurlencode("Hi, I'm interested in {$it['name']}") ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success btn-sm py-0 px-2">Inquire</a>
+                <?php if ($waNumber !== ''): ?>
+                  <a href="https://wa.me/<?= htmlspecialchars($waNumber, ENT_QUOTES, 'UTF-8') ?>?text=<?= rawurlencode("Hi, I'm interested in {$it['name']}") ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success btn-sm py-0 px-2">Inquire</a>
                 <?php endif; ?>
               </div>
             </div>

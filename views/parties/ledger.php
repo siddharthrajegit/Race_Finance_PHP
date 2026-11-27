@@ -485,10 +485,14 @@ foreach ($txList as $tx) {
                     </div>
                   <?php endif; ?>
                 </td>
-                <td style="padding: 0.45rem 0.65rem;" class="text-end fw-bold text-nowrap <?= $runBal > 0 ? 'text-warning' : ($runBal < 0 ? 'text-danger' : 'text-success') ?>">
+                <td style="padding: 0.45rem 0.65rem;" class="text-end fw-bold text-nowrap <?= $runBal > 0 ? ($partyType === 'supplier' ? 'text-success' : 'text-warning') : ($runBal < 0 ? ($partyType === 'supplier' ? 'text-danger' : 'text-success') : 'text-success') ?>">
                   ₹ <?= number_format(abs($runBal), 2) ?>
                   <div class="small fw-normal text-muted" style="font-size: 0.7rem;">
-                    <?= $runBal > 0 ? '(Due)' : ($runBal < 0 ? '(Advance)' : '(Cleared)') ?>
+                    <?php if ($partyType === 'supplier'): ?>
+                      <?= $runBal < 0 ? '(Payable)' : ($runBal > 0 ? '(Advance)' : '(Cleared)') ?>
+                    <?php else: ?>
+                      <?= $runBal > 0 ? '(Due)' : ($runBal < 0 ? '(Advance)' : '(Cleared)') ?>
+                    <?php endif; ?>
                   </div>
                 </td>
                 <td style="padding: 0.45rem 0.5rem;" class="text-end d-print-none">

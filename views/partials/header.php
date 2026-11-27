@@ -119,7 +119,7 @@
   <!-- Flatpickr CSS (Offline Local with CDN Fallback) -->
   <link rel="stylesheet" href="/vendor/flatpickr/flatpickr.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body>
 

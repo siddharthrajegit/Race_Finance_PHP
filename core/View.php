@@ -15,18 +15,18 @@ require_once __DIR__ . '/../models/Setting.php';
 require_once __DIR__ . '/../models/CustomUnit.php';
 
 class View {
-    public static function render(string $viewName, array $data = [], bool $layout = true): void {
+    public static function render(string $_viewName, array $_viewData = [], bool $_layout = true): void {
         // Strip .php or .ejs extension if provided
-        $viewPath = preg_replace('/\.(php|ejs)$/', '', $viewName);
-        $fullPath = ROOT_DIR . '/views/' . $viewPath . '.php';
+        $_viewPath = preg_replace('/\.(php|ejs)$/', '', $_viewName);
+        $_fullPath = ROOT_DIR . '/views/' . $_viewPath . '.php';
 
-        if (!file_exists($fullPath)) {
+        if (!file_exists($_fullPath)) {
             // Check if .ejs file exists (for development warning)
-            $ejsPath = ROOT_DIR . '/views/' . $viewPath . '.ejs';
-            if (file_exists($ejsPath)) {
-                throw new Exception("View template '$viewName' exists as .ejs but needs to be converted to .php");
+            $_ejsPath = ROOT_DIR . '/views/' . $_viewPath . '.ejs';
+            if (file_exists($_ejsPath)) {
+                throw new Exception("View template '$_viewName' exists as .ejs but needs to be converted to .php");
             }
-            throw new Exception("View template not found: $fullPath");
+            throw new Exception("View template not found: $_fullPath");
         }
 
         require_once __DIR__ . '/RBAC.php';
@@ -58,7 +58,7 @@ class View {
         $staffRole = ($currentUser && !$isAdmin) ? RBAC::getStaffRole($currentUser, $activeFirm) : ($isAdmin ? 'admin' : 'guest');
         $userPermissions = ($currentUser && !$isAdmin) ? RBAC::getPermissionsForContext($currentUser, $activeFirm) : ($isAdmin ? ['*'] : []);
 
-        $globals = [
+        $_globals = [
             'appUrl' => APP_URL,
             'appDomain' => parse_url(APP_URL, PHP_URL_HOST) ?: 'racefinance.site',
             'supportPhone' => SUPPORT_PHONE,
@@ -76,20 +76,20 @@ class View {
             'error_msg' => Flash::get('error_msg'),
             'info_msg' => Flash::get('info_msg'),
             'currentUrl' => $_SERVER['REQUEST_URI'] ?? '/',
-            'activeMenu' => $data['activeMenu'] ?? '',
+            'activeMenu' => $_viewData['activeMenu'] ?? '',
             'platformSettings' => $platformSettings
         ];
 
-        // Merge globals with view data ($data overrides globals if key matches)
-        $variables = array_merge($globals, $data);
-        extract($variables, EXTR_SKIP);
+        // Merge globals with view data ($_viewData overrides globals if key matches)
+        $_variables = array_merge($_globals, $_viewData);
+        extract($_variables, EXTR_SKIP);
 
-        if ($layout) {
+        if ($_layout) {
             require ROOT_DIR . '/views/partials/header.php';
-            require $fullPath;
+            require $_fullPath;
             require ROOT_DIR . '/views/partials/footer.php';
         } else {
-            require $fullPath;
+            require $_fullPath;
         }
     }
 }

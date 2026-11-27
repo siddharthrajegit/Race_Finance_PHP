@@ -1,14 +1,14 @@
-﻿const CACHE_NAME = 'race-finance-v2';
+﻿const CACHE_NAME = 'race-finance-v3';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/favicon.ico',
   '/logo.png',
   '/img/icon-192.png',
   '/img/icon-512.png',
-  '/css/style.css',
+  '/css/style.css?v=2',
   '/css/receipt.css',
-  '/js/app.js',
-  '/js/invoice-calc.js?v=5',
+  '/js/app.js?v=2',
+  '/js/invoice-calc.js?v=6',
   '/js/barcode.js',
   '/js/offline.js',
   '/js/vendor/qrcode.min.js',
@@ -48,13 +48,30 @@ self.addEventListener('fetch', (event) => {
     if (url.pathname.startsWith(EXCLUDED_PREFIXES[i])) return;
   }
 
-  // Static assets: Cache-first with background network refresh
+  // App CSS/JS/Manifest: Network-first with cache fallback so updates apply immediately while offline still works
   if (
-    url.pathname.startsWith('/vendor/') ||
     url.pathname.startsWith('/css/') ||
     url.pathname.startsWith('/js/') ||
-    url.pathname.startsWith('/img/') ||
     url.pathname === '/manifest.json'
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((resp) => {
+          if (resp && resp.status === 200) {
+            const copy = resp.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, copy));
+          }
+          return resp;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Vendor & static images: Cache-first
+  if (
+    url.pathname.startsWith('/vendor/') ||
+    url.pathname.startsWith('/img/')
   ) {
     event.respondWith(
       caches.match(event.request).then((cached) => {

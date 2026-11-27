@@ -101,12 +101,13 @@ class ExpenseController {
         }
     }
 
-    public function getEdit($id): void {
+    public function getEdit(array $params): void {
         self::requireFeatureEnabled();
         RBAC::requirePermission('manage_expenses');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
-        $expense = Expense::getById((int)$id, $firmId);
+        $id = (int)($params['id'] ?? 0);
+        $expense = Expense::getById($id, $firmId);
         if (!$expense) {
             Flash::set('error_msg', 'Expense record not found.');
             header('Location: /expenses');
@@ -122,15 +123,16 @@ class ExpenseController {
         ]);
     }
 
-    public function postEdit($id): void {
+    public function postEdit(array $params): void {
         self::requireFeatureEnabled();
         RBAC::requirePermission('manage_expenses');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $user = Auth::user();
+        $id = (int)($params['id'] ?? 0);
 
         try {
-            $existing = Expense::getById((int)$id, $firmId);
+            $existing = Expense::getById($id, $firmId);
             if (!$existing) {
                 Flash::set('error_msg', 'Expense record not found.');
                 header('Location: /expenses');
@@ -154,7 +156,7 @@ class ExpenseController {
                 $category = trim((string)($_POST['category'] ?? $existing['category']));
             }
 
-            $updated = Expense::update((int)$id, $firmId, [
+            $updated = Expense::update($id, $firmId, [
                 'expense_number' => $_POST['expense_number'] ?? $existing['expense_number'],
                 'expense_date' => $_POST['expense_date'] ?? $existing['expense_date'],
                 'category' => $category,
@@ -178,15 +180,16 @@ class ExpenseController {
         }
     }
 
-    public function postDelete($id): void {
+    public function postDelete(array $params): void {
         self::requireFeatureEnabled();
         RBAC::requirePermission('manage_expenses');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
+        $id = (int)($params['id'] ?? 0);
 
         try {
-            $existing = Expense::getById((int)$id, $firmId);
-            if (Expense::delete((int)$id, $firmId)) {
+            $existing = Expense::getById($id, $firmId);
+            if ($existing && Expense::delete($id, $firmId)) {
                 AuditLog::log($firmId, 'DELETE', 'expense', $id, "Deleted expense #" . ($existing['expense_number'] ?? $id));
                 Flash::set('success_msg', 'Expense deleted successfully.');
             } else {

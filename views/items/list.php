@@ -159,49 +159,6 @@ $lowStock = $lowStockCount ?? 0;
                       </li>
                     </ul>
                   </div>
-
-                  <!-- Quick Stock Adjust Modal -->
-                  <div class="modal fade" id="adjustStockModal<?= $it['id'] ?>" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered modal-sm text-start">
-                      <div class="modal-content">
-                        <form action="/items/adjust/<?= $it['id'] ?>" method="POST">
-                          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                          <div class="modal-header py-2">
-                            <h6 class="modal-title fw-bold">Adjust Stock: <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></h6>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body py-3">
-                            <p class="small text-muted mb-2">Current Stock: <strong><?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></p>
-                            <?php if (!empty($warehouses) && count($warehouses) > 1): ?>
-                              <div class="mb-2">
-                                <label class="form-label small">Warehouse</label>
-                                <select name="warehouse_id" class="form-select form-select-sm">
-                                  <?php foreach ($warehouses as $wh): ?>
-                                    <option value="<?= (int)$wh['id'] ?>" <?= !empty($wh['is_default']) ? 'selected' : '' ?>><?= htmlspecialchars($wh['name'], ENT_QUOTES, 'UTF-8') ?></option>
-                                  <?php endforeach; ?>
-                                </select>
-                              </div>
-                            <?php endif; ?>
-                            <div class="mb-3">
-                              <label class="form-label small">Action</label>
-                              <select name="action" class="form-select form-select-sm">
-                                <option value="add">Add (+ Increase Stock)</option>
-                                <option value="reduce">Reduce (- Damage / Return)</option>
-                              </select>
-                            </div>
-                            <div class="mb-2">
-                              <label class="form-label small">Quantity (<?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>)</label>
-                              <input type="number" name="adjustment" class="form-control form-control-sm" min="0.01" step="any" placeholder="e.g. 5" required>
-                            </div>
-                          </div>
-                          <div class="modal-footer py-2">
-                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Update Stock</button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -218,3 +175,50 @@ $lowStock = $lowStockCount ?? 0;
     </div>
   </div>
 </div>
+
+<?php if (!empty($items)): ?>
+  <?php foreach ($items as $it): ?>
+    <!-- Quick Stock Adjust Modal (placed outside scroll/table wrapper) -->
+    <div class="modal fade" id="adjustStockModal<?= $it['id'] ?>" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm text-start">
+        <div class="modal-content">
+          <form action="/items/adjust/<?= $it['id'] ?>" method="POST">
+            <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <div class="modal-header py-2">
+              <h6 class="modal-title fw-bold">Adjust Stock: <?= htmlspecialchars($it['name'], ENT_QUOTES, 'UTF-8') ?></h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+              <p class="small text-muted mb-2">Current Stock: <strong><?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></p>
+              <?php if (!empty($warehouses) && count($warehouses) > 1): ?>
+                <div class="mb-2">
+                  <label class="form-label small">Warehouse</label>
+                  <select name="warehouse_id" class="form-select form-select-sm">
+                    <?php foreach ($warehouses as $wh): ?>
+                      <option value="<?= (int)$wh['id'] ?>" <?= !empty($wh['is_default']) ? 'selected' : '' ?>><?= htmlspecialchars($wh['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+              <?php endif; ?>
+              <div class="mb-3">
+                <label class="form-label small">Action</label>
+                <select name="action" class="form-select form-select-sm">
+                  <option value="add">Add (+ Increase Stock)</option>
+                  <option value="reduce">Reduce (- Damage / Return)</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small">Quantity (<?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?>)</label>
+                <input type="number" name="adjustment" class="form-control form-control-sm" min="0.01" step="any" placeholder="e.g. 5" required>
+              </div>
+            </div>
+            <div class="modal-footer py-2">
+              <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-sm">Update Stock</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>

@@ -420,16 +420,20 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <div class="col-md-6">
             <div class="total-highlight-card">
               <table class="table table-borderless table-sm mb-0" style="font-size: 0.84rem;">
-                <tr>
-                  <td class="text-muted p-1">Taxable Subtotal:</td>
-                  <td class="text-end fw-semibold p-1">₹ <?= number_format($cleanTaxable, 2) ?></td>
-                </tr>
                 <?php if ((float)($invoice["discount_amount"] ?? 0) > 0): ?>
+                  <tr>
+                    <td class="text-muted p-1">Subtotal:</td>
+                    <td class="text-end fw-semibold p-1">₹ <?= number_format((float)($invoice["subtotal"] ?? 0), 2) ?></td>
+                  </tr>
                   <tr>
                     <td class="text-danger p-1">Overall Discount:</td>
                     <td class="text-end text-danger fw-semibold p-1">- ₹ <?= number_format((float)($invoice["discount_amount"]), 2) ?></td>
                   </tr>
                 <?php endif; ?>
+                <tr>
+                  <td class="text-muted p-1">Taxable Subtotal:</td>
+                  <td class="text-end fw-semibold p-1">₹ <?= number_format($cleanTaxable, 2) ?></td>
+                </tr>
                 <?php if (!empty($invoice["is_gst_bill"]) && (float)($invoice["tax_amount"] ?? 0) > 0): ?>
                   <?php if (!empty($invoice["is_interstate"])): ?>
                     <tr>
@@ -471,9 +475,13 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
         </div>
 
         <!-- 5. Signatory & Bottom Acknowledgement -->
+        <?php $footerNote = trim((string)($settings['print']['footer_notes'] ?? ($firmSettings['print']['footer_notes'] ?? ''))); ?>
         <div class="row align-items-end mt-4 pt-3 border-top">
           <div class="col-7">
             <div class="small text-muted" style="font-size: 0.76rem;">
+              <?php if ($footerNote !== ''): ?>
+                <div class="text-dark fw-medium mb-1" style="white-space: pre-line;"><?= htmlspecialchars($footerNote, ENT_QUOTES, 'UTF-8') ?></div>
+              <?php endif; ?>
               Thank you for doing business with <strong><?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></strong>.<br>
               This is a digitally generated invoice, authorized signature verified.
             </div>

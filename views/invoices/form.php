@@ -20,6 +20,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 
 <form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm" 
   data-firm-id="<?= htmlspecialchars((string)($activeFirm['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+  data-invoice-type="<?= htmlspecialchars($invoiceType ?? 'sale', ENT_QUOTES, 'UTF-8') ?>"
   data-is-edit="<?= $isEditMode ? '1' : '0' ?>"
   data-firm-state-code="<?= htmlspecialchars((string)($activeFirm['state_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
   data-default-gst="<?= $isEditMode ? (!empty($invoice['is_gst_bill']) ? 'gst' : 'non_gst') : htmlspecialchars($billSettings['default_gst_type'] ?? 'gst', ENT_QUOTES, 'UTF-8') ?>"
@@ -60,8 +61,9 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
           <i class="bi bi-cloud-check text-success me-1"></i> <span id="draftSaveTime">Draft saved</span>
         </span>
       </div>
+      <?php $docModeNoun = ($invoiceType === 'purchase') ? 'Purchase Record' : 'Sales Record'; ?>
       <span class="badge <?= $isGstDefault ? 'bg-primary' : 'bg-secondary' ?> mt-1" id="gstModeBadge">
-        <?= $isGstDefault ? ($isSeparateGst ? 'GST Sales Record (Separate Item GST)' : 'GST Sales Record (Final Amount GST)') : 'Non-GST Business Record' ?>
+        <?= $isGstDefault ? ($isSeparateGst ? "GST {$docModeNoun} (Separate Item GST)" : "GST {$docModeNoun} (Final Amount GST)") : 'Non-GST Business Record' ?>
       </span>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -404,7 +406,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
           <div class="d-flex justify-content-between align-items-center mb-2 text-muted small">
             <span>Round Off:</span>
             <input type="hidden" name="round_off" id="roundOffInput" value="<?= $isEditMode ? $invoice['round_off'] : '0' ?>">
-            <span class="text-muted">₹ 0.00</span>
+            <span class="text-muted" id="displayRoundOff">₹ <?= number_format((float)($isEditMode ? ($invoice['round_off'] ?? 0) : 0), 2) ?></span>
           </div>
 
           <hr class="my-2">
@@ -673,11 +675,6 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
               <input type="hidden" name="tax_rate" id="quickItemTaxRateHidden" value="18">
             </div>
 
-            <div class="col-md-3">
-              <label class="form-label small fw-bold">Opening Stock Qty</label>
-              <input type="number" class="form-control form-control-sm" name="opening_stock" id="quickItemOpeningStock" min="0" step="any" placeholder="0" value="0">
-            </div>
-
             <div class="col-md-12">
               <label class="form-label small fw-bold">Item Description (Optional)</label>
               <input type="text" class="form-control form-control-sm" name="description" id="quickItemDesc" placeholder="Optional details...">
@@ -731,5 +728,5 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
   </div>
 </div>
 
-<script src="/js/invoice-calc.js?v=5"></script>
+<script src="/js/invoice-calc.js?v=6"></script>
 

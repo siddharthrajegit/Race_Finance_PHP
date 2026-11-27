@@ -280,6 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initTableSorting();
 
+  // Prevent action dropdown menus inside scrollable/clipped tables from getting truncated
+  if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+    document.querySelectorAll('table [data-bs-toggle="dropdown"]').forEach(toggle => {
+      toggle.setAttribute('data-bs-popper-config', JSON.stringify({ strategy: 'fixed' }));
+      bootstrap.Dropdown.getOrCreateInstance(toggle, {
+        popperConfig: (defaultBsPopperConfig) => Object.assign({}, defaultBsPopperConfig, { strategy: 'fixed' })
+      });
+    });
+  }
+
   // 2. Generic Delete Confirmations
   const deleteForms = document.querySelectorAll('.form-delete-confirm');
   deleteForms.forEach(form => {

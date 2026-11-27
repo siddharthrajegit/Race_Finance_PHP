@@ -835,11 +835,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update text labels
     const displaySubtotal = document.getElementById('displaySubtotal');
     const displayTax = document.getElementById('displayTax');
+    const displayRoundOff = document.getElementById('displayRoundOff');
     const displayGrandTotal = document.getElementById('displayGrandTotal');
     const displayBalanceDue = document.getElementById('displayBalanceDue');
 
     if (displaySubtotal) displaySubtotal.textContent = '₹ ' + totalSubtotal.toFixed(2);
     if (displayTax) displayTax.textContent = '₹ ' + totalTax.toFixed(2);
+    if (displayRoundOff) displayRoundOff.textContent = (roundOff >= 0 ? '₹ ' : '-₹ ') + Math.abs(roundOff).toFixed(2);
     if (displayGrandTotal) displayGrandTotal.textContent = '₹ ' + roundedGrand.toFixed(2);
     if (displayBalanceDue) displayBalanceDue.textContent = '₹ ' + balanceDue.toFixed(2);
   }
@@ -872,12 +874,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (gstBadge) {
+        const docNoun = (invoiceForm && invoiceForm.dataset.invoiceType === 'purchase') ? 'Purchase Record' : 'Sales Record';
         if (isGst) {
-          gstBadge.textContent = isSeparateGst ? 'GST Tax Invoice (Separate Item GST)' : 'GST Tax Invoice (Final Amount GST)';
-          gstBadge.className = 'badge bg-primary';
+          gstBadge.textContent = isSeparateGst ? `GST ${docNoun} (Separate Item GST)` : `GST ${docNoun} (Final Amount GST)`;
+          gstBadge.className = 'badge bg-primary mt-1';
         } else {
-          gstBadge.textContent = 'Non-GST Retail Bill';
-          gstBadge.className = 'badge bg-secondary';
+          gstBadge.textContent = 'Non-GST Business Record';
+          gstBadge.className = 'badge bg-secondary mt-1';
         }
       }
 
