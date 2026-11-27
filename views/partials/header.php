@@ -254,6 +254,25 @@
         </button>
       <?php endif; ?>
 
+      <?php
+        $advanceMenuKeys = [
+            'warehouses', 'batches', 'serials', 'bom', 'barcodes',
+            'loyalty', 'catalogue', 'expenses', 'accounting', 'staff', 'audit_logs',
+        ];
+        $isAdvanceActive = in_array($activeMenu ?? '', $advanceMenuKeys, true);
+        $hasAdvanceItems =
+            (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE && $canPerm('view_warehouses')) ||
+            (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && $canPerm('view_items')) ||
+            (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && $canPerm('view_items')) ||
+            (defined('ENABLE_BOM') && ENABLE_BOM && $canPerm('manage_bom')) ||
+            (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')) ||
+            (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $canPerm('manage_loyalty')) ||
+            (defined('ENABLE_CATALOGUE') && ENABLE_CATALOGUE && $canPerm('manage_catalogue')) ||
+            (defined('ENABLE_EXPENSES') && ENABLE_EXPENSES && $canPerm('view_expenses')) ||
+            (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING && $canPerm('view_accounting')) ||
+            ($isOwnerAccount && defined('ENABLE_RBAC') && ENABLE_RBAC) ||
+            (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS && $canPerm('view_audit_logs'));
+      ?>
       <!-- Navigation Menu Items filtered by RBAC -->
       <div class="sidebar-nav flex-grow-1">
         <ul class="nav flex-column mb-auto">
@@ -285,41 +304,6 @@
               </a>
             </li>
           <?php endif; ?>
-          <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE && $canPerm('view_warehouses')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'warehouses') ? 'active' : '' ?>" href="/warehouses">
-                <i class="bi bi-buildings"></i> Warehouses
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && $canPerm('view_items')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'batches') ? 'active' : '' ?>" href="/batches">
-                <i class="bi bi-calendar2-week"></i> Batches &amp; Expiry
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && $canPerm('view_items')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'serials') ? 'active' : '' ?>" href="/serials">
-                <i class="bi bi-hash"></i> Serial / IMEI
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_BOM') && ENABLE_BOM && $canPerm('manage_bom')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'bom') ? 'active' : '' ?>" href="/bom">
-                <i class="bi bi-boxes"></i> Manufacturing BOM
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'barcodes') ? 'active' : '' ?>" href="/barcodes">
-                <i class="bi bi-upc-scan"></i> Barcode Labels
-              </a>
-            </li>
-          <?php endif; ?>
           <?php if ($canPerm('view_estimates') || $canPerm('manage_estimates')): ?>
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
@@ -334,38 +318,10 @@
               </a>
             </li>
           <?php endif; ?>
-          <?php if (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $canPerm('manage_loyalty')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'loyalty') ? 'active' : '' ?>" href="/loyalty">
-                <i class="bi bi-stars"></i> Loyalty Rewards
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_CATALOGUE') && ENABLE_CATALOGUE && $canPerm('manage_catalogue')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'catalogue') ? 'active' : '' ?>" href="/catalogue">
-                <i class="bi bi-shop"></i> Online Catalogue
-              </a>
-            </li>
-          <?php endif; ?>
           <?php if ($canPerm('view_payments')): ?>
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
                 <i class="bi bi-cash-stack"></i> Payments
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_EXPENSES') && ENABLE_EXPENSES && $canPerm('view_expenses')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'expenses') ? 'active' : '' ?>" href="/expenses">
-                <i class="bi bi-wallet2"></i> Expenses
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING && $canPerm('view_accounting')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'accounting') ? 'active' : '' ?>" href="/accounting">
-                <i class="bi bi-diagram-3"></i> Accounting &amp; P&amp;L
               </a>
             </li>
           <?php endif; ?>
@@ -377,23 +333,9 @@
             </li>
           <?php endif; ?>
           <?php if ($isOwnerAccount): ?>
-            <?php if (defined('ENABLE_RBAC') && ENABLE_RBAC): ?>
-              <li class="nav-item">
-                <a class="nav-link <?= ($activeMenu === 'staff') ? 'active' : '' ?>" href="/staff">
-                  <i class="bi bi-person-badge"></i> Staff &amp; CA Team
-                </a>
-              </li>
-            <?php endif; ?>
             <li class="nav-item">
               <a class="nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
                 <i class="bi bi-cloud-arrow-up"></i> Backup &amp; Cloud
-              </a>
-            </li>
-          <?php endif; ?>
-          <?php if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS && $canPerm('view_audit_logs')): ?>
-            <li class="nav-item">
-              <a class="nav-link <?= ($activeMenu === 'audit_logs') ? 'active' : '' ?>" href="/audit-logs">
-                <i class="bi bi-journal-text"></i> Audit Logs
               </a>
             </li>
           <?php endif; ?>
@@ -402,6 +344,103 @@
               <a class="nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
                 <i class="bi bi-gear"></i> Settings
               </a>
+            </li>
+          <?php endif; ?>
+          <?php if ($hasAdvanceItems): ?>
+            <li class="nav-item">
+              <a
+                class="nav-link <?= $isAdvanceActive ? 'advance-parent-active' : '' ?>"
+                href="#sidebarAdvanceMenu"
+                data-bs-toggle="collapse"
+                role="button"
+                aria-expanded="<?= $isAdvanceActive ? 'true' : 'false' ?>"
+                aria-controls="sidebarAdvanceMenu"
+              >
+                <i class="bi bi-sliders2"></i>
+                <span>Advance</span>
+                <i class="bi bi-chevron-down advance-chevron ms-auto" aria-hidden="true"></i>
+              </a>
+              <div class="collapse <?= $isAdvanceActive ? 'show' : '' ?>" id="sidebarAdvanceMenu">
+                <ul class="nav flex-column sidebar-advance-submenu">
+                  <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE && $canPerm('view_warehouses')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'warehouses') ? 'active' : '' ?>" href="/warehouses">
+                        <i class="bi bi-buildings"></i> Warehouses
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && $canPerm('view_items')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'batches') ? 'active' : '' ?>" href="/batches">
+                        <i class="bi bi-calendar2-week"></i> Batches &amp; Expiry
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && $canPerm('view_items')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'serials') ? 'active' : '' ?>" href="/serials">
+                        <i class="bi bi-hash"></i> Serial / IMEI
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_BOM') && ENABLE_BOM && $canPerm('manage_bom')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'bom') ? 'active' : '' ?>" href="/bom">
+                        <i class="bi bi-boxes"></i> Manufacturing BOM
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'barcodes') ? 'active' : '' ?>" href="/barcodes">
+                        <i class="bi bi-upc-scan"></i> Barcode Labels
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $canPerm('manage_loyalty')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'loyalty') ? 'active' : '' ?>" href="/loyalty">
+                        <i class="bi bi-stars"></i> Loyalty Rewards
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_CATALOGUE') && ENABLE_CATALOGUE && $canPerm('manage_catalogue')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'catalogue') ? 'active' : '' ?>" href="/catalogue">
+                        <i class="bi bi-shop"></i> Online Catalogue
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_EXPENSES') && ENABLE_EXPENSES && $canPerm('view_expenses')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'expenses') ? 'active' : '' ?>" href="/expenses">
+                        <i class="bi bi-wallet2"></i> Expenses
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING && $canPerm('view_accounting')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'accounting') ? 'active' : '' ?>" href="/accounting">
+                        <i class="bi bi-diagram-3"></i> Accounting &amp; P&amp;L
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if ($isOwnerAccount && defined('ENABLE_RBAC') && ENABLE_RBAC): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'staff') ? 'active' : '' ?>" href="/staff">
+                        <i class="bi bi-person-badge"></i> Staff &amp; CA Team
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                  <?php if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS && $canPerm('view_audit_logs')): ?>
+                    <li class="nav-item">
+                      <a class="nav-link <?= ($activeMenu === 'audit_logs') ? 'active' : '' ?>" href="/audit-logs">
+                        <i class="bi bi-journal-text"></i> Audit Logs
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                </ul>
+              </div>
             </li>
           <?php endif; ?>
         </ul>

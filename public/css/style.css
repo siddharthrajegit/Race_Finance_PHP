@@ -141,6 +141,31 @@ main {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
 }
 
+.sidebar-nav .nav-link.advance-parent-active {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav .nav-link .advance-chevron {
+  font-size: 0.78rem;
+  margin-right: 0;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-nav .nav-link[aria-expanded="true"] .advance-chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-advance-submenu .nav-link {
+  padding: 0.5rem 0.9rem 0.5rem 2.15rem;
+  font-size: 0.85rem;
+}
+
+.sidebar-advance-submenu .nav-link i {
+  font-size: 1rem;
+  margin-right: 0.65rem;
+}
+
 /* Firm switcher inside sidebar */
 .sidebar-firm-card {
   background-color: rgba(255, 255, 255, 0.07);
