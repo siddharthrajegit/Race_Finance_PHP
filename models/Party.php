@@ -226,9 +226,14 @@ class Party extends Model {
             $timeA = strtotime($a['date']);
             $timeB = strtotime($b['date']);
             if ($timeA === $timeB) {
-                return ((int)$a['id']) - ((int)$b['id']);
+                $typeRankA = (($a['entry_type'] ?? '') === 'invoice') ? 0 : 1;
+                $typeRankB = (($b['entry_type'] ?? '') === 'invoice') ? 0 : 1;
+                if ($typeRankA !== $typeRankB) {
+                    return $typeRankA <=> $typeRankB;
+                }
+                return ((int)$a['id']) <=> ((int)$b['id']);
             }
-            return $timeA - $timeB;
+            return $timeA <=> $timeB;
         });
 
         $transactions = [];

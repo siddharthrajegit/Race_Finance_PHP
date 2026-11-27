@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
@@ -12,6 +13,7 @@ require_once __DIR__ . '/../models/Invoice.php';
 require_once __DIR__ . '/../models/Party.php';
 require_once __DIR__ . '/../models/Item.php';
 require_once __DIR__ . '/../models/Setting.php';
+require_once __DIR__ . '/../models/Warehouse.php';
 require_once __DIR__ . '/../models/Model.php';
 
 class InvoiceController {
@@ -219,7 +221,12 @@ class InvoiceController {
                 'sgst_amount' => $tax['sgst_amount'],
                 'igst_rate' => $tax['igst_rate'],
                 'igst_amount' => $tax['igst_amount'],
-                'total_amount' => $totalAmount
+                'total_amount' => $totalAmount,
+                'batch_number' => self::formArrayValue($body['batch_number'] ?? null, $i, null),
+                'mfg_date' => self::formArrayValue($body['mfg_date'] ?? null, $i, null),
+                'expiry_date' => self::formArrayValue($body['expiry_date'] ?? null, $i, null),
+                'batch_id' => self::formArrayValue($body['batch_id'] ?? null, $i, null),
+                'serial_numbers' => self::formArrayValue($body['serial_numbers'] ?? null, $i, null)
             ];
         }
 
@@ -295,6 +302,7 @@ class InvoiceController {
             'balance_due' => $balanceDue,
             'payment_status' => $paymentStatus,
             'payment_mode' => $body['payment_mode'] ?? 'cash',
+            'warehouse_id' => !empty($body['warehouse_id']) ? (int)$body['warehouse_id'] : ($existingInvoice['warehouse_id'] ?? null),
             'notes' => $body['notes'] ?? null,
             'terms' => isset($body['terms']) && trim((string)$body['terms']) !== '' ? trim((string)$body['terms']) : ($activeFirm['terms'] ?? null)
         ];
@@ -308,6 +316,8 @@ class InvoiceController {
         $firmId = (int)$firm['id'];
         $invType = $invoice ? ($invoice['type'] ?? 'sale') : $type;
 
+        $warehouses = (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) ? Warehouse::getByFirmId($firmId, true) : [];
+
         view('invoices/form', [
             'title' => $title,
             'isEdit' => ($invoice !== null),
@@ -318,6 +328,7 @@ class InvoiceController {
             'parties' => Party::getByFirmId($firmId, ($invType === 'sale') ? 'customer' : 'supplier'),
             'items' => Item::getByFirmId($firmId),
             'categories' => Item::getCategories($firmId),
+            'warehouses' => $warehouses,
             'settings' => Setting::get($firmId),
             'gstStates' => Model::GST_STATES,
             'activeMenu' => ($invType === 'sale') ? 'sales' : 'purchases'
@@ -325,7 +336,7 @@ class InvoiceController {
     }
 
     public function listSales(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_sales');
         $firm = Auth::requireActiveFirm();
 
         view('invoices/sales_list', [
@@ -336,7 +347,7 @@ class InvoiceController {
     }
 
     public function listPurchases(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_purchases');
         $firm = Auth::requireActiveFirm();
 
         view('invoices/purchase_list', [
@@ -347,6 +358,7 @@ class InvoiceController {
     }
 
     public function getCreateSale(): void {
+        RBAC::requirePermission('create_sales');
         $firm = Auth::requireActiveFirm();
         $prefilled = null;
         if (!empty($_GET['estimate_id'])) {
@@ -380,13 +392,14 @@ class InvoiceController {
     }
 
     public function getCreatePurchase(): void {
+        RBAC::requirePermission('create_purchases');
         self::renderForm('purchase', 'Create Purchase Record');
     }
 
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        $type = ($_POST['type'] ?? 'sale') === 'purchase' ? 'purchase' : 'sale';
+        RBAC::requirePermission($type === 'purchase' ? 'create_purchases' : 'create_sales');
         $firm = Auth::requireActiveFirm();
-        $type = $_POST['type'] ?? 'sale';
         $redirectUrl = ($type === 'purchase') ? '/purchases/create' : '/sales/create';
 
         try {
@@ -416,6 +429,7 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'edit_purchases' : 'edit_sales');
         $label = ($invoice['type'] === 'purchase') ? 'Purchase Bill' : 'Sales Invoice';
         self::renderForm($invoice['type'], "Edit {$label}: {$invoice['invoice_number']}", $invoice);
     }
@@ -431,6 +445,8 @@ class InvoiceController {
             header('Location: /sales');
             exit;
         }
+
+        RBAC::requirePermission(($existing['type'] ?? 'sale') === 'purchase' ? 'edit_purchases' : 'edit_sales');
 
         try {
             $data = self::buildInvoiceSubmission($_POST, (int)$firm['id'], $firm, $existing);
@@ -459,6 +475,8 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
+
         view('invoices/view', [
             'title' => ($invoice['type'] === 'purchase' ? 'Purchase Record' : 'Sales Record') . " - {$invoice['invoice_number']}",
             'invoice' => $invoice,
@@ -478,6 +496,8 @@ class InvoiceController {
             header('Location: /sales');
             exit;
         }
+
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
 
         view('invoices/download', [
             'title' => "Download Record - {$invoice['invoice_number']}",
@@ -499,6 +519,8 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
+
         view('invoices/print_a4', [
             'title' => "Print Record - {$invoice['invoice_number']}",
             'invoice' => $invoice,
@@ -506,8 +528,35 @@ class InvoiceController {
         ], false);
     }
 
-    public function getBulkPrint(): void {
+    public function getPrintReceipt(array $params): void {
+        if (!defined('ENABLE_THERMAL_RECEIPT') || !ENABLE_THERMAL_RECEIPT) {
+            Flash::set('info_msg', 'Thermal receipt printing is disabled.');
+            header('Location: /sales');
+            exit;
+        }
         Auth::requireUserOnly();
+        $firm = Auth::requireActiveFirm();
+        $id = (int)($params['id'] ?? 0);
+        $invoice = Invoice::getById($id, (int)$firm['id']);
+
+        if (!$invoice) {
+            Flash::set('error_msg', 'Record not found.');
+            header('Location: /sales');
+            exit;
+        }
+
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'view_purchases' : 'view_sales');
+
+        view('invoices/print_receipt', [
+            'title' => "Thermal Receipt - {$invoice['invoice_number']}",
+            'invoice' => $invoice,
+            'firm' => $firm
+        ], false);
+    }
+
+    public function getBulkPrint(): void {
+        $type = $_GET['type'] ?? 'sale';
+        RBAC::requirePermission($type === 'purchase' ? 'view_purchases' : 'view_sales');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -517,7 +566,6 @@ class InvoiceController {
             $ids = array_filter(array_map('trim', explode(',', $idsParam)));
         }
 
-        $type = $_GET['type'] ?? 'sale';
         $from = !empty($_GET['from']) ? trim($_GET['from']) : null;
         $to = !empty($_GET['to']) ? trim($_GET['to']) : null;
 
@@ -559,9 +607,99 @@ class InvoiceController {
             exit;
         }
 
+        RBAC::requirePermission(($invoice['type'] ?? 'sale') === 'purchase' ? 'delete_purchases' : 'delete_sales');
+
         Invoice::delete($id, (int)$firm['id']);
         Flash::set('success_msg', "Record \"{$invoice['invoice_number']}\" deleted and item inventory restored.");
         header('Location: ' . (($invoice['type'] === 'purchase') ? '/purchases' : '/sales'));
         exit;
+    }
+
+    /**
+     * JSON API: Idempotent & Conflict-Safe Offline PWA Invoice Sync
+     */
+    public function apiSyncOfflineInvoice(): void {
+        header('Content-Type: application/json; charset=utf-8');
+        if (!defined('ENABLE_OFFLINE') || !ENABLE_OFFLINE) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Offline sync feature is disabled.']);
+            exit;
+        }
+
+        $body = $_POST;
+        $payload = is_array($body['payload'] ?? null) ? $body['payload'] : $body;
+        $type = ($payload['type'] ?? 'sale') === 'purchase' ? 'purchase' : 'sale';
+
+        RBAC::requirePermission($type === 'purchase' ? 'create_purchases' : 'create_sales', true);
+        $firm = Auth::requireActiveFirm();
+        $firmId = (int)$firm['id'];
+
+        $queuedFirmId = (int)($body['firm_id'] ?? 0);
+        if ($queuedFirmId > 0 && $queuedFirmId !== $firmId) {
+            http_response_code(409);
+            echo json_encode([
+                'success' => false,
+                'conflict' => true,
+                'error' => 'Active business firm changed since this bill was queued offline. Switch back to the original firm and retry.'
+            ]);
+            exit;
+        }
+
+        $clientUuid = substr(trim((string)($body['client_uuid'] ?? '')), 0, 64);
+        if ($clientUuid === '') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Missing client_uuid idempotency key.']);
+            exit;
+        }
+
+        $existingUuid = Invoice::findByClientUuid($firmId, $clientUuid);
+        if ($existingUuid) {
+            echo json_encode([
+                'success' => true,
+                'already_synced' => true,
+                'invoice_id' => (int)$existingUuid['id'],
+                'invoice_number' => $existingUuid['invoice_number']
+            ]);
+            exit;
+        }
+
+        try {
+            $renumbered = false;
+            $reqNum = !empty($payload['invoice_number']) ? trim((string)$payload['invoice_number']) : '';
+            if ($reqNum !== '') {
+                $chk = DB::getConnection()->prepare("SELECT id FROM invoices WHERE firm_id = ? AND type = ? AND invoice_number = ? LIMIT 1");
+                $chk->execute([$firmId, $type, $reqNum]);
+                if ($chk->fetch()) {
+                    if (!empty($body['strict_number'])) {
+                        http_response_code(409);
+                        echo json_encode(['success' => false, 'conflict' => true, 'error' => "Invoice number #{$reqNum} was taken while offline."]);
+                        exit;
+                    }
+                    unset($payload['invoice_number']);
+                    $renumbered = true;
+                }
+            }
+
+            $data = self::buildInvoiceSubmission($payload, $firmId, $firm);
+            $data['invoiceData']['client_uuid'] = $clientUuid;
+            $created = Invoice::create($data['invoiceData'], $data['items']);
+
+            echo json_encode([
+                'success' => true,
+                'already_synced' => false,
+                'renumbered' => $renumbered,
+                'invoice_id' => (int)$created['id'],
+                'invoice_number' => $created['invoice_number']
+            ]);
+            exit;
+        } catch (Throwable $e) {
+            http_response_code(409);
+            echo json_encode([
+                'success' => false,
+                'conflict' => true,
+                'error' => Security::getSafeErrorMessage($e, 'Offline invoice conflict during sync.')
+            ]);
+            exit;
+        }
     }
 }

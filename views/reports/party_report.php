@@ -17,7 +17,7 @@ $partyList = !empty($parties) ? $parties : [];
 
   <!-- Balance Summary Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <div class="rf-card p-6 flex items-center justify-between gap-4">
+    <div class="rf-card p-6 flex items-center justify-between gap-4 cursor-pointer transition-colors hover:border-[#C8C4BA]" data-balance-filter="receivable" role="button" title="Click to filter Receivable accounts">
       <div>
         <div class="text-[11px] font-semibold uppercase tracking-wider text-[#78746C]">Total Receivables (To Collect)</div>
         <div class="text-2xl font-semibold text-[#8A5A00] mt-1.5 tabular-nums">₹ <?= number_format($rec, 2) ?></div>
@@ -27,7 +27,7 @@ $partyList = !empty($parties) ? $parties : [];
       </div>
     </div>
 
-    <div class="rf-card p-6 flex items-center justify-between gap-4">
+    <div class="rf-card p-6 flex items-center justify-between gap-4 cursor-pointer transition-colors hover:border-[#C8C4BA]" data-balance-filter="payable" role="button" title="Click to filter Payable accounts">
       <div>
         <div class="text-[11px] font-semibold uppercase tracking-wider text-[#78746C]">Total Payables (To Pay)</div>
         <div class="text-2xl font-semibold text-[#8F2D2B] mt-1.5 tabular-nums">₹ <?= number_format($pay, 2) ?></div>
@@ -65,8 +65,9 @@ $partyList = !empty($parties) ? $parties : [];
           <?php if (!empty($partyList)): ?>
             <?php foreach ($partyList as $p):
               $cBal = (float)($p['closing_balance'] ?? 0);
+              $balType = $cBal > 0 ? 'receivable' : ($cBal < 0 ? 'payable' : 'settled');
             ?>
-              <tr>
+              <tr data-balance-type="<?= $balType ?>">
                 <td class="font-medium">
                   <a href="/parties/ledger/<?= $p['id'] ?>" class="text-[#1C1B18] hover:underline no-underline">
                     <?= htmlspecialchars($p['name'], ENT_QUOTES, 'UTF-8') ?>
@@ -105,3 +106,21 @@ $partyList = !empty($parties) ? $parties : [];
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cards = document.querySelectorAll('[data-balance-filter]');
+  const rows = document.querySelectorAll('#partyReportTable tbody tr[data-balance-type]');
+  let activeFilter = '';
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const target = card.dataset.balanceFilter || '';
+      activeFilter = (activeFilter === target) ? '' : target;
+      cards.forEach(c => c.classList.toggle('!border-[#1C1B18]', c.dataset.balanceFilter === activeFilter && activeFilter !== ''));
+      rows.forEach(row => {
+        row.style.display = (!activeFilter || row.dataset.balanceType === activeFilter) ? '' : 'none';
+      });
+    });
+  });
+});
+</script>

@@ -21,6 +21,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
 <form action="<?= $isEditMode ? ('/invoices/edit/' . $invoice['id']) : '/invoices/create' ?>" method="POST" id="invoiceForm"
   class="space-y-6"
   data-firm-id="<?= htmlspecialchars((string)($activeFirm['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+  data-invoice-type="<?= htmlspecialchars($invoiceType ?? 'sale', ENT_QUOTES, 'UTF-8') ?>"
   data-is-edit="<?= $isEditMode ? '1' : '0' ?>"
   data-firm-state-code="<?= htmlspecialchars((string)($activeFirm['state_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
   data-default-gst="<?= $isEditMode ? (!empty($invoice['is_gst_bill']) ? 'gst' : 'non_gst') : htmlspecialchars($billSettings['default_gst_type'] ?? 'gst', ENT_QUOTES, 'UTF-8') ?>"
@@ -59,9 +60,10 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
           <i class="bi bi-cloud-check text-[#2E5A36]"></i> <span id="draftSaveTime">Draft saved</span>
         </span>
       </div>
+      <?php $docModeNoun = ($invoiceType === 'purchase') ? 'Purchase Record' : 'Sales Record'; ?>
       <div class="mt-1.5">
         <span class="rf-badge <?= $isGstDefault ? 'rf-badge-slate' : 'rf-badge-neutral' ?>" id="gstModeBadge">
-          <?= $isGstDefault ? ($isSeparateGst ? 'GST Sales Record (Separate Item GST)' : 'GST Sales Record (Final Amount GST)') : 'Non-GST Business Record' ?>
+          <?= $isGstDefault ? ($isSeparateGst ? "GST {$docModeNoun} (Separate Item GST)" : "GST {$docModeNoun} (Final Amount GST)") : 'Non-GST Business Record' ?>
         </span>
       </div>
     </div>
@@ -120,6 +122,20 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
           </label>
         </div>
       </div>
+
+      <?php if (!empty($warehouses) && count($warehouses) > 1): ?>
+        <?php $selectedWh = $isEditMode ? (int)($invoice['warehouse_id'] ?? 0) : (int)($warehouses[0]['id'] ?? 0); ?>
+        <div class="sm:col-span-2 lg:col-span-4">
+          <label class="rf-label-plain text-xs" for="warehouseSelect"><i class="bi bi-buildings mr-1 text-[#2B526E]"></i>Warehouse / Godown</label>
+          <select name="warehouse_id" id="warehouseSelect" class="rf-select rf-select-sm">
+            <?php foreach ($warehouses as $wh): ?>
+              <option value="<?= (int)$wh['id'] ?>" <?= ($selectedWh === (int)$wh['id']) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($wh['name'], ENT_QUOTES, 'UTF-8') ?><?= !empty($wh['is_default']) ? ' (Default)' : '' ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -216,7 +232,13 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
       <span class="text-xs font-semibold uppercase tracking-wider text-[#5C5A54] flex items-center gap-1.5">
         <i class="bi bi-box-seam"></i> Bill Line Items
       </span>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE): ?>
+          <div class="relative w-56">
+            <i class="bi bi-upc-scan absolute left-3 top-1/2 -translate-y-1/2 text-[#5C5A54] text-xs pointer-events-none"></i>
+            <input type="text" id="barcodeScanInput" class="rf-input rf-input-sm pl-8" placeholder="Scan barcode + Enter..." autocomplete="off">
+          </div>
+        <?php endif; ?>
         <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm py-1 px-2.5" data-ui-modal="#modalQuickAddItem" id="btnOpenAddItemModal">
           <i class="bi bi-plus-circle"></i> New Item
         </button>
@@ -354,7 +376,7 @@ $existingFinalTaxRate = ($isEditMode && !empty($invoice['taxable_amount']) && (f
       <div class="flex justify-between items-center text-xs text-[#78746C]">
         <span>Round Off</span>
         <input type="hidden" name="round_off" id="roundOffInput" value="<?= $isEditMode ? $invoice['round_off'] : '0' ?>">
-        <span class="tabular-nums">₹ 0.00</span>
+        <span class="tabular-nums" id="displayRoundOff">₹ <?= number_format((float)($isEditMode ? ($invoice['round_off'] ?? 0) : 0), 2) ?></span>
       </div>
 
       <div class="pt-3 border-t border-[#E6E4DF] flex justify-between items-center">

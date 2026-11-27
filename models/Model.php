@@ -52,10 +52,84 @@ class Model {
         return DB::getConnection();
     }
 
+    private const ALLOWED_SEQUENCE_TARGETS = [
+        'stock_transfers' => 'transfer_number',
+        'expenses' => 'expense_number',
+        'journal_entries' => 'entry_number',
+        'production_orders' => 'order_number',
+    ];
+
     public static function formatDocumentNumber(int|string|null $num): string {
         $parsed = (int)$num;
         if ($parsed < 0) return '001';
         return str_pad((string)$parsed, 3, '0', STR_PAD_LEFT);
+    }
+
+    public static function getOrInitFirmSequence(int $firmId, string $docType, string $table, string $column): int {
+        if ((self::ALLOWED_SEQUENCE_TARGETS[$table] ?? null) !== $column) {
+            throw new Exception("Invalid sequence target: {$table}.{$column}");
+        }
+        $db = self::db();
+        $stmt = $db->prepare("SELECT last_number FROM document_sequences WHERE firm_id = ? AND doc_type = ?");
+        $stmt->execute([$firmId, $docType]);
+        $row = $stmt->fetch();
+        if ($row !== false) {
+            return (int)$row['last_number'];
+        }
+
+        $maxStmt = $db->prepare("SELECT {$column} FROM {$table} WHERE firm_id = ?");
+        $maxStmt->execute([$firmId]);
+        $max = 0;
+        foreach ($maxStmt->fetchAll(PDO::FETCH_COLUMN) as $val) {
+            $strVal = trim((string)$val);
+            if ($strVal !== '' && ctype_digit($strVal)) {
+                $num = (int)$strVal;
+                if ($num > $max) $max = $num;
+            }
+        }
+
+        try {
+            $ins = $db->prepare("INSERT INTO document_sequences (firm_id, doc_type, last_number) VALUES (?, ?, ?)");
+            $ins->execute([$firmId, $docType, $max]);
+        } catch (Throwable $e) {
+            // Handle concurrent init gracefully
+        }
+        return $max;
+    }
+
+    public static function allocateFirmSequence(int $firmId, string $docType, ?string $requestedNumber, string $table, string $column): string {
+        if ((self::ALLOWED_SEQUENCE_TARGETS[$table] ?? null) !== $column) {
+            throw new Exception("Invalid sequence target: {$table}.{$column}");
+        }
+        $db = self::db();
+        $last = self::getOrInitFirmSequence($firmId, $docType, $table, $column);
+        $chkStmt = $db->prepare("SELECT id FROM {$table} WHERE firm_id = ? AND {$column} = ? LIMIT 1");
+
+        $trimmed = $requestedNumber !== null ? trim($requestedNumber) : '';
+        if ($trimmed !== '') {
+            $cand = ctype_digit($trimmed) ? self::formatDocumentNumber((int)$trimmed) : $trimmed;
+            $chkStmt->execute([$firmId, $cand]);
+            if ($chkStmt->fetch()) {
+                throw new Exception("Document number '{$cand}' already exists.");
+            }
+            if (ctype_digit($trimmed) && (int)$trimmed > $last) {
+                $upd = $db->prepare("UPDATE document_sequences SET last_number = ?, updated_at = CURRENT_TIMESTAMP WHERE firm_id = ? AND doc_type = ?");
+                $upd->execute([(int)$trimmed, $firmId, $docType]);
+            }
+            return $cand;
+        }
+
+        $next = $last + 1;
+        while (true) {
+            $cand = self::formatDocumentNumber($next);
+            $chkStmt->execute([$firmId, $cand]);
+            if (!$chkStmt->fetch()) {
+                $upd = $db->prepare("UPDATE document_sequences SET last_number = ?, updated_at = CURRENT_TIMESTAMP WHERE firm_id = ? AND doc_type = ?");
+                $upd->execute([$next, $firmId, $docType]);
+                return $cand;
+            }
+            $next++;
+        }
     }
 
     public static function transaction(callable $callback) {

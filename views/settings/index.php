@@ -318,6 +318,15 @@ $genSettings = $settings['general'] ?? [];
                   </select>
                   <p class="rf-help">Applied to invoice creation, bill viewing, printouts, and reports.</p>
                 </div>
+
+                <div>
+                  <label class="rf-label-plain">Inventory Stock Valuation Method</label>
+                  <select name="stock_valuation_method" class="rf-select">
+                    <option value="fifo" <?= (($genSettings['stock_valuation_method'] ?? 'fifo') === 'fifo') ? 'selected' : '' ?>>FIFO (First-In, First-Out)</option>
+                    <option value="weighted_avg" <?= (($genSettings['stock_valuation_method'] ?? '') === 'weighted_avg') ? 'selected' : '' ?>>Weighted Average Cost</option>
+                  </select>
+                  <p class="rf-help">Controls cost layer calculation on Stock Valuation reports.</p>
+                </div>
               </div>
             </div>
 

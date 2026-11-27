@@ -238,18 +238,34 @@ $invNum = $invoice['invoice_number'] ?? '';
       <div class="grid grid-cols-12 border-t border-[#1C1B18]">
         <!-- Left: Bank Details & Terms -->
         <div class="col-span-7 p-2.5 border-r border-[#1C1B18] text-[11px]">
-          <?php if (!empty($firm['bank_name']) || !empty($firm['bank_account_no']) || !empty($firm['upi_id'])): ?>
-            <div class="mb-2 space-y-0.5">
-              <strong class="uppercase text-[10px]">Bank Account Details:</strong>
-              <div>Bank: <strong><?= htmlspecialchars($firm['bank_name'] ?? '--', ENT_QUOTES, 'UTF-8') ?></strong> (<?= htmlspecialchars($firm['bank_branch'] ?? '', ENT_QUOTES, 'UTF-8') ?>)</div>
-              <div>A/C No: <strong><?= htmlspecialchars($firm['bank_account_no'] ?? '--', ENT_QUOTES, 'UTF-8') ?></strong></div>
-              <div>IFSC Code: <strong><?= htmlspecialchars($firm['bank_ifsc'] ?? '--', ENT_QUOTES, 'UTF-8') ?></strong></div>
-              <?php if (!empty($firm['upi_id'])): ?><div>UPI ID: <strong><?= htmlspecialchars($firm['upi_id'], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+          <?php
+            require_once __DIR__ . '/../../core/SvgQrCode.php';
+            $upiAmt = ((float)($invoice['balance_due'] ?? 0) > 0) ? (float)$invoice['balance_due'] : (float)($invoice['grand_total'] ?? 0);
+            $dynUpiQr = (defined('ENABLE_UPI_QR') && ENABLE_UPI_QR && !empty($firm['upi_id']))
+                ? SvgQrCode::renderUpiWidget($firm, $upiAmt, (string)$invoice['invoice_number'], 84)
+                : '';
+          ?>
+          <?php if (!empty($firm['bank_name']) || !empty($firm['bank_account_no']) || !empty($firm['upi_id']) || $dynUpiQr !== ''): ?>
+            <div class="mb-2 flex justify-between items-start gap-2">
+              <div class="space-y-0.5">
+                <strong class="uppercase text-[10px]">Bank Account Details:</strong>
+                <div>Bank: <strong><?= htmlspecialchars($firm['bank_name'] ?? '--', ENT_QUOTES, 'UTF-8') ?></strong> (<?= htmlspecialchars($firm['bank_branch'] ?? '', ENT_QUOTES, 'UTF-8') ?>)</div>
+                <div>A/C No: <strong><?= htmlspecialchars($firm['bank_account_no'] ?? '--', ENT_QUOTES, 'UTF-8') ?></strong></div>
+                <div>IFSC Code: <strong><?= htmlspecialchars($firm['bank_ifsc'] ?? '--', ENT_QUOTES, 'UTF-8') ?></strong></div>
+                <?php if (!empty($firm['upi_id'])): ?><div>UPI ID: <strong><?= htmlspecialchars($firm['upi_id'], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
+              </div>
+              <?php if ($dynUpiQr !== ''): ?>
+                <div class="text-center border border-[#D4D1C9] p-1 rounded bg-white shrink-0">
+                  <?= $dynUpiQr ?>
+                  <div class="text-[8px] text-[#5C5A54]">UPI Pay (not payment proof)</div>
+                </div>
+              <?php endif; ?>
             </div>
           <?php endif; ?>
 
           <?php 
             $termsText = !empty($invoice['terms']) ? $invoice['terms'] : ($firm['terms'] ?? '');
+            $footerNote = trim((string)($firmSettings['print']['footer_notes'] ?? ''));
             if (!empty($termsText)): 
           ?>
             <div class="mt-2 text-ink-muted text-[10px]">
@@ -257,19 +273,33 @@ $invNum = $invoice['invoice_number'] ?? '';
               <div class="whitespace-pre-line"><?= htmlspecialchars($termsText, ENT_QUOTES, 'UTF-8') ?></div>
             </div>
           <?php endif; ?>
+          <?php if ($footerNote !== ''): ?>
+            <div class="mt-2 text-ink-muted text-[10px]">
+              <div class="whitespace-pre-line"><?= htmlspecialchars($footerNote, ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+          <?php endif; ?>
         </div>
 
         <!-- Right: Summary Totals -->
         <div class="col-span-5 p-2.5 text-[11px]">
           <table class="meta-table">
-            <tr>
-              <td>Taxable Amount:</td>
-              <td class="text-right font-semibold">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></td>
-            </tr>
             <?php if ((float)($invoice['discount_amount'] ?? 0) > 0): ?>
+              <tr>
+                <td>Subtotal:</td>
+                <td class="text-right font-semibold">₹ <?= number_format((float)($invoice['subtotal'] ?? 0), 2) ?></td>
+              </tr>
               <tr>
                 <td class="text-rose">Discount:</td>
                 <td class="text-right text-rose">- ₹ <?= number_format((float)$invoice['discount_amount'], 2) ?></td>
+              </tr>
+              <tr>
+                <td>Taxable Amount:</td>
+                <td class="text-right font-semibold">₹ <?= number_format((float)($invoice['taxable_amount'] ?? 0), 2) ?></td>
+              </tr>
+            <?php else: ?>
+              <tr>
+                <td>Taxable Amount:</td>
+                <td class="text-right font-semibold">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></td>
               </tr>
             <?php endif; ?>
             <?php if ($isGst && (float)($invoice['tax_amount'] ?? 0) > 0): ?>
@@ -331,5 +361,7 @@ $invNum = $invoice['invoice_number'] ?? '';
     </div>
   </div>
 
+  <script src="/js/vendor/qrcode.min.js"></script>
+  <script src="/js/barcode.js"></script>
 </body>
 </html>

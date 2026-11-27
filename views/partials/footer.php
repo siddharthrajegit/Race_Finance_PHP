@@ -51,9 +51,32 @@
 <!-- Flatpickr JS (Offline Local with CDN Fallback) -->
 <script src="/vendor/flatpickr/flatpickr.min.js"></script>
 <script>if(typeof flatpickr==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/flatpickr"><\/script>');}</script>
+<!-- Barcode / QR Helpers -->
+<script src="/js/vendor/qrcode.min.js"></script>
+<script src="/js/barcode.js"></script>
+<?php if (!empty($user) && defined('ENABLE_OFFLINE') && ENABLE_OFFLINE): ?>
+<!-- Offline Queue Modal -->
+<div class="rf-modal hidden" id="offlineQueueModal" tabindex="-1" aria-hidden="true">
+  <div class="rf-modal-dialog rf-modal-dialog-lg">
+    <div class="rf-modal-header">
+      <h3 class="rf-modal-title text-sm"><i class="bi bi-cloud-upload text-[#2B526E]"></i> Offline Billing Queue &amp; Sync</h3>
+      <button type="button" class="text-[#78746C] hover:text-[#1C1B18] bg-transparent border-0 cursor-pointer p-1" data-ui-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="rf-modal-body" id="offlineQueueList">
+      <div class="text-[#78746C] text-center py-6 text-xs">Checking local offline queue...</div>
+    </div>
+    <div class="rf-modal-footer">
+      <button type="button" id="btnSyncOfflineNow" class="rf-btn rf-btn-primary rf-btn-sm">Sync Pending Now</button>
+      <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm" data-ui-dismiss="modal">Close</button>
+    </div>
+  </div>
+</div>
+<script src="/js/offline.js"></script>
+<?php endif; ?>
 <!-- Vanilla UI Controller & App Scripts -->
 <script src="/js/ui.js"></script>
 <script src="/js/app.js"></script>
+<?php if (!defined('ENABLE_PWA') || ENABLE_PWA): ?>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -61,5 +84,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<?php endif; ?>
 </body>
 </html>

@@ -533,9 +533,17 @@ class AdminController {
         $topStorageUsers = $regularUsers;
         usort($topStorageUsers, fn($a, $b) => ($b['storage']['totalUsedBytes'] ?? 0) - ($a['storage']['totalUsedBytes'] ?? 0));
 
+        require_once __DIR__ . '/../database/MigrationRunner.php';
+        $migPdo = DB::getConnection();
+        $migDriver = DB::getDriver();
+        $appliedMigrations = MigrationRunner::getAppliedMigrations($migPdo, $migDriver);
+        $availableMigrations = array_map('basename', MigrationRunner::getAvailableMigrations());
+
         view('admin/system', [
             'title' => 'System Health & Maintenance',
             'activeMenu' => 'admin-system',
+            'appliedMigrations' => $appliedMigrations,
+            'availableMigrations' => $availableMigrations,
             'sysInfo' => [
                 'uptime' => 0,
                 'cpuCount' => 2,
@@ -642,6 +650,41 @@ class AdminController {
             header('Location: /admin/system');
             exit;
         }
+    }
+
+    public function postRunMigrations(): void {
+        Auth::requireAdmin();
+        $admin = Auth::user();
+
+        try {
+            require_once __DIR__ . '/../database/MigrationRunner.php';
+            $res = MigrationRunner::runPending();
+            $executedCount = count($res['executed'] ?? []);
+            $errorsCount = count($res['errors'] ?? []);
+
+            Admin::logAction(
+                (int)$admin['id'],
+                $admin['name'],
+                'RUN_MIGRATIONS',
+                'Database',
+                DB::getDriver(),
+                "Executed {$executedCount} migration(s), errors: {$errorsCount}",
+                Security::getClientIp()
+            );
+
+            if ($errorsCount > 0) {
+                $firstErr = $res['errors'][0]['migration'] . ': ' . $res['errors'][0]['error'];
+                Flash::set('error_msg', "Migration halted on {$firstErr}");
+            } else {
+                Flash::set('success_msg', $executedCount > 0
+                    ? "Applied {$executedCount} pending migration(s) successfully!"
+                    : "All database schema migrations are already up to date.");
+            }
+        } catch (Throwable $e) {
+            Flash::set('error_msg', Security::getSafeErrorMessage($e, 'Failed to apply migrations.'));
+        }
+        header('Location: /admin/system');
+        exit;
     }
 
     public function getDownloadDb(): void {

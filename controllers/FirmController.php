@@ -5,16 +5,18 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/Upload.php';
 require_once __DIR__ . '/../core/View.php';
 require_once __DIR__ . '/../models/Firm.php';
 require_once __DIR__ . '/../models/Model.php';
+require_once __DIR__ . '/../models/AuditLog.php';
 
 class FirmController {
     public function listFirms(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $firms = Firm::getByUserId($user['id']);
 
@@ -27,7 +29,7 @@ class FirmController {
     }
 
     public function getCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $existing = Firm::getByUserId($user['id']);
         if (count($existing) >= 2) {
@@ -45,7 +47,7 @@ class FirmController {
     }
 
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
 
         try {
@@ -121,7 +123,7 @@ class FirmController {
     }
 
     public function getEdit(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $firmId = (int)($params['id'] ?? 0);
         $firm = Firm::getById($firmId, (int)$user['id']);
@@ -141,7 +143,7 @@ class FirmController {
     }
 
     public function postEdit(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $firmId = (int)($params['id'] ?? 0);
         $existing = Firm::getById($firmId, (int)$user['id']);
@@ -224,15 +226,16 @@ class FirmController {
         Auth::requireUserOnly();
         $user = Auth::user();
         $firmId = (int)($params['id'] ?? 0);
-        $firm = Firm::getById($firmId, (int)$user['id']);
+        $firm = Firm::getAccessibleById($firmId, (int)$user['id']);
 
         if (!$firm) {
-            Flash::set('error_msg', 'Firm not found.');
+            Flash::set('error_msg', 'Firm not found or access denied.');
             header('Location: /dashboard');
             exit;
         }
 
         $_SESSION['activeFirmId'] = $firm['id'];
+        RBAC::clearCache();
         Flash::set('success_msg', "Switched active firm to \"{$firm['name']}\".");
         $returnUrl = Security::getSafeRefererUrl('/dashboard');
         header("Location: {$returnUrl}");
@@ -240,7 +243,7 @@ class FirmController {
     }
 
     public function postSetDefault(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $firmId = (int)($params['id'] ?? 0);
         $firm = Firm::getById($firmId, (int)$user['id']);
@@ -254,7 +257,7 @@ class FirmController {
     }
 
     public function postDelete(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requireOwnerAccount();
         $user = Auth::user();
         $firmId = (int)($params['id'] ?? 0);
         $firms = Firm::getByUserId((int)$user['id']);

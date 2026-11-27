@@ -52,7 +52,7 @@ class Report extends Model {
             SELECT i.*, p.name as party_name 
             FROM invoices i 
             LEFT JOIN parties p ON i.party_id = p.id 
-            WHERE i.firm_id = ? 
+            WHERE i.firm_id = ? AND i.type = 'sale'
             ORDER BY i.created_at DESC LIMIT 6
         ");
         $recentStmt->execute([$firmId]);
@@ -119,11 +119,11 @@ class Report extends Model {
         $stmt = self::db()->prepare("
             SELECT 
                 it.id, it.name, it.item_code, it.unit, it.current_stock,
-                COALESCE(SUM(ii.quantity), 0) as total_sold_qty,
-                COALESCE(SUM(ii.total_amount), 0) as total_sales_value
+                COALESCE(SUM(CASE WHEN inv.type = 'sale' THEN ii.quantity ELSE 0 END), 0) as total_sold_qty,
+                COALESCE(SUM(CASE WHEN inv.type = 'sale' THEN ii.total_amount ELSE 0 END), 0) as total_sales_value
             FROM items it
             LEFT JOIN invoice_items ii ON it.id = ii.item_id
-            LEFT JOIN invoices inv ON ii.invoice_id = inv.id AND inv.type = 'sale'
+            LEFT JOIN invoices inv ON ii.invoice_id = inv.id
             WHERE it.firm_id = ?
             GROUP BY it.id, it.name, it.item_code, it.unit, it.current_stock
             ORDER BY total_sold_qty DESC

@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
@@ -15,7 +16,7 @@ require_once __DIR__ . '/../models/Party.php';
 
 class EstimateController {
     public function listEstimates(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_estimates');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -29,7 +30,7 @@ class EstimateController {
     }
 
     public function getBuilder(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_estimates');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -57,7 +58,7 @@ class EstimateController {
     }
 
     public function postSave(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_estimates');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -136,7 +137,7 @@ class EstimateController {
     }
 
     public function getView(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_estimates');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $id = (int)($params['id'] ?? 0);
@@ -157,7 +158,7 @@ class EstimateController {
     }
 
     public function getPrint(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_estimates');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $id = (int)($params['id'] ?? 0);
@@ -181,7 +182,7 @@ class EstimateController {
     }
 
     public function postPrintDirect(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_estimates');
         $firm = Auth::requireActiveFirm();
 
         $mode = $_POST['mode'] ?? 'ratelist';
@@ -253,7 +254,7 @@ class EstimateController {
     }
 
     public function postDelete(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_estimates');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $id = (int)($params['id'] ?? 0);
@@ -270,7 +271,7 @@ class EstimateController {
     }
 
     public function apiItemsByCategory(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_items', true);
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 

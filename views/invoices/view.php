@@ -27,9 +27,28 @@ $due = (float)($invoice['balance_due'] ?? 0);
       <a href="/invoices/edit/<?= $invoice['id'] ?>" class="rf-btn rf-btn-amber rf-btn-sm">
         <i class="bi bi-pencil-square"></i> Edit Record
       </a>
+      <?php if (defined('ENABLE_THERMAL_RECEIPT') && ENABLE_THERMAL_RECEIPT): ?>
+        <a href="/invoices/receipt/<?= $invoice['id'] ?>" target="_blank" class="rf-btn rf-btn-secondary rf-btn-sm">
+          <i class="bi bi-receipt"></i> Thermal Receipt
+        </a>
+      <?php endif; ?>
       <a href="/invoices/print/<?= $invoice['id'] ?>" target="_blank" class="rf-btn rf-btn-secondary rf-btn-sm">
         <i class="bi bi-printer"></i> Print Record
       </a>
+      <?php
+        $waPhone = preg_replace('/[^0-9]/', '', (string)($invoice['party_phone'] ?? ''));
+        if (strlen($waPhone) === 10) $waPhone = '91' . $waPhone;
+        if (defined('ENABLE_WHATSAPP_REMINDER') && ENABLE_WHATSAPP_REMINDER && !$isPurchase && $due > 0.01):
+          $waText = "Hello {$invoice['party_name']}, payment reminder from {$firm['name']} for Bill #{$invoice['invoice_number']} (Total: ₹" . number_format((float)$invoice['grand_total'], 2) . ", Balance Due: ₹" . number_format($due, 2) . ").";
+          if (!empty($firm['upi_id'])) {
+            $waText .= " UPI ID: {$firm['upi_id']}.";
+          }
+          $waLink = 'https://wa.me/' . $waPhone . '?text=' . rawurlencode($waText);
+      ?>
+        <a href="<?= htmlspecialchars($waLink, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="rf-btn rf-btn-sage rf-btn-sm" title="Send payment reminder via WhatsApp Web/App">
+          <i class="bi bi-whatsapp"></i> Remind on WhatsApp
+        </a>
+      <?php endif; ?>
       <form action="/invoices/delete/<?= $invoice['id'] ?>" method="POST" class="inline form-delete-confirm" data-confirm-message="Are you sure you want to delete this record? Item inventory stock will be restored automatically.">
         <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
         <button type="submit" class="rf-btn rf-btn-danger rf-btn-sm" title="Delete Record">
@@ -169,11 +188,19 @@ $due = (float)($invoice['balance_due'] ?? 0);
 
         <?php
           $termsText = !empty($invoice['terms']) ? $invoice['terms'] : ($firm['terms'] ?? '');
+          $footerNote = trim((string)($firmSettings['print']['footer_notes'] ?? ''));
           if (!empty($termsText)):
         ?>
           <div>
             <div class="rf-label">Terms &amp; Conditions</div>
             <div class="text-xs text-[#5C5A54] leading-relaxed whitespace-pre-line"><?= htmlspecialchars($termsText, ENT_QUOTES, 'UTF-8') ?></div>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($footerNote !== ''): ?>
+          <div>
+            <div class="rf-label">Footer Note</div>
+            <div class="text-xs text-[#5C5A54] leading-relaxed whitespace-pre-line"><?= htmlspecialchars($footerNote, ENT_QUOTES, 'UTF-8') ?></div>
           </div>
         <?php endif; ?>
 
@@ -185,15 +212,23 @@ $due = (float)($invoice['balance_due'] ?? 0);
 
       <div class="md:col-span-6">
         <div class="rf-card-muted p-5 space-y-2.5 text-sm">
-          <div class="flex justify-between pb-2.5 border-b border-[#E2DFD7]">
-            <span class="text-[#5C5A54] text-xs">Taxable Subtotal</span>
-            <span class="font-medium tabular-nums">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></span>
-          </div>
-
           <?php if ((float)($invoice['discount_amount'] ?? 0) > 0): ?>
+            <div class="flex justify-between pb-2.5 border-b border-[#E2DFD7]">
+              <span class="text-[#5C5A54] text-xs">Subtotal</span>
+              <span class="font-medium tabular-nums">₹ <?= number_format((float)($invoice['subtotal'] ?? 0), 2) ?></span>
+            </div>
             <div class="flex justify-between pb-2.5 border-b border-[#E2DFD7] text-[#8F2D2B] text-xs">
               <span>Discount</span>
               <span class="tabular-nums">- ₹ <?= number_format((float)$invoice['discount_amount'], 2) ?></span>
+            </div>
+            <div class="flex justify-between pb-2.5 border-b border-[#E2DFD7]">
+              <span class="text-[#5C5A54] text-xs">Taxable Subtotal</span>
+              <span class="font-medium tabular-nums">₹ <?= number_format((float)($invoice['taxable_amount'] ?? 0), 2) ?></span>
+            </div>
+          <?php else: ?>
+            <div class="flex justify-between pb-2.5 border-b border-[#E2DFD7]">
+              <span class="text-[#5C5A54] text-xs">Taxable Subtotal</span>
+              <span class="font-medium tabular-nums">₹ <?= number_format((float)($invoice['taxable_amount'] ?? ($invoice['subtotal'] ?? 0)), 2) ?></span>
             </div>
           <?php endif; ?>
 
@@ -215,6 +250,13 @@ $due = (float)($invoice['balance_due'] ?? 0);
             <?php endif; ?>
           <?php endif; ?>
 
+          <?php if ((float)($invoice['round_off'] ?? 0) != 0.0): ?>
+            <div class="flex justify-between pb-2.5 border-b border-[#E2DFD7] text-xs text-[#5C5A54]">
+              <span>Round Off</span>
+              <span class="tabular-nums">₹ <?= number_format((float)$invoice['round_off'], 2) ?></span>
+            </div>
+          <?php endif; ?>
+
           <div class="flex justify-between items-center py-2 border-b border-[#E2DFD7]">
             <span class="font-semibold text-[#1C1B18]">Grand Total</span>
             <span class="text-lg font-semibold text-[#1C1B18] tabular-nums">₹ <?= number_format((float)($invoice['grand_total'] ?? 0), 2) ?></span>
@@ -229,6 +271,27 @@ $due = (float)($invoice['balance_due'] ?? 0);
             <span class="text-[#8F2D2B] font-medium">Balance Due</span>
             <span class="font-semibold text-[#8F2D2B] tabular-nums">₹ <?= number_format($due, 2) ?></span>
           </div>
+
+          <?php
+            if (defined('ENABLE_UPI_QR') && ENABLE_UPI_QR && !$isPurchase && !empty($firm['upi_id'])):
+              require_once __DIR__ . '/../../core/SvgQrCode.php';
+              $upiPayAmt = $due > 0.01 ? $due : (float)($invoice['grand_total'] ?? 0);
+              $upiDeepLink = SvgQrCode::buildUpiUri((string)$firm['upi_id'], (string)($firm['name'] ?? 'Merchant'), $upiPayAmt, "Bill #{$invoice['invoice_number']}");
+              $upiWidgetHtml = SvgQrCode::renderUpiWidget($firm, $upiPayAmt, (string)$invoice['invoice_number'], 96);
+          ?>
+            <div class="mt-3 pt-3 border-t border-[#E2DFD7] flex justify-between items-center gap-3 no-print">
+              <div>
+                <div class="text-xs font-semibold text-[#1C1B18]">Scan or Pay via UPI</div>
+                <div class="text-[11px] text-[#78746C] mt-0.5">Amount: ₹<?= number_format($upiPayAmt, 2) ?> (not auto-verified)</div>
+                <a href="<?= htmlspecialchars($upiDeepLink, ENT_QUOTES, 'UTF-8') ?>" class="rf-btn rf-btn-secondary rf-btn-sm mt-2">
+                  <i class="bi bi-qr-code-scan"></i> Open UPI App
+                </a>
+              </div>
+              <div class="bg-white p-1.5 border border-[#E2DFD7] rounded-lg shrink-0">
+                <?= $upiWidgetHtml ?>
+              </div>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
     </div>

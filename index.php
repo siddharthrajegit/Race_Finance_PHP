@@ -50,6 +50,9 @@ require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/LegalController.php';
 require_once __DIR__ . '/controllers/UnitController.php';
 require_once __DIR__ . '/controllers/EstimateController.php';
+require_once __DIR__ . '/controllers/WarehouseController.php';
+require_once __DIR__ . '/controllers/ExpenseController.php';
+require_once __DIR__ . '/controllers/StaffController.php';
 
 // -----------------------------------------------------------------------------
 // Root & Dashboard
@@ -160,6 +163,10 @@ Router::get('/reports', [ReportController::class, 'getReportsIndex']);
 Router::get('/reports/parties', [ReportController::class, 'getPartyReport']);
 Router::get('/reports/tax', [ReportController::class, 'getTaxReport']);
 Router::get('/reports/items', [ReportController::class, 'getItemReport']);
+Router::get('/reports/gst-exports', [ExportController::class, 'gstrIndex']);
+Router::get('/reports/gst-exports/download', [ExportController::class, 'downloadGstrCsv']);
+Router::get('/reports/tally-export', [ExportController::class, 'tallyIndex']);
+Router::get('/reports/tally-export/download', [ExportController::class, 'downloadTallyXml']);
 
 // -----------------------------------------------------------------------------
 // Backup Routes
@@ -174,6 +181,94 @@ Router::post('/backup/google-drive', [BackupController::class, 'uploadGoogleDriv
 // -----------------------------------------------------------------------------
 Router::get('/settings', [SettingController::class, 'getSettings']);
 Router::post('/settings', [SettingController::class, 'postSettings']);
+
+// -----------------------------------------------------------------------------
+// Warehouses, Transfers & Stock Valuation Routes
+// -----------------------------------------------------------------------------
+Router::get('/warehouses', [WarehouseController::class, 'listWarehouses']);
+Router::get('/warehouses/create', [WarehouseController::class, 'getCreate']);
+Router::post('/warehouses/create', [WarehouseController::class, 'postCreate']);
+Router::get('/warehouses/edit/:id', [WarehouseController::class, 'getEdit']);
+Router::post('/warehouses/edit/:id', [WarehouseController::class, 'postEdit']);
+Router::post('/warehouses/delete/:id', [WarehouseController::class, 'postDelete']);
+Router::get('/warehouses/transfers', [WarehouseController::class, 'listTransfers']);
+Router::get('/warehouses/transfers/create', [WarehouseController::class, 'getCreateTransfer']);
+Router::post('/warehouses/transfers/create', [WarehouseController::class, 'postCreateTransfer']);
+Router::get('/warehouses/valuation', [WarehouseController::class, 'getValuation']);
+Router::get('/api/warehouses/item/:id', [WarehouseController::class, 'apiItemBreakdown']);
+
+// -----------------------------------------------------------------------------
+// Business Expense Routes
+// -----------------------------------------------------------------------------
+Router::get('/expenses', [ExpenseController::class, 'listExpenses']);
+Router::get('/expenses/create', [ExpenseController::class, 'getCreate']);
+Router::post('/expenses/create', [ExpenseController::class, 'postCreate']);
+Router::get('/expenses/edit/:id', [ExpenseController::class, 'getEdit']);
+Router::post('/expenses/edit/:id', [ExpenseController::class, 'postEdit']);
+Router::post('/expenses/delete/:id', [ExpenseController::class, 'postDelete']);
+
+// -----------------------------------------------------------------------------
+// Staff, RBAC & Audit Log Routes
+// -----------------------------------------------------------------------------
+Router::get('/staff', [StaffController::class, 'listStaff']);
+Router::get('/staff/create', [StaffController::class, 'getCreate']);
+Router::post('/staff/create', [StaffController::class, 'postCreate']);
+Router::get('/staff/edit/:id', [StaffController::class, 'getEdit']);
+Router::post('/staff/edit/:id', [StaffController::class, 'postEdit']);
+Router::post('/staff/delete/:id', [StaffController::class, 'postDelete']);
+Router::get('/audit-logs', [StaffController::class, 'listAuditLogs']);
+
+// -----------------------------------------------------------------------------
+// Double-Entry Accounting & Bank Reconciliation Routes
+// -----------------------------------------------------------------------------
+Router::get('/accounting', [AccountingController::class, 'index']);
+Router::post('/accounting/accounts/create', [AccountingController::class, 'postCreateAccount']);
+Router::post('/accounting/backfill', [AccountingController::class, 'postBackfill']);
+Router::get('/accounting/journals', [AccountingController::class, 'listJournals']);
+Router::get('/accounting/journals/create', [AccountingController::class, 'getCreateJournal']);
+Router::post('/accounting/journals/create', [AccountingController::class, 'postCreateJournal']);
+Router::post('/accounting/journals/reverse/:id', [AccountingController::class, 'postReverseJournal']);
+Router::get('/accounting/trial-balance', [AccountingController::class, 'getTrialBalance']);
+Router::get('/accounting/profit-loss', [AccountingController::class, 'getProfitAndLoss']);
+Router::get('/accounting/balance-sheet', [AccountingController::class, 'getBalanceSheet']);
+Router::get('/accounting/cash-flow', [AccountingController::class, 'getCashFlow']);
+Router::get('/accounting/reconciliation', [AccountingController::class, 'listBankReconciliation']);
+Router::post('/accounting/reconciliation/import', [AccountingController::class, 'postImportCsv']);
+Router::post('/accounting/reconciliation/manual-line', [AccountingController::class, 'postAddManualLine']);
+Router::post('/accounting/reconciliation/match', [AccountingController::class, 'postMatchLine']);
+Router::post('/accounting/reconciliation/status', [AccountingController::class, 'postSetLineStatus']);
+Router::get('/api/accounting/reconcile-candidates/:id', [AccountingController::class, 'apiCandidates']);
+
+// -----------------------------------------------------------------------------
+// Thermal Receipt, Dynamic UPI, Barcode, Catalogue & Loyalty Routes
+// -----------------------------------------------------------------------------
+Router::get('/invoices/receipt/:id', [InvoiceController::class, 'getPrintReceipt']);
+Router::get('/barcodes', [BarcodeController::class, 'studio']);
+Router::get('/api/barcodes/lookup', [BarcodeController::class, 'apiLookup']);
+Router::get('/catalogue', [CatalogueController::class, 'manage']);
+Router::post('/catalogue', [CatalogueController::class, 'postUpdate']);
+Router::get('/c/:slug', [CatalogueController::class, 'publicView']);
+Router::get('/loyalty', [LoyaltyController::class, 'index']);
+Router::post('/loyalty/program', [LoyaltyController::class, 'postSaveProgram']);
+Router::post('/loyalty/adjust', [LoyaltyController::class, 'postAdjustPoints']);
+
+// -----------------------------------------------------------------------------
+// Batches & Expiry (FEFO), Serial / IMEI, and Manufacturing BOM Routes
+// -----------------------------------------------------------------------------
+Router::get('/batches', [InventoryAdvancedController::class, 'listBatches']);
+Router::post('/batches/create', [InventoryAdvancedController::class, 'postCreateBatch']);
+Router::get('/serials', [InventoryAdvancedController::class, 'listSerials']);
+Router::post('/serials/register', [InventoryAdvancedController::class, 'postRegisterSerials']);
+Router::post('/serials/status', [InventoryAdvancedController::class, 'postUpdateSerialStatus']);
+Router::get('/bom', [InventoryAdvancedController::class, 'listBoms']);
+Router::post('/bom/save', [InventoryAdvancedController::class, 'postSaveBom']);
+Router::post('/bom/delete/:id', [InventoryAdvancedController::class, 'postDeleteBom']);
+Router::post('/bom/produce', [InventoryAdvancedController::class, 'postExecuteProduction']);
+
+// -----------------------------------------------------------------------------
+// Offline PWA Sync API
+// -----------------------------------------------------------------------------
+Router::post('/api/invoices/sync', [InvoiceController::class, 'apiSyncOfflineInvoice']);
 
 // -----------------------------------------------------------------------------
 // Admin Platform Management Routes
@@ -194,6 +289,7 @@ Router::get('/admin/invoices/:id', [AdminController::class, 'getInspectInvoice']
 Router::get('/admin/system', [AdminController::class, 'getSystemHealth']);
 Router::post('/admin/system/vacuum', [AdminController::class, 'postVacuumDb']);
 Router::post('/admin/system/clean-orphans', [AdminController::class, 'postCleanOrphans']);
+Router::post('/admin/system/run-migrations', [AdminController::class, 'postRunMigrations']);
 Router::get('/admin/system/download-db', [AdminController::class, 'getDownloadDb']);
 Router::post('/admin/system/download-db', [AdminController::class, 'postDownloadDb']);
 Router::get('/admin/settings', [AdminController::class, 'getSettings']);

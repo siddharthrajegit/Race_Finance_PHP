@@ -90,6 +90,16 @@ class Auth {
                 exit;
             }
         }
+
+        if ($user['role'] === 'staff') {
+            $accessibleFirms = Firm::getAccessibleByUserId((int)$user['id']);
+            if (empty($accessibleFirms)) {
+                self::logout();
+                Flash::set('error_msg', 'Your staff access is inactive or the business owner subscription is paused.');
+                header('Location: /auth/login');
+                exit;
+            }
+        }
     }
 
     public static function requireAdmin(): void {
@@ -120,7 +130,7 @@ class Auth {
             return null;
         }
 
-        $firms = Firm::getByUserId($user['id']);
+        $firms = Firm::getAccessibleByUserId((int)$user['id']);
         if (empty($firms)) {
             return null;
         }
@@ -158,6 +168,13 @@ class Auth {
     public static function requireActiveFirm(): ?array {
         $firm = self::getActiveFirm();
         if (!$firm) {
+            $user = self::user();
+            if ($user && ($user['role'] ?? '') === 'staff') {
+                self::logout();
+                Flash::set('error_msg', 'No active business firm assignment found for your staff account. Contact your business owner.');
+                header('Location: /auth/login');
+                exit;
+            }
             $uri = $_SERVER['REQUEST_URI'] ?? '';
             if (!str_starts_with($uri, '/firms/create') && !str_starts_with($uri, '/auth') && !str_starts_with($uri, '/firms') && !str_starts_with($uri, '/admin')) {
                 Flash::set('info_msg', 'Welcome! Please create your first business firm to get started.');

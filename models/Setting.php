@@ -31,7 +31,8 @@ class Setting extends Model {
         ],
         'general' => [
             'currency_symbol' => '₹',
-            'date_format' => 'DD/MM/YYYY'
+            'date_format' => 'DD/MM/YYYY',
+            'stock_valuation_method' => 'fifo'
         ]
     ];
 

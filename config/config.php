@@ -62,6 +62,35 @@ define('SUPPORT_PHONE_RAW', preg_replace('/[^0-9]/', '', SUPPORT_PHONE));
 define('ROOT_DIR', dirname(__DIR__));
 define('UPLOADS_DIR', ROOT_DIR . '/public/uploads');
 
+// Feature Toggles — set to false (or via .env) to disable any module instantly
+$featureFlag = static function (string $name, bool $default = true): bool {
+    $raw = env($name);
+    if ($raw === null || $raw === '') {
+        return $default;
+    }
+    return !in_array(strtolower((string)$raw), ['false', '0', 'off', 'no'], true);
+};
+
+if (!defined('ENABLE_WAREHOUSE'))          define('ENABLE_WAREHOUSE',          $featureFlag('ENABLE_WAREHOUSE', true));
+if (!defined('ENABLE_RBAC'))               define('ENABLE_RBAC',               $featureFlag('ENABLE_RBAC', true));
+if (!defined('ENABLE_ACCOUNTING'))         define('ENABLE_ACCOUNTING',         $featureFlag('ENABLE_ACCOUNTING', true));
+if (!defined('ENABLE_BARCODE'))            define('ENABLE_BARCODE',            $featureFlag('ENABLE_BARCODE', true));
+if (!defined('ENABLE_UPI_QR'))             define('ENABLE_UPI_QR',             $featureFlag('ENABLE_UPI_QR', true));
+if (!defined('ENABLE_LOYALTY'))            define('ENABLE_LOYALTY',            $featureFlag('ENABLE_LOYALTY', true));
+if (!defined('ENABLE_CATALOGUE'))          define('ENABLE_CATALOGUE',          $featureFlag('ENABLE_CATALOGUE', true));
+if (!defined('ENABLE_PWA'))                define('ENABLE_PWA',                $featureFlag('ENABLE_PWA', true));
+if (!defined('ENABLE_OFFLINE'))            define('ENABLE_OFFLINE',            $featureFlag('ENABLE_OFFLINE', true));
+if (!defined('ENABLE_BATCH_TRACKING'))     define('ENABLE_BATCH_TRACKING',     $featureFlag('ENABLE_BATCH_TRACKING', true));
+if (!defined('ENABLE_BATCH_EXPIRY'))       define('ENABLE_BATCH_EXPIRY',       $featureFlag('ENABLE_BATCH_EXPIRY', ENABLE_BATCH_TRACKING));
+if (!defined('ENABLE_SERIAL_TRACKING'))    define('ENABLE_SERIAL_TRACKING',    $featureFlag('ENABLE_SERIAL_TRACKING', ENABLE_BATCH_TRACKING));
+if (!defined('ENABLE_BOM'))                define('ENABLE_BOM',                $featureFlag('ENABLE_BOM', true));
+if (!defined('ENABLE_EXPENSES'))           define('ENABLE_EXPENSES',           $featureFlag('ENABLE_EXPENSES', true));
+if (!defined('ENABLE_AUDIT_LOGS'))         define('ENABLE_AUDIT_LOGS',         $featureFlag('ENABLE_AUDIT_LOGS', ENABLE_RBAC));
+if (!defined('ENABLE_THERMAL_RECEIPT'))    define('ENABLE_THERMAL_RECEIPT',    $featureFlag('ENABLE_THERMAL_RECEIPT', true));
+if (!defined('ENABLE_WHATSAPP_REMINDER'))  define('ENABLE_WHATSAPP_REMINDER',  $featureFlag('ENABLE_WHATSAPP_REMINDER', true));
+if (!defined('ENABLE_COMPLIANCE_EXPORTS')) define('ENABLE_COMPLIANCE_EXPORTS', $featureFlag('ENABLE_COMPLIANCE_EXPORTS', true));
+unset($featureFlag);
+
 // Error reporting based on environment
 $isProduction = env('NODE_ENV') === 'production' || env('APP_ENV') === 'production';
 if ($isProduction) {

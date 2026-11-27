@@ -400,7 +400,17 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                     <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC Code: <strong class="text-ink font-mono"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
                     <?php if (!empty($firm["upi_id"])): ?><div>UPI ID: <strong class="text-slate font-mono"><?= htmlspecialchars($firm["upi_id"], ENT_QUOTES, 'UTF-8') ?></strong></div><?php endif; ?>
                   </div>
-                  <?php if (!empty($firm["qr_code_path"])): ?>
+                  <?php
+                    $showDynQr = defined('ENABLE_UPI_QR') && ENABLE_UPI_QR && !empty($firm['upi_id']) && !empty($settings['print']['show_upi_qr'] ?? true);
+                    if ($showDynQr):
+                      require_once __DIR__ . '/../../core/SvgQrCode.php';
+                      $dynAmt = $cleanDue > 0.01 ? $cleanDue : $cleanGrandTotal;
+                  ?>
+                    <div class="text-center pl-3 border-l border-border flex flex-col items-center">
+                      <?= SvgQrCode::renderUpiWidget($firm, $dynAmt, (string)($invoice['invoice_number'] ?? ''), 78) ?>
+                      <span class="uppercase font-semibold text-ink-muted mt-1 text-[10px] tracking-wide">Dynamic UPI QR</span>
+                    </div>
+                  <?php elseif (!empty($firm["qr_code_path"])): ?>
                     <div class="text-center pl-3 border-l border-border flex flex-col items-center">
                       <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="Scan & Pay QR" class="rounded border border-border p-1 bg-white w-[78px] h-[78px] object-contain">
                       <span class="uppercase font-semibold text-ink-muted mt-1 text-[10px] tracking-wide">Scan to Pay</span>
@@ -427,16 +437,20 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
           <div class="col-span-6">
             <div class="total-highlight-card">
               <table class="paper-table-reset text-xs">
-                <tr>
-                  <td class="text-ink-muted p-1">Taxable Subtotal:</td>
-                  <td class="text-right font-semibold font-mono p-1">₹ <?= number_format($cleanTaxable, 2) ?></td>
-                </tr>
                 <?php if ((float)($invoice["discount_amount"] ?? 0) > 0): ?>
+                  <tr>
+                    <td class="text-ink-muted p-1">Subtotal:</td>
+                    <td class="text-right font-semibold font-mono p-1">₹ <?= number_format((float)($invoice["subtotal"] ?? 0), 2) ?></td>
+                  </tr>
                   <tr>
                     <td class="text-rose p-1">Overall Discount:</td>
                     <td class="text-right text-rose font-semibold font-mono p-1">- ₹ <?= number_format((float)($invoice["discount_amount"]), 2) ?></td>
                   </tr>
                 <?php endif; ?>
+                <tr>
+                  <td class="text-ink-muted p-1">Taxable Subtotal:</td>
+                  <td class="text-right font-semibold font-mono p-1">₹ <?= number_format($cleanTaxable, 2) ?></td>
+                </tr>
                 <?php if (!empty($invoice["is_gst_bill"]) && (float)($invoice["tax_amount"] ?? 0) > 0): ?>
                   <?php if (!empty($invoice["is_interstate"])): ?>
                     <tr>
@@ -478,9 +492,13 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
         </div>
 
         <!-- 5. Signatory & Bottom Acknowledgement -->
+        <?php $footerNote = trim((string)($settings['print']['footer_notes'] ?? ($firmSettings['print']['footer_notes'] ?? ''))); ?>
         <div class="grid grid-cols-12 items-end mt-4 pt-3 border-t border-border">
           <div class="col-span-7">
             <div class="text-xs text-ink-muted leading-relaxed">
+              <?php if ($footerNote !== ''): ?>
+                <div class="text-ink font-medium mb-1 whitespace-pre-line"><?= htmlspecialchars($footerNote, ENT_QUOTES, 'UTF-8') ?></div>
+              <?php endif; ?>
               Thank you for doing business with <strong class="text-ink"><?= htmlspecialchars($firm["name"] ?? $firmName, ENT_QUOTES, 'UTF-8') ?></strong>.<br>
               This is a digitally generated invoice, authorized signature verified.
             </div>
@@ -592,7 +610,12 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
                   <?php if (!empty($firm["bank_account_no"])): ?><div>A/C: <span class="font-mono font-bold"><?= htmlspecialchars($firm["bank_account_no"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
                   <?php if (!empty($firm["bank_ifsc"])): ?><div>IFSC: <span class="font-mono"><?= htmlspecialchars($firm["bank_ifsc"], ENT_QUOTES, 'UTF-8') ?></span></div><?php endif; ?>
                 </div>
-                <?php if (!empty($firm["qr_code_path"])): ?>
+                <?php if ($showDynQr ?? false): ?>
+                  <div class="text-center pl-2 border-l border-border flex flex-col items-center">
+                    <?= SvgQrCode::renderUpiWidget($firm, $cleanDue > 0.01 ? $cleanDue : $cleanGrandTotal, (string)($invoice['invoice_number'] ?? ''), 68) ?>
+                    <span class="text-[10px] text-ink-muted mt-1">Dynamic UPI QR</span>
+                  </div>
+                <?php elseif (!empty($firm["qr_code_path"])): ?>
                   <div class="text-center pl-2 border-l border-border flex flex-col items-center">
                     <img src="<?= htmlspecialchars($firm["qr_code_path"], ENT_QUOTES, 'UTF-8') ?>" alt="QR Code" class="border border-border p-1 bg-white rounded w-[68px] h-[68px] object-contain">
                     <span class="text-[10px] text-ink-muted mt-1">Scan to Pay</span>
@@ -1020,6 +1043,8 @@ $waDefaultMessage = "*Tax Invoice from {$firmName}*\n" .
       whatsAppMessage: <?= json_encode($waDefaultMessage) ?>
     };
   </script>
+  <script src="/js/vendor/qrcode.min.js"></script>
+  <script src="/js/barcode.js"></script>
   <script src="/js/ui.js"></script>
   <script src="/js/invoice-download.js"></script>
 </body>

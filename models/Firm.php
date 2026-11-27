@@ -13,6 +13,59 @@ class Firm extends Model {
         return $stmt->fetchAll();
     }
 
+    /**
+     * Returns all firms accessible to the user: directly owned firms + active staff assignments.
+     */
+    public static function getAccessibleByUserId(int $userId): array {
+        $owned = self::getByUserId($userId);
+        $seen = [];
+        foreach ($owned as $f) {
+            $seen[(int)$f['id']] = true;
+        }
+        if (defined('ENABLE_RBAC') && ENABLE_RBAC) {
+            require_once __DIR__ . '/StaffAccount.php';
+            foreach (StaffAccount::getActiveFirmsForStaff($userId) as $sf) {
+                $fid = (int)$sf['id'];
+                if (!isset($seen[$fid])) {
+                    $owned[] = $sf;
+                    $seen[$fid] = true;
+                }
+            }
+        }
+        return $owned;
+    }
+
+    /**
+     * Fetch a single firm only if the user owns it or holds an active staff assignment.
+     */
+    public static function getAccessibleById(int $id, int $userId): ?array {
+        $owned = self::getById($id, $userId);
+        if ($owned) {
+            return $owned;
+        }
+        if (defined('ENABLE_RBAC') && ENABLE_RBAC) {
+            try {
+                $stmt = self::db()->prepare("
+                    SELECT f.*, sa.role AS access_role, sa.permissions_json, sa.owner_user_id
+                    FROM staff_accounts sa
+                    JOIN firms f ON f.id = sa.firm_id
+                    JOIN users owner ON owner.id = sa.owner_user_id
+                    WHERE sa.firm_id = ?
+                      AND sa.user_id = ?
+                      AND sa.is_active = 1
+                      AND owner.status = 'active'
+                      AND (owner.subscription_expires_at IS NULL OR owner.subscription_expires_at >= ?)
+                    LIMIT 1
+                ");
+                $stmt->execute([$id, $userId, date('Y-m-d H:i:s')]);
+                return $stmt->fetch() ?: null;
+            } catch (Throwable $e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public static function getById(int $id, ?int $userId = null): ?array {
         if ($userId !== null) {
             $stmt = self::db()->prepare("SELECT * FROM firms WHERE id = ? AND user_id = ?");

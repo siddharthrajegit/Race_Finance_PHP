@@ -18,7 +18,7 @@ class Upload {
         'text/plain' // Some browsers upload json as text/plain
     ];
 
-    public static function handle(string $fieldName, string $subDir = ''): ?string {
+    public static function handle(string $fieldName, string $subDir = '', bool $allowPdf = false): ?string {
         if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] === UPLOAD_ERR_NO_FILE) {
             return null;
         }
@@ -36,15 +36,23 @@ class Upload {
         $origName = $file['name'];
         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 
-        if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
-            throw new Exception("Invalid file format. Only JPG, PNG, WebP images and JSON files are permitted.");
+        $allowedExts = self::ALLOWED_EXTENSIONS;
+        $allowedMimes = self::ALLOWED_MIME_TYPES;
+        if ($allowPdf) {
+            $allowedExts[] = 'pdf';
+            $allowedMimes[] = 'application/pdf';
+        }
+
+        if (!in_array($ext, $allowedExts, true)) {
+            $label = $allowPdf ? 'JPG, PNG, WebP, JSON, and PDF files' : 'JPG, PNG, WebP images and JSON files';
+            throw new Exception("Invalid file format. Only {$label} are permitted.");
         }
 
         // Verify MIME type using finfo
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file['tmp_name']);
 
-        if (!in_array($mime, self::ALLOWED_MIME_TYPES, true)) {
+        if (!in_array($mime, $allowedMimes, true)) {
             throw new Exception("Security Alert: Invalid MIME type detected ($mime).");
         }
 

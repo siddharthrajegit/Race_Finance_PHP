@@ -17,6 +17,7 @@ class Admin extends Model {
                 SUM(CASE WHEN status = 'suspended' THEN 1 ELSE 0 END) as suspended,
                 SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admins
             FROM users
+            WHERE role != 'staff'
         ")->fetch();
 
         $firmStats = self::db()->query("SELECT COUNT(*) as total FROM firms")->fetch();
@@ -44,7 +45,7 @@ class Admin extends Model {
         $itemStats = self::db()->query("SELECT COUNT(*) as total_items FROM items")->fetch();
         $partyStats = self::db()->query("SELECT COUNT(*) as total_parties FROM parties")->fetch();
 
-        $regularUsers = self::db()->query("SELECT id FROM users WHERE role != 'admin'")->fetchAll();
+        $regularUsers = self::db()->query("SELECT id FROM users WHERE role NOT IN ('admin', 'staff')")->fetchAll();
         $totalPoolUsedBytes = 0;
         foreach ($regularUsers as $u) {
             $st = self::getUserStorageStats((int)$u['id']);
@@ -212,6 +213,8 @@ class Admin extends Model {
         if (trim($role) !== '') {
             $query .= " AND u.role = ?";
             $params[] = trim($role);
+        } else {
+            $query .= " AND u.role != 'staff'";
         }
         if (trim($status) !== '') {
             $query .= " AND u.status = ?";

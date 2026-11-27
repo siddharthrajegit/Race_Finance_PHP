@@ -5,14 +5,17 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
 require_once __DIR__ . '/../models/Item.php';
+require_once __DIR__ . '/../models/Warehouse.php';
+require_once __DIR__ . '/../models/AuditLog.php';
 
 class ItemController {
     public function listItems(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_items');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $selectedCategory = trim($_GET['category'] ?? '');
@@ -25,19 +28,21 @@ class ItemController {
 
         $lowStock = Item::getLowStock($firmId);
         $categories = Item::getCategories($firmId);
+        $warehouses = (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE) ? Warehouse::getByFirmId($firmId, true) : [];
 
         view('items/list', [
             'title' => 'Items & Inventory',
             'items' => $items,
             'lowStockCount' => count($lowStock),
             'categories' => $categories,
+            'warehouses' => $warehouses,
             'selectedCategory' => $selectedCategory,
             'activeMenu' => 'items'
         ]);
     }
 
     public function getCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items');
         $firm = Auth::requireActiveFirm();
         $categories = Item::getCategories((int)$firm['id']);
 
@@ -50,7 +55,7 @@ class ItemController {
     }
 
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
 
@@ -108,7 +113,8 @@ class ItemController {
                 'tax_inclusive' => !empty($_POST['tax_inclusive']) ? 1 : 0,
                 'opening_stock' => Security::parseCleanFloat($_POST['opening_stock'] ?? 0),
                 'low_stock_threshold' => Security::parseCleanFloat($_POST['low_stock_threshold'] ?? 5),
-                'description' => $_POST['description'] ?? null
+                'description' => $_POST['description'] ?? null,
+                'tracking_type' => $_POST['tracking_type'] ?? 'none'
             ]);
 
             Flash::set('success_msg', "Item \"{$name}\" added successfully!");
@@ -122,7 +128,7 @@ class ItemController {
     }
 
     public function getEdit(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items');
         $firm = Auth::requireActiveFirm();
         $itemId = (int)($params['id'] ?? 0);
         $item = Item::getById($itemId, (int)$firm['id']);
@@ -144,7 +150,7 @@ class ItemController {
     }
 
     public function postEdit(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $itemId = (int)($params['id'] ?? 0);
@@ -201,7 +207,8 @@ class ItemController {
                 'tax_rate' => $taxRate,
                 'tax_inclusive' => !empty($_POST['tax_inclusive']) ? 1 : 0,
                 'low_stock_threshold' => Security::parseCleanFloat($_POST['low_stock_threshold'] ?? 5),
-                'description' => $_POST['description'] ?? null
+                'description' => $_POST['description'] ?? null,
+                'tracking_type' => $_POST['tracking_type'] ?? 'none'
             ]);
 
             Flash::set('success_msg', 'Item details updated.');
@@ -215,9 +222,10 @@ class ItemController {
     }
 
     public function postAdjustStock(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('adjust_stock');
         $firm = Auth::requireActiveFirm();
         $itemId = (int)($params['id'] ?? 0);
+        $user = Auth::user();
 
         try {
             $qty = Security::parseCleanFloat($_POST['adjustment'] ?? 0);
@@ -229,8 +237,12 @@ class ItemController {
 
             $action = $_POST['action'] ?? 'add';
             $finalDelta = ($action === 'reduce') ? -abs($qty) : abs($qty);
+            $warehouseId = !empty($_POST['warehouse_id']) ? (int)$_POST['warehouse_id'] : null;
 
-            Item::adjustStock($itemId, (int)$firm['id'], $finalDelta);
+            Item::adjustStock($itemId, (int)$firm['id'], $finalDelta, $warehouseId, trim($_POST['notes'] ?? '') ?: null, $user ? (int)$user['id'] : null);
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                AuditLog::log((int)$firm['id'], 'ADJUST_STOCK', 'item', $itemId, "Adjusted stock by {$finalDelta}");
+            }
             Flash::set('success_msg', 'Stock level updated.');
             header('Location: /items');
             exit;
@@ -242,12 +254,15 @@ class ItemController {
     }
 
     public function postDelete(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items');
         $firm = Auth::requireActiveFirm();
         $itemId = (int)($params['id'] ?? 0);
 
         try {
             Item::delete($itemId, (int)$firm['id']);
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                AuditLog::log((int)$firm['id'], 'DELETE', 'item', $itemId, "Deleted item #{$itemId}");
+            }
             Flash::set('success_msg', 'Item deleted.');
             header('Location: /items');
             exit;
@@ -259,7 +274,7 @@ class ItemController {
     }
 
     public function apiGetItems(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_items', true);
         $firm = Auth::requireActiveFirm();
         $items = Item::getByFirmId((int)$firm['id']);
 
@@ -269,7 +284,7 @@ class ItemController {
     }
 
     public function postQuickCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('manage_items', true);
         $firm = Auth::requireActiveFirm();
         header('Content-Type: application/json');
 

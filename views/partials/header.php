@@ -170,6 +170,30 @@
         </a>
       </nav>
     <?php else: ?>
+      <?php
+        $canPerm = function(string $perm) use ($userPermissions): bool {
+            $list = $userPermissions ?? [];
+            return in_array('*', $list, true) || in_array($perm, $list, true);
+        };
+        $isOwnerAccount = (($user['role'] ?? 'user') !== 'staff');
+        $advanceMenuKeys = [
+            'warehouses', 'batches', 'serials', 'bom', 'barcodes',
+            'loyalty', 'catalogue', 'expenses', 'accounting', 'staff', 'audit_logs',
+        ];
+        $isAdvanceActive = in_array($activeMenu ?? '', $advanceMenuKeys, true);
+        $hasAdvanceItems =
+            (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE && $canPerm('view_warehouses')) ||
+            (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && $canPerm('view_items')) ||
+            (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && $canPerm('view_items')) ||
+            (defined('ENABLE_BOM') && ENABLE_BOM && $canPerm('manage_bom')) ||
+            (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')) ||
+            (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $canPerm('manage_loyalty')) ||
+            (defined('ENABLE_CATALOGUE') && ENABLE_CATALOGUE && $canPerm('manage_catalogue')) ||
+            (defined('ENABLE_EXPENSES') && ENABLE_EXPENSES && $canPerm('view_expenses')) ||
+            (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING && $canPerm('view_accounting')) ||
+            ($isOwnerAccount && defined('ENABLE_RBAC') && ENABLE_RBAC) ||
+            (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS && $canPerm('view_audit_logs'));
+      ?>
       <!-- Active Firm Switcher -->
       <?php if (!empty($userFirms)): ?>
         <div class="rf-dropdown w-full mb-3.5" data-ui-dropdown>
@@ -199,54 +223,158 @@
                 </button>
               </form>
             <?php endforeach; ?>
-            <div class="rf-dropdown-divider"></div>
-            <a class="rf-dropdown-item text-[#2E5A36]" href="/firms/create">
-              <i class="bi bi-plus-circle"></i> Register New Firm
-            </a>
-            <a class="rf-dropdown-item" href="/firms">
-              <i class="bi bi-gear"></i> Manage All Firms
-            </a>
+            <?php if ($isOwnerAccount): ?>
+              <div class="rf-dropdown-divider"></div>
+              <a class="rf-dropdown-item text-[#2E5A36]" href="/firms/create">
+                <i class="bi bi-plus-circle"></i> Register New Firm
+              </a>
+              <a class="rf-dropdown-item" href="/firms">
+                <i class="bi bi-gear"></i> Manage All Firms
+              </a>
+            <?php endif; ?>
           </div>
         </div>
       <?php endif; ?>
 
-      <!-- Primary CTA -->
-      <a href="/sales/create" class="rf-btn rf-btn-primary w-full mb-4 py-2.5 text-xs">
-        <i class="bi bi-plus-lg"></i> New Sales Record
-      </a>
+      <!-- Primary CTA & Offline Indicator -->
+      <?php if ($canPerm('create_sales')): ?>
+        <a href="/sales/create" class="rf-btn rf-btn-primary w-full mb-2 py-2.5 text-xs">
+          <i class="bi bi-plus-lg"></i> New Sales Record
+        </a>
+      <?php endif; ?>
+      <?php if (defined('ENABLE_OFFLINE') && ENABLE_OFFLINE): ?>
+        <button type="button" id="offlineStatusBadge" class="rf-btn rf-btn-sage rf-btn-sm w-full mb-3 py-1.5 justify-center text-xs" data-ui-modal="#offlineQueueModal">
+          <i class="bi bi-wifi"></i> Online
+        </button>
+      <?php endif; ?>
 
       <!-- Sidebar Navigation -->
       <nav class="flex-1 space-y-1">
-        <a class="rf-nav-link <?= ($activeMenu === 'dashboard') ? 'active' : '' ?>" href="/dashboard">
-          <i class="bi bi-grid text-base"></i><span>Dashboard</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'sales') ? 'active' : '' ?>" href="/sales">
-          <i class="bi bi-receipt text-base"></i><span>Sales Records</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'purchases') ? 'active' : '' ?>" href="/purchases">
-          <i class="bi bi-bag text-base"></i><span>Purchase Records</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'items') ? 'active' : '' ?>" href="/items">
-          <i class="bi bi-box-seam text-base"></i><span>Items & Inventory</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
-          <i class="bi bi-file-earmark-spreadsheet text-base"></i><span>Rate List &amp; Estimate</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
-          <i class="bi bi-people text-base"></i><span>Parties & Customers</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
-          <i class="bi bi-cash-stack text-base"></i><span>Payments</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
-          <i class="bi bi-bar-chart text-base"></i><span>Reports & GST</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
-          <i class="bi bi-cloud-arrow-up text-base"></i><span>Backup & Cloud</span>
-        </a>
-        <a class="rf-nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
-          <i class="bi bi-gear text-base"></i><span>Settings</span>
-        </a>
+        <?php if ($canPerm('view_dashboard')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'dashboard') ? 'active' : '' ?>" href="/dashboard">
+            <i class="bi bi-grid text-base"></i><span>Dashboard</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_sales')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'sales') ? 'active' : '' ?>" href="/sales">
+            <i class="bi bi-receipt text-base"></i><span>Sales Records</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_purchases')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'purchases') ? 'active' : '' ?>" href="/purchases">
+            <i class="bi bi-bag text-base"></i><span>Purchase Records</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_items')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'items') ? 'active' : '' ?>" href="/items">
+            <i class="bi bi-box-seam text-base"></i><span>Items &amp; Inventory</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_estimates') || $canPerm('manage_estimates')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'estimates') ? 'active' : '' ?>" href="/estimates/builder">
+            <i class="bi bi-file-earmark-spreadsheet text-base"></i><span>Rate List &amp; Estimate</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_parties')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'parties') ? 'active' : '' ?>" href="/parties">
+            <i class="bi bi-people text-base"></i><span>Parties &amp; Customers</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_payments')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'payments') ? 'active' : '' ?>" href="/payments">
+            <i class="bi bi-cash-stack text-base"></i><span>Payments</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('view_reports')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'reports') ? 'active' : '' ?>" href="/reports">
+            <i class="bi bi-bar-chart text-base"></i><span>Reports &amp; GST</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($isOwnerAccount): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'backup') ? 'active' : '' ?>" href="/backup">
+            <i class="bi bi-cloud-arrow-up text-base"></i><span>Backup &amp; Cloud</span>
+          </a>
+        <?php endif; ?>
+        <?php if ($canPerm('manage_settings')): ?>
+          <a class="rf-nav-link <?= ($activeMenu === 'settings') ? 'active' : '' ?>" href="/settings">
+            <i class="bi bi-gear text-base"></i><span>Settings</span>
+          </a>
+        <?php endif; ?>
+
+        <?php if ($hasAdvanceItems): ?>
+          <div>
+            <button
+              type="button"
+              class="rf-nav-link w-full justify-between text-left bg-transparent border-0 cursor-pointer <?= $isAdvanceActive ? 'bg-[#E7E4DC]/75 text-[#1C1B18] font-semibold' : '' ?>"
+              data-ui-collapse="#sidebarAdvanceMenu"
+              aria-expanded="<?= $isAdvanceActive ? 'true' : 'false' ?>"
+              aria-controls="sidebarAdvanceMenu"
+            >
+              <span class="flex items-center gap-3">
+                <i class="bi bi-sliders2 text-base"></i>
+                <span>Advance</span>
+              </span>
+              <i class="bi bi-chevron-down advance-chevron text-[11px] text-[#78746C] transition-transform duration-150" aria-hidden="true"></i>
+            </button>
+            <div class="<?= $isAdvanceActive ? '' : 'hidden' ?> mt-1 space-y-0.5 pl-4" id="sidebarAdvanceMenu" data-ui-collapse-panel>
+              <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE && $canPerm('view_warehouses')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'warehouses') ? 'active' : '' ?>" href="/warehouses">
+                  <i class="bi bi-buildings text-sm"></i><span>Warehouses</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY && $canPerm('view_items')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'batches') ? 'active' : '' ?>" href="/batches">
+                  <i class="bi bi-calendar2-week text-sm"></i><span>Batches &amp; Expiry</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING && $canPerm('view_items')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'serials') ? 'active' : '' ?>" href="/serials">
+                  <i class="bi bi-hash text-sm"></i><span>Serial / IMEI</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_BOM') && ENABLE_BOM && $canPerm('manage_bom')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'bom') ? 'active' : '' ?>" href="/bom">
+                  <i class="bi bi-boxes text-sm"></i><span>Manufacturing BOM</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE && $canPerm('view_items')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'barcodes') ? 'active' : '' ?>" href="/barcodes">
+                  <i class="bi bi-upc-scan text-sm"></i><span>Barcode Labels</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_LOYALTY') && ENABLE_LOYALTY && $canPerm('manage_loyalty')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'loyalty') ? 'active' : '' ?>" href="/loyalty">
+                  <i class="bi bi-stars text-sm"></i><span>Loyalty Rewards</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_CATALOGUE') && ENABLE_CATALOGUE && $canPerm('manage_catalogue')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'catalogue') ? 'active' : '' ?>" href="/catalogue">
+                  <i class="bi bi-shop text-sm"></i><span>Online Catalogue</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_EXPENSES') && ENABLE_EXPENSES && $canPerm('view_expenses')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'expenses') ? 'active' : '' ?>" href="/expenses">
+                  <i class="bi bi-wallet2 text-sm"></i><span>Expenses</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING && $canPerm('view_accounting')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'accounting') ? 'active' : '' ?>" href="/accounting">
+                  <i class="bi bi-diagram-3 text-sm"></i><span>Accounting &amp; P&amp;L</span>
+                </a>
+              <?php endif; ?>
+              <?php if ($isOwnerAccount && defined('ENABLE_RBAC') && ENABLE_RBAC): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'staff') ? 'active' : '' ?>" href="/staff">
+                  <i class="bi bi-person-badge text-sm"></i><span>Staff &amp; CA Team</span>
+                </a>
+              <?php endif; ?>
+              <?php if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS && $canPerm('view_audit_logs')): ?>
+                <a class="rf-nav-link py-1.5 text-xs <?= ($activeMenu === 'audit_logs') ? 'active' : '' ?>" href="/audit-logs">
+                  <i class="bi bi-journal-text text-sm"></i><span>Audit Logs</span>
+                </a>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
       </nav>
     <?php endif; ?>
 
@@ -267,6 +395,8 @@
                 <span class="truncate"><?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                 <?php if (!empty($isAdmin)): ?>
                   <span class="rf-badge rf-badge-amber text-[9px] px-1.5 py-0">ADMIN</span>
+                <?php elseif (($user['role'] ?? 'user') === 'staff'): ?>
+                  <span class="rf-badge rf-badge-slate text-[9px] px-1.5 py-0"><?= htmlspecialchars(strtoupper($staffRole ?? 'STAFF'), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php endif; ?>
               </div>
               <div class="text-[11px] text-[#78746C] truncate"><?= htmlspecialchars($user['email'] ?? ($user['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
@@ -279,9 +409,13 @@
           <?php if (!empty($isAdmin)): ?>
             <a class="rf-dropdown-item font-semibold text-[#8A5A00]" href="/admin"><i class="bi bi-shield-lock"></i> Admin Command Center</a>
           <?php else: ?>
-            <a class="rf-dropdown-item" href="/settings"><i class="bi bi-gear"></i> Settings</a>
-            <a class="rf-dropdown-item" href="/firms"><i class="bi bi-buildings"></i> Business Firms</a>
-            <a class="rf-dropdown-item" href="/backup"><i class="bi bi-cloud-arrow-up"></i> Data Backup</a>
+            <?php if (in_array('*', $userPermissions ?? [], true) || in_array('manage_settings', $userPermissions ?? [], true)): ?>
+              <a class="rf-dropdown-item" href="/settings"><i class="bi bi-gear"></i> Settings</a>
+            <?php endif; ?>
+            <?php if (($user['role'] ?? 'user') !== 'staff'): ?>
+              <a class="rf-dropdown-item" href="/firms"><i class="bi bi-buildings"></i> Business Firms</a>
+              <a class="rf-dropdown-item" href="/backup"><i class="bi bi-cloud-arrow-up"></i> Data Backup</a>
+            <?php endif; ?>
           <?php endif; ?>
           <div class="rf-dropdown-divider"></div>
           <form action="/auth/logout" method="POST" class="m-0">

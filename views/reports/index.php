@@ -49,5 +49,37 @@
         View Item Report &rarr;
       </a>
     </div>
+
+    <?php if (defined('ENABLE_COMPLIANCE_EXPORTS') && ENABLE_COMPLIANCE_EXPORTS): ?>
+      <div class="rf-card p-6 flex flex-col justify-between hover:border-[#C8C4BA] transition-colors">
+        <div>
+          <div class="w-11 h-11 rounded-xl bg-[#FBF3DB] border border-[#EAE0B8] text-[#8A5A00] flex items-center justify-center text-xl mb-5">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+          </div>
+          <h2 class="text-base font-semibold text-[#1C1B18] mb-2">GSTR-1 / 2B / 3B CSV Exports</h2>
+          <p class="text-sm text-[#5C5A54] leading-relaxed mb-6">
+            Download software-compiled outward sales, purchase ITC, and liability working CSV sheets for CA review.
+          </p>
+        </div>
+        <a href="/reports/gst-exports" class="rf-btn rf-btn-amber w-full">
+          Open GST Exports &rarr;
+        </a>
+      </div>
+
+      <div class="rf-card p-6 flex flex-col justify-between hover:border-[#C8C4BA] transition-colors">
+        <div>
+          <div class="w-11 h-11 rounded-xl bg-[#F3F1EC] border border-[#E2DFD7] text-[#1C1B18] flex items-center justify-center text-xl mb-5">
+            <i class="bi bi-filetype-xml"></i>
+          </div>
+          <h2 class="text-base font-semibold text-[#1C1B18] mb-2">Tally-Compatible XML Export</h2>
+          <p class="text-sm text-[#5C5A54] leading-relaxed mb-6">
+            Export Sundry Debtor/Creditor masters and Sales/Purchase vouchers in standard Tally XML schema.
+          </p>
+        </div>
+        <a href="/reports/tally-export" class="rf-btn rf-btn-secondary w-full">
+          Export Tally XML &rarr;
+        </a>
+      </div>
+    <?php endif; ?>
   </div>
 </div>

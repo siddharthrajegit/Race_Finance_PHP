@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../core/Auth.php';
+require_once __DIR__ . '/../core/RBAC.php';
 require_once __DIR__ . '/../core/Security.php';
 require_once __DIR__ . '/../core/Flash.php';
 require_once __DIR__ . '/../core/View.php';
@@ -15,7 +16,7 @@ require_once __DIR__ . '/../models/Setting.php';
 
 class PaymentController {
     public function listPayments(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_payments');
         $firm = Auth::requireActiveFirm();
         $type = $_GET['type'] ?? null;
         $payments = Payment::getByFirmId((int)$firm['id'], $type);
@@ -31,7 +32,7 @@ class PaymentController {
     }
 
     public function getCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('create_payments');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $type = $_GET['type'] ?? 'payment_in';
@@ -52,7 +53,7 @@ class PaymentController {
     }
 
     public function postCreate(): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('create_payments');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $type = $_POST['type'] ?? 'payment_in';
@@ -96,7 +97,7 @@ class PaymentController {
     }
 
     public function getView(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('view_payments');
         $firm = Auth::requireActiveFirm();
         $firmId = (int)$firm['id'];
         $id = (int)($params['id'] ?? 0);
@@ -129,7 +130,7 @@ class PaymentController {
     }
 
     public function postDelete(array $params): void {
-        Auth::requireUserOnly();
+        RBAC::requirePermission('delete_payments');
         $firm = Auth::requireActiveFirm();
         $id = (int)($params['id'] ?? 0);
 

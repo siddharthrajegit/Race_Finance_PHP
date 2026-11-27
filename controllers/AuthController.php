@@ -93,6 +93,15 @@ class AuthController {
             }
         }
 
+        if ($user['role'] === 'staff') {
+            require_once __DIR__ . '/../models/Firm.php';
+            if (empty(Firm::getAccessibleByUserId((int)$user['id']))) {
+                Flash::set('error_msg', 'Your staff access is currently paused or no active firm is assigned.');
+                header('Location: /auth/login');
+                exit;
+            }
+        }
+
         Auth::login($user);
         Security::clearFailedAttempts($identifier);
 

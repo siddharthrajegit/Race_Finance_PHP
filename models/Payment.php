@@ -92,7 +92,18 @@ class Payment extends Model {
 
             Party::syncFIFOSettlement($partyId, $firmId);
 
-            return self::getById($id, $firmId);
+            $payment = self::getById($id, $firmId);
+
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                require_once __DIR__ . '/AuditLog.php';
+                AuditLog::log($firmId, 'CREATE', 'payment', $id, "Created {$payType} #{$finalNumber} amount {$payment['amount']}");
+            }
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
+                Accounting::postPaymentJournal($payment);
+            }
+
+            return $payment;
         });
     }
 
@@ -101,11 +112,21 @@ class Payment extends Model {
             $payment = self::getById($id, $firmId);
             if (!$payment) return false;
 
+            if (defined('ENABLE_ACCOUNTING') && ENABLE_ACCOUNTING) {
+                require_once __DIR__ . '/Accounting.php';
+                Accounting::reverseSourceJournal($firmId, 'payment', $id, "Deleted payment #{$payment['payment_number']}");
+            }
+
             $partyId = (int)$payment['party_id'];
             $db->prepare("DELETE FROM payments WHERE id = ? AND firm_id = ?")->execute([$id, $firmId]);
 
             if ($partyId) {
                 Party::syncFIFOSettlement($partyId, $firmId);
+            }
+
+            if (defined('ENABLE_AUDIT_LOGS') && ENABLE_AUDIT_LOGS) {
+                require_once __DIR__ . '/AuditLog.php';
+                AuditLog::log($firmId, 'DELETE', 'payment', $id, "Deleted {$payment['type']} #{$payment['payment_number']} amount {$payment['amount']}");
             }
             return true;
         });

@@ -99,6 +99,17 @@
           <span class="flex items-center gap-2"><i class="bi bi-download"></i> Download Full Database Snapshot (.db / .sql)</span>
           <span class="rf-badge rf-badge-sage">Requires Password</span>
         </button>
+
+        <?php $pendingCount = count(array_diff($availableMigrations ?? [], array_keys($appliedMigrations ?? []))); ?>
+        <form action="/admin/system/run-migrations" method="POST" class="m-0">
+          <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          <button type="submit" class="rf-btn rf-btn-secondary w-full justify-between px-3.5 py-2">
+            <span class="flex items-center gap-2"><i class="bi bi-database-check text-ink-muted"></i> Database Schema Migrations (<?= count($appliedMigrations ?? []) ?>/<?= count($availableMigrations ?? []) ?> applied)</span>
+            <span class="rf-badge <?= $pendingCount > 0 ? 'rf-badge-amber' : 'rf-badge-sage' ?>">
+              <?= $pendingCount > 0 ? ($pendingCount . ' Pending — Run Now') : 'Up to Date' ?>
+            </span>
+          </button>
+        </form>
       </div>
     </div>
   </div>

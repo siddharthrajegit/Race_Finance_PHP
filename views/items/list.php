@@ -8,7 +8,22 @@ $lowStock = $lowStockCount ?? 0;
       <h1 class="text-2xl font-semibold text-[#1C1B18] tracking-tight">Items &amp; Inventory</h1>
       <p class="text-sm text-[#5C5A54] mt-1">Track stock levels, pricing, GST tax rates, categories, and HSN codes</p>
     </div>
-    <div class="flex flex-wrap items-center gap-2.5">
+    <div class="flex flex-wrap items-center gap-2">
+      <?php if (defined('ENABLE_BARCODE') && ENABLE_BARCODE): ?>
+        <a href="/barcodes" class="rf-btn rf-btn-secondary rf-btn-sm"><i class="bi bi-upc-scan"></i> Barcodes</a>
+      <?php endif; ?>
+      <?php if (defined('ENABLE_WAREHOUSE') && ENABLE_WAREHOUSE): ?>
+        <a href="/warehouses" class="rf-btn rf-btn-secondary rf-btn-sm"><i class="bi bi-buildings"></i> Warehouses</a>
+      <?php endif; ?>
+      <?php if (defined('ENABLE_BATCH_EXPIRY') && ENABLE_BATCH_EXPIRY): ?>
+        <a href="/batches" class="rf-btn rf-btn-secondary rf-btn-sm"><i class="bi bi-calendar2-week"></i> Batches</a>
+      <?php endif; ?>
+      <?php if (defined('ENABLE_SERIAL_TRACKING') && ENABLE_SERIAL_TRACKING): ?>
+        <a href="/serials" class="rf-btn rf-btn-secondary rf-btn-sm"><i class="bi bi-hash"></i> Serials</a>
+      <?php endif; ?>
+      <?php if (defined('ENABLE_BOM') && ENABLE_BOM): ?>
+        <a href="/bom" class="rf-btn rf-btn-secondary rf-btn-sm"><i class="bi bi-boxes"></i> BOM</a>
+      <?php endif; ?>
       <a href="/estimates/builder" class="rf-btn rf-btn-secondary">
         <i class="bi bi-file-earmark-spreadsheet"></i> Rate List &amp; Estimate
       </a>
@@ -153,6 +168,16 @@ $lowStock = $lowStockCount ?? 0;
           </div>
           <div class="rf-modal-body space-y-4">
             <p class="text-xs text-[#5C5A54]">Current Stock: <strong class="text-[#1C1B18] tabular-nums"><?= htmlspecialchars((string)($it['current_stock'] ?? 0), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars($it['unit'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></p>
+            <?php if (!empty($warehouses) && count($warehouses) > 1): ?>
+              <div>
+                <label class="rf-label-plain text-xs">Warehouse</label>
+                <select name="warehouse_id" class="rf-select rf-select-sm">
+                  <?php foreach ($warehouses as $wh): ?>
+                    <option value="<?= (int)$wh['id'] ?>" <?= !empty($wh['is_default']) ? 'selected' : '' ?>><?= htmlspecialchars($wh['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            <?php endif; ?>
             <div>
               <label class="rf-label-plain text-xs">Action</label>
               <select name="action" class="rf-select rf-select-sm">

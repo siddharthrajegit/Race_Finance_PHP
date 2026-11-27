@@ -49,6 +49,27 @@ foreach ($txList as $tx) {
       <a href="/<?= ($partyType === 'supplier') ? 'purchases' : 'sales' ?>/create" class="rf-btn rf-btn-primary rf-btn-sm">
         <i class="bi bi-plus-circle"></i> New <?= ($partyType === 'supplier') ? 'Purchase Bill' : 'Sale Bill' ?>
       </a>
+      <?php
+        $waLedgerPhone = preg_replace('/[^0-9]/', '', (string)($party['phone'] ?? ''));
+        if (strlen($waLedgerPhone) === 10) $waLedgerPhone = '91' . $waLedgerPhone;
+        if (defined('ENABLE_WHATSAPP_REMINDER') && ENABLE_WHATSAPP_REMINDER && $partyType !== 'supplier' && ($closing_balance ?? 0) > 0.01):
+          $billList = [];
+          foreach (($pending_bills ?? []) as $pb) {
+            $billList[] = '#' . $pb['invoice_number'] . ' (Due ₹' . number_format((float)$pb['balance_due'], 2) . ')';
+          }
+          $msg = "Hello {$party['name']}, friendly reminder from {$firm['name']}: total pending balance is ₹" . number_format((float)$closing_balance, 2) . ".";
+          if (!empty($billList)) {
+            $msg .= " Pending bills: " . implode(', ', array_slice($billList, 0, 5)) . ".";
+          }
+          if (!empty($firm['upi_id'])) {
+            $msg .= " UPI ID: {$firm['upi_id']}.";
+          }
+          $waLedgerUrl = 'https://wa.me/' . $waLedgerPhone . '?text=' . rawurlencode($msg);
+      ?>
+        <a href="<?= htmlspecialchars($waLedgerUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="rf-btn rf-btn-sage rf-btn-sm">
+          <i class="bi bi-whatsapp"></i> WhatsApp Reminder
+        </a>
+      <?php endif; ?>
       <button type="button" class="rf-btn rf-btn-secondary rf-btn-sm btn-trigger-print">
         <i class="bi bi-printer"></i> Print Statement
       </button>
@@ -346,10 +367,14 @@ foreach ($txList as $tx) {
                     <div class="text-[11px] text-[#78746C]"><?= htmlspecialchars(implode(' | ', $details), ENT_QUOTES, 'UTF-8') ?></div>
                   <?php endif; ?>
                 </td>
-                <td class="text-right font-semibold tabular-nums whitespace-nowrap <?= $runBal > 0 ? 'text-[#8A5A00]' : ($runBal < 0 ? 'text-[#8F2D2B]' : 'text-[#2E5A36]') ?>">
+                <td class="text-right font-semibold tabular-nums whitespace-nowrap <?= $runBal > 0 ? ($partyType === 'supplier' ? 'text-[#2E5A36]' : 'text-[#8A5A00]') : ($runBal < 0 ? ($partyType === 'supplier' ? 'text-[#8F2D2B]' : 'text-[#2E5A36]') : 'text-[#2E5A36]') ?>">
                   ₹ <?= number_format(abs($runBal), 2) ?>
                   <div class="text-[10px] font-normal text-[#78746C]">
-                    <?= $runBal > 0 ? '(Due)' : ($runBal < 0 ? '(Advance)' : '(Cleared)') ?>
+                    <?php if ($partyType === 'supplier'): ?>
+                      <?= $runBal < 0 ? '(Payable)' : ($runBal > 0 ? '(Advance)' : '(Cleared)') ?>
+                    <?php else: ?>
+                      <?= $runBal > 0 ? '(Due)' : ($runBal < 0 ? '(Advance)' : '(Cleared)') ?>
+                    <?php endif; ?>
                   </div>
                 </td>
                 <td class="text-right print:hidden">
